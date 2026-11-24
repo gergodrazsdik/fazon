@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0082, F-0003, Q-0017.
+Next free IDs: T-0082, F-0004, Q-0017.
 
 ## Now
 
@@ -19,14 +19,14 @@ Next free IDs: T-0082, F-0003, Q-0017.
 
 ### Repository and skeleton
 
-- [~] T-0001 Create the empty public GitHub repository and initialise `~/projects/fazon` in place
-- [~] T-0002 Skeleton: license, Code of Conduct, contributing, security and support files, changelog, editor and lint configs, `justfile`, lefthook hooks, `scripts/`
-- [~] T-0003 Agent instructions: `AGENTS.md`, `CLAUDE.md`, committed `.claude/settings.json`
-- [~] T-0004 Work tracker, ADR template and the baseline ADR (0001)
-- [~] T-0005 `lint` workflow (`lint`, `zizmor`, `pr-title` jobs) and Dependabot for GitHub Actions
-- [~] T-0006 Repository settings and rulesets (`scripts/github-settings.sh`), applied and checked
-- [ ] T-0007 Smoke-test pull request: `lint`, `zizmor` and `pr-title` run and pass, then they become required checks on `main`
-- [~] T-0008 Contributor agreement text: Harmony HA-CLA-I 1.0 with outbound Option Five in `CLA.md` ([ADR 0002](../adr/0002-contributor-license-agreement.md))
+- [x] T-0001 Create the empty public GitHub repository and initialise `~/projects/fazon` in place — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
+- [x] T-0002 Skeleton: license, Code of Conduct, contributing, security and support files, changelog, editor and lint configs, `justfile`, lefthook hooks, `scripts/` — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
+- [x] T-0003 Agent instructions: `AGENTS.md`, `CLAUDE.md`, committed `.claude/settings.json` — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
+- [x] T-0004 Work tracker, ADR template and the baseline ADR (0001) — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
+- [x] T-0005 `lint` workflow (`lint`, `zizmor`, `pr-title` jobs) and Dependabot for GitHub Actions — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
+- [x] T-0006 Repository settings and rulesets (`scripts/github-settings.sh`), applied and checked — 2026-11-25, applied with `--no-required-checks` after the first push; `just github-settings-check` reports every setting as matching
+- [~] T-0007 Smoke-test pull request: `lint`, `zizmor` and `pr-title` run and pass, then they become required checks on `main`
+- [x] T-0008 Contributor agreement text: Harmony HA-CLA-I 1.0 with outbound Option Five in `CLA.md` ([ADR 0002](../adr/0002-contributor-license-agreement.md)) — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
 - [!] T-0009 The maintainer merges the smoke-test pull request with "Rebase and merge", to confirm the relaxed rules work (maintainer)
 - [ ] T-0015 CI tool pins: the linter versions in `scripts/install-ci-tools.sh` and `.github/workflows/lint.yml` are outside Dependabot's reach; bump them together with the local toolchain (`just doctor`), with a 7-day cooldown like Dependabot's
 
@@ -118,6 +118,8 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 
 - [ ] F-0001 The brief is committed as exported and excluded from the Markdown, spelling and EditorConfig gates rather than edited. With the repo's configs it fails one rule: markdownlint MD040 (a fenced code block without a language, the "Framework repo layout" block, line 393); typos and EditorConfig pass. A fix belongs in the design doc's next export (maintainer, 2026-11-25)
 - [ ] F-0002 The hosted CLA assistant had several outages of 2 to 9 hours in October 2026; a required `license/cla` check with no bypass would block every merge during one (2026-11-25, T-0014)
+
+- [x] F-0003 The first `lint` run on `main` failed: editorconfig-checker v4's archive holds the binary as `editorconfig-checker`, not `ec-linux-amd64`; the installer's one-match check caught it — fixed 2026-11-25, in the smoke-test pull request
 
 ## Open questions
 
