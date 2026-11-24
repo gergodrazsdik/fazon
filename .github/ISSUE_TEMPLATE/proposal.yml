@@ -1,0 +1,38 @@
+---
+name: Proposal
+description: Suggest a change to Fazon, its specs or its process.
+labels: ["type: feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the work tracker (docs/plan/TRACKER.md), the ADRs (docs/adr/) and the design
+        brief (docs/design/brief.md) first: it may already be planned or decided. For anything
+        non-trivial, agree on the approach here before opening a pull request.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do, and what gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: What would you change? Which alternatives did you consider?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Specification documents (docs/spec)
+        - CLI and harness
+        - Core (loop, checks, judge)
+        - Vue adapter
+        - Claude Code plugin and skills
+        - Verifier image
+        - CI and repo tooling
+        - Other

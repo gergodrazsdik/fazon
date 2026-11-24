@@ -1,0 +1,31 @@
+---
+name: Bug report
+description: Something in Fazon, its docs or its tooling is wrong.
+labels: ["type: bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Security problems go through private reporting (see SECURITY.md), never a public issue.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: The smallest set of steps, files or configuration that shows the problem.
+  - type: textarea
+    id: where
+    attributes:
+      label: Where?
+      description: The command, document or file, and the Fazon version or commit SHA.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node and pnpm versions, container runtime, Claude Code version if relevant. Leave out API keys and other secrets.
