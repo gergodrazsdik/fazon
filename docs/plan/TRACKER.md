@@ -10,7 +10,7 @@ Next free IDs: T-0082, F-0004, Q-0017.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. Smoke-test pull request: the required checks pass, the maintainer merges it with "Rebase and merge" (T-0007, T-0009)
+1. The maintainer merges the smoke-test pull request with "Rebase and merge" (T-0009)
 2. Contributor agreement: review it and set up the CLA assistant before any outside pull request is merged (T-0010, T-0011)
 3. M0: the spec format and its JSON Schema first, as most other documents build on it (T-0020), then the story matrix rules (T-0021) and the check catalogue (T-0022)
 4. Decide whether to reserve the npm name `fazon` now (Q-0014)
@@ -25,7 +25,7 @@ Next free IDs: T-0082, F-0004, Q-0017.
 - [x] T-0004 Work tracker, ADR template and the baseline ADR (0001) — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
 - [x] T-0005 `lint` workflow (`lint`, `zizmor`, `pr-title` jobs) and Dependabot for GitHub Actions — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
 - [x] T-0006 Repository settings and rulesets (`scripts/github-settings.sh`), applied and checked — 2026-11-25, applied with `--no-required-checks` after the first push; `just github-settings-check` reports every setting as matching
-- [~] T-0007 Smoke-test pull request: `lint`, `zizmor` and `pr-title` run and pass, then they become required checks on `main`
+- [x] T-0007 Smoke-test pull request: `lint`, `zizmor` and `pr-title` run and pass, then they become required checks on `main` — 2026-11-25, [#1](https://github.com/gergodrazsdik/fazon/pull/1)
 - [x] T-0008 Contributor agreement text: Harmony HA-CLA-I 1.0 with outbound Option Five in `CLA.md` ([ADR 0002](../adr/0002-contributor-license-agreement.md)) — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
 - [!] T-0009 The maintainer merges the smoke-test pull request with "Rebase and merge", to confirm the relaxed rules work (maintainer)
 - [ ] T-0015 CI tool pins: the linter versions in `scripts/install-ci-tools.sh` and `.github/workflows/lint.yml` are outside Dependabot's reach; bump them together with the local toolchain (`just doctor`), with a 7-day cooldown like Dependabot's
