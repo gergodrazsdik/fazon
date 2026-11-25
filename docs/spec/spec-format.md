@@ -12,7 +12,7 @@ This document defines what a spec may contain and which rules make it valid. The
 | What | Defined in |
 |---|---|
 | How a state is produced (prop, pseudo-state, interaction), how `matrix` expands into stories, story names, the icon set fixtures draw from | [Story matrix rules](story-matrix.md) (T-0021) |
-| Check and rule IDs that `exemptions` name, and what each rule allows | Check catalogue (T-0022) |
+| Check and rule IDs that `exemptions` name, and what each rule allows | [Check catalogue](check-catalogue.md) (T-0022) |
 | How the judge's rubric is built from the body | Judge (T-0026) |
 | Where the approved API's hash is recorded, and its canonical form | Run record and provenance schemas (T-0028) |
 | Where specs live in a consumer repo, adapter-wide defaults | Config file reference (T-0029) |
@@ -200,8 +200,8 @@ Specs name role tokens only, never raw tokens. The token names in the examples a
 
 `exemptions` waives a check where the spec says it doesn't apply. Each exemption has:
 
-- `check` and `rule`: the IDs from the check catalogue (T-0022);
-- `part`, `fixture` and `when`: where it applies; everywhere when all are left out;
+- `check` and `rule`: the IDs from the [check catalogue](check-catalogue.md);
+- `part`, `fixture` and `when`: where it applies, for a rendered check; everywhere when all are left out. An exemption for a source check (`build`, `lint`, `test`, `package`) applies to all of the component's files and names none of them;
 - `reason` (required): why the check doesn't apply.
 
 Every exemption is listed in the report and in the pull request summary. An exemption is the developer's decision, which the reviewer sees; the agent permission model (T-0024) keeps it out of the agent's reach.
@@ -281,7 +281,7 @@ Other second-level headings are allowed. Write anything measurable as a field ra
 | SPEC-009 | Fixtures: `extends` names another fixture, with no cycles; after merging, every prop, slot and part a fixture sets exists, and its value fits the type; every part has as many instances as its `count` allows; required props and slots are set; icons exist in the icon set. |
 | SPEC-010 | Matrix: every axis is an enum or boolean prop; every fixture exists; every `exclude` condition is valid (SPEC-014), with `<Part>.<prop>` naming a prop of that part. |
 | SPEC-011 | Tokens: every token exists in the token set and is a role token; every `part` exists; every condition is valid (SPEC-014); no two rules with the same part and condition set the same property. |
-| SPEC-012 | Exemptions: `check` and `rule` exist in the check catalogue; `part`, `fixture` and the condition exist (SPEC-014). |
+| SPEC-012 | Exemptions: `check` and `rule` exist in the check catalogue, and the rule can be exempted; `part`, `fixture` and the condition exist (SPEC-014), and appear only for a rendered check. |
 | SPEC-013 | Extensions: every `map` and `omit` path exists in the neutral API, and no `add` path does; every `instead` names an existing or added member; a block for an adapter the consumer uses is valid against that adapter's schema. A block for another adapter is reported, not failed. |
 | SPEC-014 | A condition names props of its part (or the component), with values of their type, and a state listed in that part's (or the component's) `states`. |
 | SPEC-015 | Every state other than `default` can be produced: it has a recipe, a boolean prop of its name, or is `hover`, `focus-visible` or `active`. |

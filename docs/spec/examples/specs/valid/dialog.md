@@ -138,7 +138,7 @@ tokens:
       outline-color: color.focus.ring
 exemptions:
   - check: layout
-    rule: overflow
+    rule: scroll
     part: Content
     fixture: long-content
     reason: The body scrolls inside Content by design when it is taller than the viewport.

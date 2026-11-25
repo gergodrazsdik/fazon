@@ -10,4 +10,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - The repository: license, contributor agreement, community files, lint tooling and agent instructions. No product code yet.
 - The spec format, version 0: the document, the JSON Schema of the front matter, and valid and invalid example specs, checked by `just lint`.
+- The check catalogue, version 0: one rule sheet per check, and passing and failing HTML fixtures for the rendered checks.
 - The story matrix rules, version 0: how stories are generated, produced, captured and named, the story manifest's JSON Schema, and the example specs' manifests.

@@ -6,7 +6,7 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 |---|---|---|---|
 | 1 | [Spec format](spec-format.md) and its [JSON Schema](schemas/spec.schema.json), including fixtures, multi-part components and exemptions | merged | T-0020 |
 | 2 | [Story matrix rules](story-matrix.md), with the [story manifest schema](schemas/story-manifest.schema.json) | merged | T-0021 |
-| 3 | Check catalogue, with one rule sheet per check | not written yet | T-0022 |
+| 3 | [Check catalogue](check-catalogue.md), with one rule sheet per check | merged | T-0022 |
 | 4 | Baseline lifecycle | not written yet | T-0023 |
 | 5 | Agent permission model | not written yet | T-0024 |
 | 6 | Loop and caps: defaults, enforcement, and what an iteration is | not written yet | T-0025 |
