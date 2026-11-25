@@ -8,7 +8,7 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 | 2 | [Story matrix rules](story-matrix.md), with the [story manifest schema](schemas/story-manifest.schema.json) | merged | T-0021 |
 | 3 | [Check catalogue](check-catalogue.md), with one rule sheet per check | merged | T-0022 |
 | 4 | [Baseline lifecycle](baseline-lifecycle.md), with the [baselines record schema](schemas/baselines.schema.json) | merged | T-0023 |
-| 5 | Agent permission model | not written yet | T-0024 |
+| 5 | [Agent permission model](agent-permissions.md) | merged | T-0024 |
 | 6 | Loop and caps: defaults, enforcement, and what an iteration is | not written yet | T-0025 |
 | 7 | Judge: rubric, image batching and the CI cost cap | not written yet | T-0026 |
 | 8 | Measurement protocol, including judge calibration and its thresholds | not written yet | T-0027 |

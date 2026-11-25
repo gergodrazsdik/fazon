@@ -11,7 +11,7 @@ How screenshot baselines are created, compared, changed, renamed and removed, lo
 |---|---|
 | Story names, themes and capture conditions | [Story matrix rules](story-matrix.md) |
 | The comparison, its tolerance and platform | [Check catalogue: visual](check-catalogue.md#visual) |
-| That the agent never edits baselines | Agent permission model (T-0024) |
+| That the agent never edits baselines | [Agent permission model](agent-permissions.md) |
 | How the loop treats findings | Loop and caps (T-0025) |
 | Which stories the judge sees in CI, and its policy | Judge (T-0026) |
 | Run records, where captures are kept | Run record and provenance schemas (T-0028) |
@@ -122,4 +122,4 @@ CI never writes, updates or commits a baseline, and no bot commits to `main`.
 | BASELINE-001 | Every file in the baselines directory is `fazon.json` or a PNG at a story's baseline path. | the visual check (`orphan`) |
 | BASELINE-002 | `fazon.json` is valid against its schema, and names the image the check runs in. | the visual check (`image`) |
 | BASELINE-003 | `fazon baseline update` writes only from a run that meets the four conditions in [Writing baselines](#writing-baselines). | the CLI |
-| BASELINE-004 | Nothing but `fazon baseline update` writes into the baselines directory: not the agent, not CI. | the agent permission model (T-0024), the reusable workflow |
+| BASELINE-004 | Nothing but `fazon baseline update` writes into the baselines directory: not the agent, not CI. | the harness ([PERM-002](agent-permissions.md#rules)), the reusable workflow |

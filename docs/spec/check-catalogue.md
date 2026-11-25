@@ -12,7 +12,7 @@ The deterministic checks that verify a component, with one rule sheet per check:
 | Which stories the rendered checks see, how states are produced and captured | [Story matrix rules](story-matrix.md) |
 | How a spec waives a check | [Spec format: exemptions](spec-format.md#exemptions) |
 | When a baseline is created or updated | [Baseline lifecycle](baseline-lifecycle.md) |
-| Which commands the agent may run itself | Agent permission model (T-0024) |
+| Which commands the agent may run itself | [Agent permission model](agent-permissions.md) |
 | What the loop does with findings | Loop and caps (T-0025) |
 | How findings are stored | Run record and provenance schemas (T-0028) |
 | The commands an adapter supplies for the source checks, and how it reads a component's API | Adapter boundary (T-0031) |
@@ -97,6 +97,7 @@ A value is valid when it is a role token's custom property (`var(--color-action-
 | `compile` | The library build fails. |
 | `types` | The type-check reports an error. The type-check configuration is the adapter's, in strict mode; the agent doesn't change it. |
 | `storybook` | The static Storybook build fails. |
+| `generated` | The committed generated files (story files, contract tests, story manifest) differ from what the harness generates from the committed spec ([agent permissions](agent-permissions.md#files-the-harness-maintains)). |
 
 **Allowed:** nothing; every error and warning is a finding.
 
