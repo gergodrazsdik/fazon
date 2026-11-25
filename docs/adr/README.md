@@ -25,6 +25,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0017](0017-workflow.md) | Reusable workflow: verify and judge jobs, the laptop's code path, a pull request comment | accepted |
 | [0018](0018-token-set.md) | Token set: a DTCG resolver, role tokens by structure, a configurable prefix, a bundled font | accepted |
 | [0019](0019-license-terms.md) | License terms: MIT-0 for Fazon's output and the example repository, no headers, notices with the baselines | accepted |
+| [0020](0020-component-list-and-npm-names.md) | Seventeen example components, with Menu and Popover; npm names `fazon` and `@fazon/*` | accepted |
 
 ## Numbering and status
 
