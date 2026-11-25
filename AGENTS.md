@@ -28,13 +28,13 @@ LICENSES/                MIT-0.txt: the license of template text Fazon writes in
 packages/                cli/ (the `fazon` package), core/ (`@fazon/core`), adapter-vue/ (`@fazon/adapter-vue`)
 verifier/                the verifier image: Containerfile, fonts, smoke test (verifier/README.md)
 .claude/settings.json    committed Claude Code sandbox and deny rules
-.github/                 workflows/ (lint.yml, ci.yml, verifier.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
+.github/                 workflows/ (lint.yml, ci.yml, verifier.yml, rendered.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
 docs/design/brief.md     the design brief (complete; changes only when the maintainer asks)
 docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker
 docs/spec/               the M0 documents and their index; schemas/ and examples/ beside them, example-library/ drafts
 docs/dev-setup.md        prerequisites and local setup
-scripts/                 with-tool.sh, with-deps.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh, check-spec-examples.sh, check-spdx.sh
+scripts/                 with-tool.sh, with-deps.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh, check-spec-examples.sh, check-spdx.sh, test-rendered.sh
 ```
 
 Directories arrive with the milestone that first needs them (`packages/`, `plugin/`, `verifier/` from M1; see the brief's "Framework repo layout"). Keep this tree current when you add top-level folders.
@@ -72,6 +72,7 @@ Use `just` (`just --list`):
 | `just build` / `just test` | Build the packages (`tsc --build`); run the framework's tests (Vitest). |
 | `just lint-ts` | ESLint and the Prettier check on the TypeScript code. |
 | `just check` | Everything CI checks: `lint`, `lint-ts`, `build` and `test`. |
+| `just test-rendered [image]` | The rendered checks' fixtures in the verifier image (podman or docker, `CONTAINER_CLI`); the `rendered` workflow runs them in CI. |
 | `just pin` | Pin workflow actions to full commit SHAs. |
 | `just tool-updates` | Which linter versions pinned outside Dependabot's reach have newer releases, and when each is due (7-day cooldown). Read-only. |
 | `just claude` | Start Claude Code in this repo, with the example repo (`../fazon-vue-example`) and its instructions in reach when it's cloned next to this one. |
