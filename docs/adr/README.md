@@ -17,6 +17,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0009](0009-agent-permissions.md) | Agent permissions: one component directory, allowlisted self-checks, committed generated files | accepted |
 | [0010](0010-loop-and-caps.md) | Loop and caps: feedback as linked runs, $10 and 90 minutes per run | accepted |
 | [0011](0011-judge.md) | Judge: a derived rubric, one call per question, $3 per CI run | accepted |
+| [0012](0012-measurement.md) | Measurement protocol: autonomous runs, mutation-seeded defects, 80/5/90 thresholds | accepted |
 
 ## Numbering and status
 

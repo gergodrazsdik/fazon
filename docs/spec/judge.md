@@ -12,7 +12,7 @@ How the vision judge decides what the checks can't measure: when it runs, what i
 | Which stories the judge sees in which theme (the manifest's `judge` field) | [Story matrix rules](story-matrix.md#themes) |
 | What a judge verdict blocks in the loop, and the run's budget | [Loop and caps](loop-and-caps.md#what-blocks) |
 | Which baselines need the judge before they're accepted, and which are new or changed in CI | [Baseline lifecycle](baseline-lifecycle.md) |
-| Calibration, its thresholds, and when the judge counts as calibrated | Measurement protocol (T-0027) |
+| Calibration, its thresholds, and when the judge counts as calibrated | [Measurement protocol](measurement.md#judge-calibration) |
 | How verdicts are stored | Run record and provenance schemas (T-0028) |
 | The judge's model, policy, cap, repeats and prices | Config file reference (T-0029) |
 | The CI step, its secret and fork handling | Reusable workflow interface (T-0032) |
@@ -92,13 +92,13 @@ A story's **verdict** combines its calls: `fail` if any call failed it; otherwis
 | Repeats per call | 1 | yes |
 | Images per call | 20 at most | no |
 
-With more than one repeat, the majority verdict of each image wins, and a tie is `unsure`. Calibration (T-0027) measures how often single calls agree with themselves, and may recommend more repeats.
+With more than one repeat, the majority verdict of each image wins, and a tie is `unsure`. [Calibration](measurement.md#measures) measures how often single calls agree with themselves, and may recommend more repeats.
 
 If the model declines a call, or the API still fails after its retries, every image of that call is `unsure`, with the reason recorded.
 
 ## Authority and policy
 
-- **Locally:** the judge is advisory until its calibration meets the thresholds (T-0027) for the configured model and framework version. After that, a `fail` goes back into the loop. `unsure` never blocks.
+- **Locally:** the judge is advisory until its calibration meets the [thresholds](measurement.md#thresholds) for the configured model and judge version. After that, a `fail` goes back into the loop. `unsure` never blocks.
 - **In CI:** the policy is `advisory` (the default), `blocking` or `off`. With `blocking`, a `fail` fails the judge step; `unsure` and "not judged" never do.
 - **Baselines:** `fazon baseline update` requires a verdict, of any kind, for every story it writes, unless the policy is `off` ([baseline lifecycle](baseline-lifecycle.md#writing-baselines)).
 
