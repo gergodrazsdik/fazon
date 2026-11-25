@@ -8,6 +8,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The story matrix in `@fazon/core`: `buildManifest` writes a component's story manifest from its spec, and `checkManifest` checks MATRIX-001 and MATRIX-002.
+- The CLI skeleton: `--json` output, exit codes, `fazon doctor` and `fazon spec check` (SPEC-001, SPEC-002); the core loads and validates the config and specs against the M0 schemas.
+- The tokens pipeline in `@fazon/core`: it resolves a DTCG resolver document, checks TOKEN-001 to TOKEN-006, builds the token CSS with Style Dictionary 5.8.0 with a `data-theme` block for every theme, hashes the token set and indexes its custom properties.
+- The verifier image (`verifier/`) on Playwright 1.65.1's image with pinned fonts, and the `verifier` workflow that builds and smoke-tests it and pushes `ghcr.io/gergodrazsdik/fazon-verifier:sha-<commit>` from `main`.
 - The pnpm workspace with the first packages, `fazon` (the CLI), `@fazon/core` and `@fazon/adapter-vue`: TypeScript 6, Vitest, ESLint with the ADAPTER-001 rule, Prettier, a license identifier check, the `ci` workflow, and `just install`, `build`, `test`, `lint-ts` and `check`.
 - Menu and Popover join the example library, which now has 17 components; the npm packages are `fazon` (the CLI), `@fazon/core` and `@fazon/adapter-vue`.
 - The license terms, version 0: MIT-0 for everything Fazon writes into another repository and for the example repository, no license headers on written files, and where third-party notices go; `LICENSES/MIT-0.txt`, and the example library's license, notices and contributing drafts.

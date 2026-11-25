@@ -4,13 +4,13 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0088, F-0007, Q-0019.
+Next free IDs: T-0091, F-0009, Q-0021.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M1, T-0046's steps in order; steps 2 to 4 and 6 run in parallel once step 1 is merged
+1. M1: the stack #33 to #36 (steps 2 to 4), then step 5 (the Vue adapter and `fazon sync`) and step 11 in the example repo
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -74,28 +74,31 @@ Complete 2026-11-25: fifteen documents at version 0, with their schemas, example
 
 ### M1 Walking skeleton
 
-- [ ] T-0040 Create `gergodrazsdik/fazon-vue-example` (public, at `~/projects/fazon-vue-example`) with the same conventions and settings script; MIT-0, no CLA assistant, and the license, notices and contributing drafts from `docs/spec/example-library/` ([ADR 0019](../adr/0019-license-terms.md))
-- [~] T-0041 The first package: pnpm workspace, `.node-version` and `packageManager` pins — M1 step 1, PR pending
-- [~] T-0042 Dependabot: add the `npm` ecosystem with the first package — M1 step 1, PR pending
-- [~] T-0043 CodeQL default setup: add `javascript-typescript` once code exists (`scripts/github-settings.sh`) — M1 step 1 adds it to the script, PR pending; it applies when the maintainer runs `just github-settings`, which also makes `build` a required check
-- [ ] T-0044 Sandbox network allowlist for Playwright and Storybook (browser downloads, registries), and any MCP servers, in `.claude/settings.json`
-- [~] T-0045 `just build`, `just test` and `just verify` recipes, with the code — `build` and `test` in M1 step 1, PR pending; `verify` with step 7
+- [~] T-0040 Create `gergodrazsdik/fazon-vue-example` (public, at `~/projects/fazon-vue-example`) with the same conventions and settings script; MIT-0, no CLA assistant, and the license, notices and contributing drafts from `docs/spec/example-library/` ([ADR 0019](../adr/0019-license-terms.md)) — 2026-11-25: created and bootstrapped, [b92ee6c](https://github.com/gergodrazsdik/fazon-vue-example/commit/b92ee6c); the settings wait for T-0090
+  - [ ] T-0090 The maintainer applies the example repo's settings from its own directory: `just github-settings gergodrazsdik/fazon-vue-example --no-required-checks` now, then without the flag once its first pull request has run `pr-title`, and `just github-settings-check` reports no differences
+- [x] T-0041 The first package: pnpm workspace, `.node-version` and `packageManager` pins — 2026-11-25, [#30](https://github.com/gergodrazsdik/fazon/pull/30)
+- [x] T-0042 Dependabot: add the `npm` ecosystem with the first package — 2026-11-25, [#30](https://github.com/gergodrazsdik/fazon/pull/30)
+- [~] T-0043 CodeQL default setup: add `javascript-typescript` once code exists (`scripts/github-settings.sh`) — in the script since [#30](https://github.com/gergodrazsdik/fazon/pull/30); it applies when the maintainer runs `just github-settings gergodrazsdik/fazon`, which also makes `build` a required check
+- [ ] T-0044 Sandbox network allowlist for Playwright and Storybook (browser downloads, registries), and any MCP servers, in `.claude/settings.json`; the verifier image's builds reach `mcr.microsoft.com` and `snapshot.ubuntu.com` (step 6)
+- [~] T-0045 `just build`, `just test` and `just verify` recipes, with the code — `build`, `test` and `check` in [#30](https://github.com/gergodrazsdik/fazon/pull/30); `verify` with step 7
 - [~] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action; the framework's CI pushes pre-release verifier images to GHCR, a lint rule keeps framework code out of the core, and the example repo checks its three pins name one commit ([ADR 0016](../adr/0016-adapter-boundary.md)); the reusable `verify.yml` with its `verify`, `judge` and `comment` jobs ([ADR 0017](../adr/0017-workflow.md)) ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md))
-  - [~] Step 1: the pnpm workspace with `fazon`, `@fazon/core` and `@fazon/adapter-vue`, TypeScript, Vitest, ESLint (with ADAPTER-001), Prettier, the `ci` workflow (T-0041, T-0042, T-0043, T-0045, T-0083) — PR pending
-  - [ ] Step 2: the CLI skeleton: the `--json` envelope, exit codes, loading and validating the config and specs against their schemas, `doctor`
-  - [ ] Step 3: the story matrix: a spec to its story manifest, tested against the M0 example manifests
-  - [ ] Step 4: the tokens pipeline and the token CSS in `fazon sync` (T-0085)
+  - [x] Step 1: the pnpm workspace with `fazon`, `@fazon/core` and `@fazon/adapter-vue`, TypeScript, Vitest, ESLint (with ADAPTER-001), Prettier, the `ci` workflow (T-0041, T-0042, T-0043, T-0045, T-0083) — 2026-11-25, [#30](https://github.com/gergodrazsdik/fazon/pull/30); ESLint and the verifier's smoke script fixed in [#33](https://github.com/gergodrazsdik/fazon/pull/33)
+  - [~] Step 2: the CLI skeleton: the `--json` envelope, exit codes, loading and validating the config and specs against their schemas, `doctor`, `spec check` (SPEC-001, SPEC-002) — [#35](https://github.com/gergodrazsdik/fazon/pull/35)
+  - [~] Step 3: the story matrix: a spec to its story manifest, tested against the M0 example manifests; MATRIX-001, MATRIX-002 — [#36](https://github.com/gergodrazsdik/fazon/pull/36)
+  - [~] Step 4: the tokens pipeline (T-0085): resolution, TOKEN-001 to TOKEN-006, the token CSS with a block per theme, the hash and the index — [#34](https://github.com/gergodrazsdik/fazon/pull/34); the `fazon sync` wiring is in step 5
   - [ ] Step 5: the Vue adapter's story files, contract tests and entry exports; `fazon sync`
-  - [~] Step 6: the verifier image on Playwright's image with pinned fonts, built in CI and pushed to GHCR from `main` (T-0044) — in progress
+  - [x] Step 6: the verifier image on Playwright 1.65.1's image with DejaVu fonts from a dated snapshot, built and smoke-tested in CI and pushed to GHCR from `main` (T-0044) — 2026-11-25, [#31](https://github.com/gergodrazsdik/fazon/pull/31); follow-ups in T-0088 and T-0089
   - [ ] Step 7: `fazon verify` with the source checks: build, lint with the token rules, test, package (T-0045's `verify`)
   - [ ] Step 8: the rendered checks (a11y, tokens, layout, visual) on the M0 HTML fixtures; baselines and `fazon baseline update`
   - [ ] Step 9: the reusable `verify.yml` with its `verify`, `judge` and `comment` jobs ([ADR 0017](../adr/0017-workflow.md))
-  - [ ] Step 10: create the example repo (T-0040)
-  - [ ] Step 11: the example repo's scaffold, tokens, Button spec and hand-written Button, its three pins and their check, its CI
+  - [x] Step 10: create the example repo (T-0040) — 2026-11-25: `gergodrazsdik/fazon-vue-example`, public, bootstrapped in [b92ee6c](https://github.com/gergodrazsdik/fazon-vue-example/commit/b92ee6c) with the same conventions and its own settings script (no CLA, issues off); its `lint` workflow passes
+  - [ ] Step 11: the example repo's scaffold, tokens, Button spec and hand-written Button, its three pins and their check, its CI; the drafts in `docs/spec/example-library/` are marked as moved once they live there (the license, notices and contributing guide already do)
   - [ ] Step 12: the exit criteria: a laptop and CI agree, one seeded failure per check fails the build, the visual tolerance measured by repeated renders, the `focus` action confirmed
-- [ ] T-0085 The tokens pipeline: resolve the resolver document, run Style Dictionary once per theme with references kept (its warning about references the dark block filters out is expected), and build `paths.tokensCss` in `fazon sync`; pin Style Dictionary and `@fontsource-variable/inter`; move the drafts in `docs/spec/example-library/` to the example repo ([ADR 0018](../adr/0018-token-set.md))
+- [~] T-0085 The tokens pipeline: resolve the resolver document, run Style Dictionary once per theme with references kept (its warning about references the dark block filters out is expected), and build `paths.tokensCss` in `fazon sync`; pin Style Dictionary and `@fontsource-variable/inter`; move the drafts in `docs/spec/example-library/` to the example repo ([ADR 0018](../adr/0018-token-set.md)) — the core module in [#34](https://github.com/gergodrazsdik/fazon/pull/34); the `fazon sync` wiring (step 5), the font pin and moving the drafts (step 11) remain
 - [x] T-0087 Create the `fazon` npm organisation and reserve `@fazon/core` and `@fazon/adapter-vue` with placeholder packages, version `0.0.0`, no code, as for `fazon` (T-0082); the maintainer publishes them with their own npm account, before M1's first package ([ADR 0020](../adr/0020-component-list-and-npm-names.md)) — 2026-11-25: the organisation exists, and `@fazon/core@0.0.0` and `@fazon/adapter-vue@0.0.0` are public, published by the maintainer; npm added `0.0.0-stage` to each, as for `fazon` (F-0004)
-- [~] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, and template files `MIT-0`, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md), [ADR 0019](../adr/0019-license-terms.md)) — `scripts/check-spdx.sh` in M1 step 1, PR pending
+- [x] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, and template files `MIT-0`, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md), [ADR 0019](../adr/0019-license-terms.md)) — 2026-11-25: `scripts/check-spdx.sh`, [#30](https://github.com/gergodrazsdik/fazon/pull/30)
+- [ ] T-0088 Lint the verifier image's Containerfile with hadolint (`just lint`, the hooks, the CI tools with a pinned digest) and let Dependabot propose base image updates for `verifier/` (step 6, [#31](https://github.com/gergodrazsdik/fazon/pull/31))
+- [ ] T-0089 After the first push to `main`, make the `fazon-verifier` package on GHCR public and check it's linked to the repository, so the example repo can pull it without credentials (maintainer, step 6)
 
 ### M2 The loop
 
@@ -151,6 +154,8 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 - [ ] F-0004 Publishing to npm has changed, which matters for M5 (T-0065, T-0066): the first publish of a new package also makes npm create a public `0.0.0-stage` placeholder version (staged publishing, which new packages joined in October 2026), and npm is restricting tokens that bypass 2FA for direct publishing. Release publishing from CI should plan for trusted publishing and staged approval (2026-11-25)
 - [x] F-0005 The CLA assistant first posted `license/cla` on #5 with the maintainer's OAuth token, not as its GitHub App, so the `cla` ruleset couldn't pin the check to the app (ID 128106) (2026-11-25) — the maintainer installed the app, which needs no migration step: from 01:06 UTC its statuses come from `cla-assistant[bot]`, and the ruleset now pins the check to the app ([#5](https://github.com/gergodrazsdik/fazon/pull/5)); the next commit's status came only from the app. The OAuth access stays: signing in to the CLA assistant's dashboard, where the Gist and the exemptions are configured, needs it, and with the pin an OAuth-posted status no longer counts
 - [ ] F-0006 Spec format version 0 can't express a `many` part inside another `many` part, such as option groups in Select; revisit when Select is specified (2026-11-25, T-0020)
+- [ ] F-0007 The CLI skeleton ([#35](https://github.com/gergodrazsdik/fazon/pull/35)) had to choose where the specs are silent; settle them in the docs: SPEC-002's kebab-case form of a name with acronyms or digits (it chose `HTMLEditor` → `html-editor`, `Heading2` → `heading2`); `fazon doctor`'s exit code for an invalid config (it chose 1, failed); and that the config is read from the current directory only, without searching parent directories (2026-11-25)
+- [ ] F-0008 The story matrix ([#36](https://github.com/gergodrazsdik/fazon/pull/36)) had to choose where story-matrix.md is silent; settle them in the doc: the empty fixture's name (`empty`); a recipe with only `story` or `instance` hands over to the later rules; a part prop in an exclusion takes the part's first instance's value; Storybook IDs follow Storybook's own sanitising (`RadioGroup` → `radiogroup--…`, `2xl` → `2-xl`), ported from memory, so step 5 checks them against the pinned Storybook 10 (2026-11-25)
 
 ## Open questions
 
@@ -179,3 +184,5 @@ From the bootstrap:
 - [x] Q-0016 Confirm the agreement's other fill-ins at the review: the maintainer personally as "We"; CC BY 4.0, CC BY-SA 4.0 and CC0 1.0 as the media licenses; "[or Your Affiliates]" left out of the patent license (maintainer, T-0010) — answered 2026-11-25: confirmed by the maintainer; the legal review still checks them (T-0010, [ADR 0003](../adr/0003-bootstrap-answers.md))
 - [x] Q-0017 How is the contributor agreement's review completed: by a lawyer, working from the review input under T-0010, or does the maintainer accept a revised text without one? Either way the maintainer or the lawyer supplies the revised wording (maintainer, 2026-11-25) — answered 2026-11-25: without a lawyer; the maintainer accepts the findings as best effort ([ADR 0004](../adr/0004-contributor-agreement-amended.md))
 - [x] Q-0018 Which npm names do the Vue adapter and any core package take, beyond the reserved `fazon`? A scope such as `@fazon/` needs its npm organisation; unscoped names such as `fazon-adapter-vue` don't. Settle before M1's first package, and reserve them as `fazon` was (T-0031, [ADR 0016](../adr/0016-adapter-boundary.md)) — answered 2026-11-25: `fazon` for the CLI, `@fazon/core` and `@fazon/adapter-vue`, under the `fazon` npm organisation; later adapters `@fazon/adapter-<name>` (T-0087, [ADR 0020](../adr/0020-component-list-and-npm-names.md))
+- [ ] Q-0019 Which Claude Code version does `fazon doctor` require? cli.md says it checks "the required Claude Code version", but no document names one; until then `doctor` reports the installed version and warns only when it's missing, as CI's `verify` job doesn't need it. Settle with M2's `generate` ([#35](https://github.com/gergodrazsdik/fazon/pull/35))
+- [ ] Q-0020 Do the example repo's own hand-written files (components, configuration) carry an `SPDX-License-Identifier: MIT-0` line? The license terms cover only what Fazon writes (no header) and the framework's source; the bootstrap gave its copied scripts `MIT-0` lines. Settle with step 11 (T-0040)
