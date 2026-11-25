@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0084, F-0005, Q-0017.
+Next free IDs: T-0084, F-0005, Q-0018.
 
 ## Now
 
@@ -31,7 +31,15 @@ Next free IDs: T-0084, F-0005, Q-0017.
 
 ### Contributor agreement (before the first outside contribution)
 
-- [!] T-0010 Have `CLA.md` reviewed by a lawyer of the maintainer's choice, under Hungarian law (its Section 6.1), then drop the draft notice (maintainer). Questions for the review, not answers: whether Section 2.4's waiver of moral rights and acceptance by a click in the CLA assistant are effective under Hungarian copyright and contract law, and whether the fill-ins in ADR 0003 hold
+- [!] T-0010 Have `CLA.md` reviewed by a lawyer of the maintainer's choice, under Hungarian law (its Section 6.1), then drop the draft notice (maintainer). The wording changes are the lawyer's and the maintainer's, not an agent's (Q-0017)
+  - Review input, 2026-11-25: a non-lawyer review the maintainer obtained. Its citations of the Copyright Act (Szjt.) 9. § (2), 30. § (1), 44. § (1), 45. § (1)–(2), 52. § and 60. § (5) were checked against the official text on njt.jog.gov.hu; the Civil Code citation (Ptk. 6:78. §), the appeal-court ruling and the reading of "distribute" were not. Points for the lawyer:
+    - [ ] Future contributions, the main risk: Szjt. 44. § (1) voids a licence clause for an unspecified number of the author's future works, and 60. § (5) doesn't exempt software from it; a sign-once agreement for every later pull request, across "more than one software project", resembles that. Under 52. §, a contract for future works defined by type can be terminated every five years, and the author can't waive that, so "irrevocable" may not hold for them. Suggested direction: each Submission is itself the grant for that Contribution (repeated in the PR template), and the agreement covers Fazon only
+    - [ ] Section 2.4's waiver of moral rights has no effect: Szjt. 9. § (2) says the author can neither transfer nor waive them, so commercially licensed builds still owe contributors their attribution
+    - [ ] Non-code "Media": the written-form exemption (Szjt. 45. § (2) c)) covers software only; whether a click counts as written form for images, icons or design assets is unsettled
+    - [ ] Scope of use: name the uses explicitly, including making the Contribution available to the public online, since a licence without named uses is read narrowly
+    - [ ] Unusual standard terms (Ptk. 6:78. §, not checked): show the commercial relicensing note to the contributor at signing, not only the agreement text
+    - [ ] Section 3(c): it points to an "Entity version" that doesn't exist yet (the corporate agreement is deferred); work made as an employment duty belongs to the employer (Szjt. 30. § (1)); the CLA assistant can't take a parent's signature, so a minimum age of 18 may be simpler
+    - [ ] Governing law covers the contract, not copyright itself: a foreign contributor's home-country author protections can still apply
 - [!] T-0011 Install the CLA assistant GitHub App on the repository, link the agreement (a Gist made from `CLA.md`) and exempt the maintainer and `dependabot[bot]` (maintainer; steps in the bootstrap pull request)
 - [ ] T-0012 Keep `CLA.md` and the CLA assistant's Gist identical: compare them with every change to either
 - [ ] T-0013 Test pull request: the CLA assistant reports `license/cla`; check whether a `Co-Authored-By` trailer (agent commits) asks the co-author to sign, and exempt that address if so
@@ -147,3 +155,4 @@ From the bootstrap:
 - [x] Q-0014 Reserve the npm name `fazon` now (free on 2026-11-25) with a placeholder package, or wait for the publishing decision? Publishing anything is the maintainer's call — answered 2026-11-25: yes, reserve it (T-0082, [ADR 0003](../adr/0003-bootstrap-answers.md))
 - [x] Q-0015 The contributor agreement's governing law (`CLA.md`, Section 6.1) is blank (maintainer, at the review: T-0010) — answered 2026-11-25: Hungary, filled in ([ADR 0003](../adr/0003-bootstrap-answers.md))
 - [x] Q-0016 Confirm the agreement's other fill-ins at the review: the maintainer personally as "We"; CC BY 4.0, CC BY-SA 4.0 and CC0 1.0 as the media licenses; "[or Your Affiliates]" left out of the patent license (maintainer, T-0010) — answered 2026-11-25: confirmed by the maintainer; the legal review still checks them (T-0010, [ADR 0003](../adr/0003-bootstrap-answers.md))
+- [!] Q-0017 How is the contributor agreement's review completed: by a lawyer, working from the review input under T-0010, or does the maintainer accept a revised text without one? Either way the maintainer or the lawyer supplies the revised wording (maintainer, 2026-11-25)
