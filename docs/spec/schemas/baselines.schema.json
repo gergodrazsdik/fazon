@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:baselines:0",
+  "title": "Fazon baselines record (format version 0)",
+  "description": "The `fazon.json` file in a consumer's baselines directory: the verifier image every baseline in the directory was made with. Written only by `fazon baseline update`; see docs/spec/baseline-lifecycle.md.",
+  "type": "object",
+  "required": ["fazon", "image"],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": {
+      "description": "Format version.",
+      "const": 0
+    },
+    "image": {
+      "description": "The verifier image, referenced by digest.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*(\\.[a-z0-9-]+)*(:[0-9]+)?(/[a-z0-9]+([._-][a-z0-9]+)*)+@sha256:[0-9a-f]{64}$"
+    }
+  }
+}

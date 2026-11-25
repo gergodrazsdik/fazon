@@ -11,7 +11,7 @@ The deterministic checks that verify a component, with one rule sheet per check:
 |---|---|
 | Which stories the rendered checks see, how states are produced and captured | [Story matrix rules](story-matrix.md) |
 | How a spec waives a check | [Spec format: exemptions](spec-format.md#exemptions) |
-| When a baseline is created or updated | Baseline lifecycle (T-0023) |
+| When a baseline is created or updated | [Baseline lifecycle](baseline-lifecycle.md) |
 | Which commands the agent may run itself | Agent permission model (T-0024) |
 | What the loop does with findings | Loop and caps (T-0025) |
 | How findings are stored | Run record and provenance schemas (T-0028) |
@@ -212,8 +212,10 @@ An interactive element has a role of `button`, `link`, `tab`, `checkbox`, `radio
 | Rule | Fails when |
 |---|---|
 | `changed` | The capture differs from its baseline beyond the tolerance, or has a different size. The finding's evidence is a diff image. |
+| `orphan` | A file in the baselines directory belongs to no story, or isn't a baseline. |
+| `image` | The verifier image running the check isn't the one recorded with the baselines; nothing is compared. |
 
-A story without a baseline is reported as **new**, and doesn't fail. When baselines are made and changed is the baseline lifecycle's (T-0023).
+A story without a baseline is reported as **new**, and doesn't fail. None of these rules can be exempted. In `fazon generate`, the component being generated has its `changed` and `orphan` findings shown to the person but not to the agent. The [baseline lifecycle](baseline-lifecycle.md) says how baselines are made, changed and removed.
 
 **Platform:** captures are made only on linux/amd64, the platform of CI's runners, in headless Chromium with software rendering, the browser and fonts the verifier image pins. On another architecture the image runs emulated.
 

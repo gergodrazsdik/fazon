@@ -13,6 +13,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0005](0005-spec-format.md) | Spec format: a neutral API with framework extensions, one spec per component | accepted |
 | [0006](0006-story-matrix.md) | Story matrix: layered grids, real input, stable names | accepted |
 | [0007](0007-check-catalogue.md) | Check catalogue: exact token identity, no inline suppressions, contract tests | accepted |
+| [0008](0008-baseline-lifecycle.md) | Baseline lifecycle: an explicit update command, plain git, the image recorded | accepted |
 
 ## Numbering and status
 
