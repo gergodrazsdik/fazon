@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Run a lint tool if it is installed; otherwise skip with a clear message.
 # Usage: scripts/with-tool.sh <tool> [args...]
 #
