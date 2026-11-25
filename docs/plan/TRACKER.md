@@ -10,7 +10,7 @@ Next free IDs: T-0088, F-0007, Q-0019.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M1: the maintainer creates the `fazon` npm organisation and reserves the scoped names (T-0087), then the example repo (T-0040) and the first package (T-0041); break down the walking skeleton (T-0046) at M1's start
+1. M1: the example repo (T-0040) and the first package (T-0041); break down the walking skeleton (T-0046) at M1's start
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -82,7 +82,7 @@ Complete 2026-11-25: fifteen documents at version 0, with their schemas, example
 - [ ] T-0045 `just build`, `just test` and `just verify` recipes, with the code
 - [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action; the framework's CI pushes pre-release verifier images to GHCR, a lint rule keeps framework code out of the core, and the example repo checks its three pins name one commit ([ADR 0016](../adr/0016-adapter-boundary.md)); the reusable `verify.yml` with its `verify`, `judge` and `comment` jobs ([ADR 0017](../adr/0017-workflow.md)) ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md)) (break down at M1 start)
 - [ ] T-0085 The tokens pipeline: resolve the resolver document, run Style Dictionary once per theme with references kept (its warning about references the dark block filters out is expected), and build `paths.tokensCss` in `fazon sync`; pin Style Dictionary and `@fontsource-variable/inter`; move the drafts in `docs/spec/example-library/` to the example repo ([ADR 0018](../adr/0018-token-set.md))
-- [ ] T-0087 Create the `fazon` npm organisation and reserve `@fazon/core` and `@fazon/adapter-vue` with placeholder packages, version `0.0.0`, no code, as for `fazon` (T-0082); the maintainer publishes them with their own npm account, before M1's first package ([ADR 0020](../adr/0020-component-list-and-npm-names.md))
+- [x] T-0087 Create the `fazon` npm organisation and reserve `@fazon/core` and `@fazon/adapter-vue` with placeholder packages, version `0.0.0`, no code, as for `fazon` (T-0082); the maintainer publishes them with their own npm account, before M1's first package ([ADR 0020](../adr/0020-component-list-and-npm-names.md)) — 2026-11-25: the organisation exists, and `@fazon/core@0.0.0` and `@fazon/adapter-vue@0.0.0` are public, published by the maintainer; npm added `0.0.0-stage` to each, as for `fazon` (F-0004)
 - [ ] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, and template files `MIT-0`, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md), [ADR 0019](../adr/0019-license-terms.md))
 
 ### M2 The loop
