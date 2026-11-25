@@ -24,5 +24,8 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
+  },
+  "dependencies": {
+    "style-dictionary": "5.8.0"
   }
 }
