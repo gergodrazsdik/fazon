@@ -40,12 +40,14 @@ jobs:
       - name: Build the image
         run: >-
           docker build --platform linux/amd64 --provenance=false --sbom=false
-          --build-arg "REVISION=$GITHUB_SHA" --tag "$LOCAL_TAG" verifier
+          --build-arg "REVISION=$GITHUB_SHA" --tag "$LOCAL_TAG" --file verifier/Containerfile verifier
       - name: Smoke-test the image
         run: verifier/smoke/run.sh "$LOCAL_TAG" "$RUNNER_TEMP/smoke"
       - name: Record the renders
         if: ${{ !cancelled() }}
         run: |
+          # No results when the build or the container failed before rendering.
+          if [ ! -f "$RUNNER_TEMP/smoke/results.json" ]; then exit 0; fi
           {
             echo "### Verifier smoke test"
             echo
@@ -69,7 +71,7 @@ jobs:
       - name: Build the image
         run: >-
           docker build --platform linux/amd64 --provenance=false --sbom=false
-          --build-arg "REVISION=$GITHUB_SHA" --tag "$LOCAL_TAG" verifier
+          --build-arg "REVISION=$GITHUB_SHA" --tag "$LOCAL_TAG" --file verifier/Containerfile verifier
       - name: Smoke-test the image
         run: verifier/smoke/run.sh "$LOCAL_TAG" "$RUNNER_TEMP/smoke"
       - name: Log in to GHCR
