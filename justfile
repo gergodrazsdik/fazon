@@ -94,6 +94,11 @@ test-rendered image="":
 [group('dev')]
 check: lint lint-ts build test
 
+# Run the Vue adapter's browser integration tests: Vitest's browser mode and a Storybook build in a scratch project. Needs Chromium for Playwright 1.65.1 once: pnpm --filter @fazon/adapter-vue exec playwright install chromium
+[group('dev')]
+test-browser: build
+    pnpm exec vitest run --config packages/adapter-vue/integration/vitest.config.ts
+
 # Start Claude Code in this repo, with the example repo in reach when it's cloned next to it (extra arguments are passed through)
 [group('dev')]
 claude *args:

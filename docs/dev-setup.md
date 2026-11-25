@@ -52,6 +52,13 @@ just check    # the checks CI runs: linters, ESLint, Prettier, build, tests
 
 `just test-rendered` runs the rendered checks' fixtures in the verifier image, with its Chromium and fonts. It builds `localhost/fazon-verifier:dev` from `verifier/` when that image doesn't exist; `just test-rendered <image>` uses another, such as the image published from `main`, by digest. The container mounts the checkout read-only with its installed dependencies, so run `just install` first, on linux/amd64. Set `CONTAINER_CLI=podman` when `docker` isn't available.
 
+The Vue adapter's browser integration tests run the generated contract tests in Vitest's browser mode and build a Storybook, so they need Chromium and stay out of `just check`:
+
+```sh
+pnpm --filter @fazon/adapter-vue exec playwright install chromium  # once: Playwright 1.65.1's Chromium
+just test-browser
+```
+
 ## WSL notes
 
 - Keep the clone in the Linux file system (for example `~/projects/fazon`), not under `/mnt/c`: file watching and git are much faster there, and line endings stay LF.

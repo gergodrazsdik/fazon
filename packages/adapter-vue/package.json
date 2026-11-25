@@ -25,16 +25,44 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./reader": {
+      "types": "./dist/reader.d.ts",
+      "default": "./dist/reader.js"
+    },
+    "./vitest": {
+      "types": "./dist/vitest.d.ts",
+      "default": "./dist/vitest.js"
+    },
+    "./storybook": {
+      "types": "./dist/storybook.d.ts",
+      "default": "./dist/storybook.js"
+    },
+    "./storybook/preview": {
+      "types": "./dist/storybook-preview.d.ts",
+      "default": "./dist/storybook-preview.js"
     }
   },
   "dependencies": {
     "@fazon/core": "workspace:*",
-    "prettier": "3.10.1"
+    "prettier": "3.10.1",
+    "vue-component-meta": "3.3.14"
+  },
+  "peerDependencies": {
+    "@storybook/vue3-vite": "10.6.7",
+    "@vitest/browser-playwright": "5.1.1",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
   },
   "devDependencies": {
     "@storybook/vue3-vite": "10.6.7",
+    "@vitejs/plugin-vue": "6.0.11",
     "@vitest/browser-playwright": "5.1.1",
+    "playwright": "1.65.1",
     "storybook": "10.6.7",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
     "vitest": "5.1.1",
     "vue": "3.5.45",
     "vue-tsc": "3.3.14"

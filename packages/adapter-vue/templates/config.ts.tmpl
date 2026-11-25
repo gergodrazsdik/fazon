@@ -1,0 +1,36 @@
+SPDX-License-Identifier: MIT-0
+#: vitest-config
+// Vitest for the components' tests and the contract tests `fazon sync` generates: browser mode in
+// Chromium, at the viewport Fazon's verifier renders the stories at.
+import vue from "@vitejs/plugin-vue";
+import { fazonVitest } from "@fazon/adapter-vue/vitest";
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  plugins: [vue()],
+  test: fazonVitest({ components: {{components}} }),
+});
+#: storybook-main
+// Storybook for the stories `fazon sync` generates in each component's generated/ directory.
+import type { StorybookConfig } from "@storybook/vue3-vite";
+import { fazonStorybook } from "@fazon/adapter-vue/storybook";
+
+const config: StorybookConfig = fazonStorybook({ components: {{components}}, icons: {{icons}} });
+export default config;
+#: storybook-preview
+// The stories' preview: the token set's CSS, the library's styles, and the theme as the `theme`
+// global, which sets `data-theme` on the document's root element.
+import { fazonPreview } from "@fazon/adapter-vue/storybook/preview";
+{{imports}}
+
+export default fazonPreview({ themes: {{themes}} });
+#: style-import
+import "{{path}}";
+#: vitest-setup
+// Applies the Storybook preview, with the theme, to the stories the contract tests render.
+import { setProjectAnnotations } from "@storybook/vue3-vite";
+import { beforeAll } from "vitest";
+import preview from "./preview";
+
+const annotations = setProjectAnnotations([preview]);
+beforeAll(annotations.beforeAll);
