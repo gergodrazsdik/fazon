@@ -1,6 +1,6 @@
 # 0002: Contributor License Agreement: Harmony, any outbound license
 
-- Status: accepted
+- Status: accepted, amended by [0004](0004-contributor-agreement-amended.md)
 - Date: 2026-11-25
 - Tracker: T-0008, T-0010 to T-0014, Q-0015, Q-0016
 

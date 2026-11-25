@@ -7,8 +7,9 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | ADR | Title | Status |
 |---|---|---|
 | [0001](0001-baseline.md) | Baseline decisions from the design brief | accepted |
-| [0002](0002-contributor-license-agreement.md) | Contributor License Agreement: Harmony, any outbound license | accepted |
+| [0002](0002-contributor-license-agreement.md) | Contributor License Agreement: Harmony, any outbound license | accepted, amended by 0004 |
 | [0003](0003-bootstrap-answers.md) | License headers, run-record path, npm name and the agreement's governing law | accepted |
+| [0004](0004-contributor-agreement-amended.md) | The contributor agreement, amended after a best-effort review | accepted |
 
 ## Numbering and status
 
