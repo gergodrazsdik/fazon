@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Checks the spec format's JSON Schema and its examples (docs/spec/spec-format.md):
-#   - the schema is valid against its metaschema;
+# Checks the spec format's and the story manifest's JSON Schemas and their examples
+# (docs/spec/spec-format.md, docs/spec/story-matrix.md):
+#   - both schemas are valid against their metaschema;
 #   - every spec under valid/ and invalid/semantic/ passes the schema (a semantic example breaks
 #     a rule only `fazon spec check` sees, from M2);
-#   - every spec under invalid/schema/ fails it, at the path its `# expect-error-at:` line names.
+#   - every spec under invalid/schema/ fails it, at the path its `# expect-error-at:` line names;
+#   - every manifest under docs/spec/examples/manifests/ passes the story manifest schema.
 # Needs yq (mikefarah, v4) to read the front matter, and check-jsonschema.
 #
 # Usage: scripts/check-spec-examples.sh
@@ -16,7 +18,9 @@ shopt -s nullglob
 
 root=$(cd "$(dirname "$0")/.." && pwd)
 schema="$root/docs/spec/schemas/spec.schema.json"
+manifest_schema="$root/docs/spec/schemas/story-manifest.schema.json"
 examples="$root/docs/spec/examples/specs"
+manifests="$root/docs/spec/examples/manifests"
 
 for tool in yq check-jsonschema; do
   if ! command -v "$tool" >/dev/null 2>&1; then
@@ -46,7 +50,7 @@ check() { # <json>...: check-jsonschema against the spec schema
 }
 
 failed=0
-check-jsonschema --check-metaschema "$schema" || failed=1
+check-jsonschema --check-metaschema "$schema" "$manifest_schema" || failed=1
 
 # Must pass.
 for spec in "$examples"/valid/*.md "$examples"/invalid/semantic/*.md; do
@@ -85,6 +89,18 @@ for spec in "$examples"/invalid/schema/*.md; do
     failed=1
   else
     echo "ok   $rel fails at $expect"
+  fi
+done
+
+# Manifests must pass their schema.
+for manifest in "$manifests"/*.json; do
+  rel=${manifest#"$root"/}
+  if ! out=$(check-jsonschema --schemafile "$manifest_schema" "$manifest" 2>&1); then
+    echo "FAIL $rel: expected to pass the story manifest schema" >&2
+    echo "$out" >&2
+    failed=1
+  else
+    echo "ok   $rel passes"
   fi
 done
 

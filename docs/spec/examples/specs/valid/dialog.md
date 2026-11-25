@@ -71,7 +71,10 @@ parts:
     a11y:
       role: button
       name: prop:label
-states: [closed, open]
+states: [closed]
+produce:
+  closed:
+    props: { open: false }
 a11y:
   keyboard:
     Escape: close the dialog
@@ -118,6 +121,9 @@ fixtures:
 matrix:
   axes: [Content.size]
   fixtures: [confirm, long-content]
+  exclude:
+    - { state: closed, props: { Content.size: sm } }
+    - { state: closed, props: { Content.size: lg } }
 tokens:
   - part: Overlay
     use:

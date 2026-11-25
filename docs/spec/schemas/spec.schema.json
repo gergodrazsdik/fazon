@@ -46,6 +46,7 @@
       "minProperties": 1
     },
     "states": { "$ref": "#/$defs/states" },
+    "produce": { "$ref": "#/$defs/produce" },
     "a11y": { "$ref": "#/$defs/a11y" },
     "fixtures": {
       "description": "Named content sets that stories render, keyed by fixture name.",
@@ -293,9 +294,73 @@
         "slots": { "$ref": "#/$defs/slots" },
         "methods": { "$ref": "#/$defs/methods" },
         "states": { "$ref": "#/$defs/states" },
+        "produce": { "$ref": "#/$defs/produce" },
         "a11y": { "$ref": "#/$defs/a11y" }
       },
       "additionalProperties": false
+    },
+    "target": {
+      "description": "An element of the story: `root`, a part (its first instance), or `<Part>[<n>]` (its instance n, counted from 0).",
+      "type": "string",
+      "pattern": "^(root|[A-Z][A-Za-z0-9]*(\\[[0-9]+\\])?)$"
+    },
+    "step": {
+      "description": "One input step the verifier performs.",
+      "type": "object",
+      "required": ["action"],
+      "properties": {
+        "action": { "enum": ["hover", "focus", "pointer-down", "click", "press", "scroll"] },
+        "target": { "$ref": "#/$defs/target" },
+        "key": {
+          "type": "string",
+          "pattern": "^((Shift|Control|Alt|Meta)\\+)*[A-Za-z0-9]+$"
+        },
+        "to": { "enum": ["start", "end"] }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "description": "press sends a key to the focused element; every other action has a target.",
+          "if": { "properties": { "action": { "const": "press" } } },
+          "then": { "required": ["key"], "properties": { "target": false, "to": false } },
+          "else": { "required": ["target"], "properties": { "key": false } }
+        },
+        {
+          "if": { "properties": { "action": { "const": "scroll" } } },
+          "then": { "required": ["to"] },
+          "else": { "properties": { "to": false } }
+        }
+      ]
+    },
+    "recipe": {
+      "description": "How a state is produced, when the story matrix rules can't infer it.",
+      "type": "object",
+      "properties": {
+        "story": {
+          "description": "false: the fixtures already show this state, so it gets no story of its own.",
+          "type": "boolean"
+        },
+        "instance": {
+          "description": "For a part's state: the instance the recipe applies to, counted from 0.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "props": { "$ref": "#/$defs/propValues" },
+        "input": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/step" },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "produce": {
+      "description": "Recipes for producing states, keyed by state name.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/kebabName" },
+      "additionalProperties": { "$ref": "#/$defs/recipe" },
+      "minProperties": 1
     },
     "nameSource": {
       "description": "Where an accessible name or description comes from: the text content, a prop of the same component or part, another part, or nothing.",
@@ -437,6 +502,15 @@
             "items": { "$ref": "#/$defs/instance" }
           },
           "minProperties": 1
+        },
+        "frame": {
+          "description": "The frame the story renders in; without one, the frame fits the content.",
+          "type": "object",
+          "required": ["width"],
+          "properties": {
+            "width": { "description": "Width in CSS pixels.", "type": "integer", "minimum": 1 }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false,
@@ -475,9 +549,49 @@
         "exclude": {
           "description": "Combinations that are invalid and get no story.",
           "type": "array",
-          "items": { "$ref": "#/$defs/when" },
+          "items": { "$ref": "#/$defs/matrixCondition" },
+          "minItems": 1
+        },
+        "include": {
+          "description": "Stories the grids don't make, forced by the spec.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/matrixPoint" },
           "minItems": 1
         }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "matrixPoint": {
+      "description": "One story: a fixture (the first fixture when left out), axis values (the others at their defaults) and a state (`default` when left out), of the component or of `part`.",
+      "type": "object",
+      "properties": {
+        "fixture": { "$ref": "#/$defs/kebabName" },
+        "props": {
+          "type": "object",
+          "propertyNames": { "pattern": "^([A-Z][A-Za-z0-9]*\\.)?[a-z][A-Za-z0-9]*$" },
+          "additionalProperties": { "type": ["boolean", "string", "number"] },
+          "minProperties": 1
+        },
+        "state": { "$ref": "#/$defs/kebabName" },
+        "part": { "$ref": "#/$defs/componentName" }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "dependentRequired": { "part": ["state"] }
+    },
+    "matrixCondition": {
+      "description": "A combination that gets no story: prop values (`<prop>` or `<Part>.<prop>`) and a state, of the component or of `part`.",
+      "type": "object",
+      "properties": {
+        "part": { "$ref": "#/$defs/componentName" },
+        "props": {
+          "type": "object",
+          "propertyNames": { "pattern": "^([A-Z][A-Za-z0-9]*\\.)?[a-z][A-Za-z0-9]*$" },
+          "additionalProperties": { "type": ["boolean", "string", "number", "array"] },
+          "minProperties": 1
+        },
+        "state": { "$ref": "#/$defs/kebabName" }
       },
       "additionalProperties": false,
       "minProperties": 1

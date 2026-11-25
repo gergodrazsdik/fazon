@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:story-manifest:0",
+  "title": "Fazon story manifest (format version 0)",
+  "description": "The stories the harness derives from one component spec, by the story matrix rules in docs/spec/story-matrix.md. The adapter writes story files from it; the verifier reads it to produce each state and capture each story.",
+  "type": "object",
+  "required": ["fazon", "component", "spec", "themes", "viewport", "fixtures", "stories"],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": {
+      "description": "Manifest format version.",
+      "const": 0
+    },
+    "component": { "$ref": "#/$defs/componentName" },
+    "spec": {
+      "description": "Path of the spec, relative to the repository root.",
+      "type": "string",
+      "pattern": "^[^/].*\\.md$"
+    },
+    "themes": {
+      "description": "The token set's themes; the first is the default theme.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/kebabName" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "viewport": {
+      "type": "object",
+      "required": ["width", "height", "scale"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "scale": { "description": "Device scale factor.", "type": "number", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "fixtures": {
+      "description": "The fixtures stories render, with `extends` already merged.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/kebabName" },
+      "additionalProperties": { "$ref": "#/$defs/fixture" },
+      "minProperties": 1
+    },
+    "stories": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/story" },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "componentName": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
+    "kebabName": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+    "target": {
+      "description": "`root`, or `<Part>[<n>]` (instance n, from 0), `<Part>[*]` (every instance) or `<Part>[default]` (the first instance with no reflected state, chosen at render time).",
+      "type": "string",
+      "pattern": "^(root|[A-Z][A-Za-z0-9]*\\[([0-9]+|\\*|default)\\])$"
+    },
+    "propValues": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][A-Za-z0-9]*$" },
+      "additionalProperties": { "type": ["boolean", "string", "number", "array"] },
+      "minProperties": 1
+    },
+    "slotContent": {
+      "description": "Slot content as in the spec format.",
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][A-Za-z0-9]*$" },
+      "minProperties": 1
+    },
+    "instance": {
+      "type": "object",
+      "properties": {
+        "props": { "$ref": "#/$defs/propValues" },
+        "slots": { "$ref": "#/$defs/slotContent" }
+      },
+      "additionalProperties": false
+    },
+    "fixture": {
+      "type": "object",
+      "properties": {
+        "props": { "$ref": "#/$defs/propValues" },
+        "slots": { "$ref": "#/$defs/slotContent" },
+        "parts": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/componentName" },
+          "additionalProperties": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/instance" }
+          },
+          "minProperties": 1
+        },
+        "frame": {
+          "type": "object",
+          "required": ["width"],
+          "properties": { "width": { "type": "integer", "minimum": 1 } },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "required": ["action"],
+      "properties": {
+        "action": { "enum": ["hover", "focus", "pointer-down", "click", "press", "scroll"] },
+        "target": { "$ref": "#/$defs/target" },
+        "key": { "type": "string", "pattern": "^((Shift|Control|Alt|Meta)\\+)*[A-Za-z0-9]+$" },
+        "to": { "enum": ["start", "end"] }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "action": { "const": "press" } } },
+          "then": { "required": ["key"], "properties": { "target": false, "to": false } },
+          "else": { "required": ["target"], "properties": { "key": false } }
+        },
+        {
+          "if": { "properties": { "action": { "const": "scroll" } } },
+          "then": { "required": ["to"] },
+          "else": { "properties": { "to": false } }
+        }
+      ]
+    },
+    "story": {
+      "type": "object",
+      "required": ["name", "storybookId", "grid", "fixture", "axes", "state", "judge"],
+      "properties": {
+        "name": {
+          "description": "The story name: `<component>--<fixture>--<axis>-<value>…--<state>`. Baselines are named after it.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*(--[a-z0-9-]+)+$"
+        },
+        "storybookId": {
+          "description": "The ID Storybook gives the story; the verifier opens the story by it.",
+          "type": "string",
+          "pattern": "^[a-z0-9-]+--[a-z0-9-]+$"
+        },
+        "grid": {
+          "description": "The grid the story comes from.",
+          "enum": ["axes", "states", "fixtures", "include"]
+        },
+        "fixture": { "$ref": "#/$defs/kebabName" },
+        "axes": {
+          "description": "The value of every axis, keyed as in matrix.axes.",
+          "type": "object",
+          "propertyNames": { "pattern": "^([A-Z][A-Za-z0-9]*\\.)?[a-z][A-Za-z0-9]*$" },
+          "additionalProperties": { "type": ["boolean", "string", "number"] }
+        },
+        "state": {
+          "type": "object",
+          "required": ["name"],
+          "properties": {
+            "name": { "$ref": "#/$defs/kebabName" },
+            "part": { "$ref": "#/$defs/componentName" }
+          },
+          "additionalProperties": false
+        },
+        "set": {
+          "description": "Prop values set over the fixture, in order: axis values, then the state's props.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["target", "props"],
+            "properties": {
+              "target": { "$ref": "#/$defs/target" },
+              "props": { "$ref": "#/$defs/propValues" }
+            },
+            "additionalProperties": false
+          },
+          "minItems": 1
+        },
+        "input": {
+          "description": "Input steps the verifier performs after the story renders and before it captures.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/step" },
+          "minItems": 1
+        },
+        "judge": {
+          "description": "The themes in which the judge sees this story.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/kebabName" },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

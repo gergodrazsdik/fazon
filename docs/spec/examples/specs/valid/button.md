@@ -60,9 +60,14 @@ fixtures:
   long-label:
     slots:
       default: Save changes and notify every member of the workspace
+    frame:
+      width: 160
 matrix:
   axes: [variant, size]
   fixtures: [label, with-icon, long-label]
+  include:
+    - props: { variant: ghost, size: lg }
+      state: hover
 tokens:
   - when: { props: { variant: primary } }
     use:
@@ -101,6 +106,7 @@ Triggers an action on the current page, such as saving a form or opening a dialo
 
 - Loading shows a spinner in place of the icon, keeps the label and blocks activation. The button stays focusable.
 - Disabled blocks activation and removes the button from the tab order.
+- A label longer than the available width wraps onto more lines; it is never clipped.
 
 ## Appearance
 
