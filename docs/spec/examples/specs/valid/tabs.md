@@ -47,6 +47,11 @@ parts:
       icon:
         description: An icon before the label.
     states: [default, hover, focus-visible, selected, disabled]
+    produce:
+      selected:
+        story: false
+      disabled:
+        story: false
     a11y:
       role: tab
       name: content

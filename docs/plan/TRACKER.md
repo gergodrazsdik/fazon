@@ -10,7 +10,7 @@ Next free IDs: T-0085, F-0007, Q-0018.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M0: the story matrix rules (T-0021), then the check catalogue (T-0022); both fill in hooks the spec format left to them
+1. M0: the check catalogue (T-0022), which defines the check and rule IDs that exemptions name, then the baseline lifecycle (T-0023)
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -53,7 +53,7 @@ Next free IDs: T-0085, F-0007, Q-0018.
 Done when every document is merged through a pull request the maintainer reviewed, and the repo holds documents, schemas and example data but no executable product code. Index: [docs/spec/README.md](../spec/README.md).
 
 - [x] T-0020 Spec format and its JSON Schema, including fixtures, multi-part components and exemptions (Q-0005, Q-0006) — 2026-11-25: format version 0, with valid and invalid examples checked by `just lint` ([ADR 0005](../adr/0005-spec-format.md)), [#8](https://github.com/gergodrazsdik/fazon/pull/8)
-- [ ] T-0021 Story matrix rules, including the icon set that spec fixtures draw from
+- [x] T-0021 Story matrix rules, including the icon set that spec fixtures draw from — 2026-11-25: version 0, with the story manifest schema and the example specs' manifests ([ADR 0006](../adr/0006-story-matrix.md))
 - [ ] T-0022 Check catalogue, with one rule sheet per check
 - [ ] T-0023 Baseline lifecycle
 - [ ] T-0024 Agent permission model
@@ -61,12 +61,12 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [ ] T-0026 Judge: rubric, image batching and the CI cost cap
 - [ ] T-0027 Measurement protocol, including judge calibration and its thresholds
 - [ ] T-0028 Run record and provenance schemas (Q-0012)
-- [ ] T-0029 Config file reference: name, format and keys
+- [ ] T-0029 Config file reference: name, format and keys, including a consumer's own fixture icon set ([ADR 0006](../adr/0006-story-matrix.md))
 - [ ] T-0030 CLI reference, covering every command
 - [ ] T-0031 Adapter boundary, including how the example repo consumes the framework before M5 (Q-0001)
 - [ ] T-0032 Reusable workflow interface: inputs, secrets and permissions
-- [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples (Q-0007)
-- [ ] T-0034 License terms for generated and scaffolded files, and for the example repo (Q-0002, Q-0003, Q-0004)
+- [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples; the conventions doc requires the `data-part` and `data-<state>` attributes ([ADR 0006](../adr/0006-story-matrix.md)) (Q-0007)
+- [ ] T-0034 License terms for generated and scaffolded files, and for the example repo, and Lucide's license notice for the fixture icons (Q-0002, Q-0003, Q-0004)
 
 ## Phase 2: Foundation (M1 to M3)
 

@@ -11,7 +11,7 @@ This document defines what a spec may contain and which rules make it valid. The
 
 | What | Defined in |
 |---|---|
-| How a state is produced (prop, pseudo-state, interaction), how `matrix` expands into stories, story names, the icon set fixtures draw from | Story matrix rules (T-0021) |
+| How a state is produced (prop, pseudo-state, interaction), how `matrix` expands into stories, story names, the icon set fixtures draw from | [Story matrix rules](story-matrix.md) (T-0021) |
 | Check and rule IDs that `exemptions` name, and what each rule allows | Check catalogue (T-0022) |
 | How the judge's rubric is built from the body | Judge (T-0026) |
 | Where the approved API's hash is recorded, and its canonical form | Run record and provenance schemas (T-0028) |
@@ -52,6 +52,7 @@ Every member of the API is written in long form, as a mapping, even when it only
 | `form` | no | [Form participation](#form-participation). |
 | `parts` | no | [Named parts](#parts) of a multi-part component. |
 | `states` | no | The states stories show, such as `hover` or `disabled`. |
+| `produce` | no | [Recipes](#states-and-recipes) for states the story matrix rules can't infer. |
 | `a11y` | no | [Accessibility](#accessibility) of the root element. |
 | `fixtures` | no | [Content](#fixtures) that stories render. |
 | `matrix` | no | [Hooks for the story matrix](#matrix). |
@@ -116,9 +117,25 @@ How the Vue adapter maps the API, and how later adapters are expected to (the [a
 - `parent` (required): the component itself, or another part;
 - `count` (required): how many instances one parent holds: `one`, `optional` or `many`;
 - `portal: true` when the part renders outside the component's root, such as a dialog's content in an overlay layer; the verifier then captures it outside the story root;
-- its own `props`, `events`, `slots`, `methods`, `states` and `a11y`, with the same rules as the component's.
+- its own `props`, `events`, `slots`, `methods`, `states`, `produce` and `a11y`, with the same rules as the component's.
 
 The component's own fields describe the root, which holds the state the parts share. In version 0, a part with `count: many` can't be the parent of another `many` part (F-0006).
+
+### States and recipes
+
+`states`, on the component and on each part, lists the states stories show. `default` is the state with nothing applied. The [story matrix rules](story-matrix.md#producing-states) say how each state is produced: a boolean prop of the state's name is set, and `hover`, `focus-visible` and `active` come from real input. Any other state needs a recipe in `produce`, keyed by state name. A recipe has:
+
+- `props`: prop values that produce the state, on the component, or on the part's instance;
+- `input`: input steps the verifier performs, each an `action` (`hover`, `focus`, `pointer-down`, `click`, `press`, `scroll`) with a `target` (`root`, `<Part>` for its first instance, or `<Part>[<n>]`), a `key` for `press`, and `to` (`start` or `end`) for `scroll`;
+- `instance`: for a part's state, the instance the recipe applies to, counted from 0;
+- `story: false`: the fixtures already show the state, so it gets no story of its own. A token rule or exemption can still name it.
+
+```yaml
+states: [closed]
+produce:
+  closed:
+    props: { open: false }
+```
 
 ### Accessibility
 
@@ -142,7 +159,8 @@ Contrast isn't a spec field: the accessibility check measures it.
 - `props`: prop values of the component;
 - `slots`: slot content, keyed by slot name;
 - `parts`: for each part, the list of its instances in order, each with its own `props` and `slots`;
-- `extends`: another fixture this one starts from. Props and slots merge by name; a part's list replaces the base's list;
+- `extends`: another fixture this one starts from. Props and slots merge by name; a part's list replaces the base's list; a `frame` replaces the base's frame;
+- `frame`: `{ width: <px> }`, the width of the frame the story renders in, to test wrapping and clipping; without it, the frame fits the content;
 - `description`.
 
 Slot content is one node or a list of nodes, rendered in order. A node is:
@@ -159,7 +177,7 @@ Fixtures carry the content that tests a layout: long labels, missing optional sl
 
 - `axes`: props whose values span the matrix, as `<prop>` or `<Part>.<prop>`; each is an enum or a boolean;
 - `fixtures`: the fixtures stories render;
-- `exclude`: invalid combinations, each a [condition](#conditions).
+- `exclude`: combinations that get no story. Each is a [condition](#conditions) whose `props` may also name part props as `<Part>.<prop>`, and which may name the `part` its `state` belongs to.
 
 ### Conditions
 
@@ -243,7 +261,7 @@ Other second-level headings are allowed. Write anything measurable as a field ra
 
 ## Approval
 
-`fazon propose` drafts the API; the developer accepts or corrects it. The approved API is the spec's `props`, `events`, `slots`, `methods`, `forward`, `form`, `parts` (without their `states` and `a11y`) and `extensions`. Its hash is recorded in the component's provenance file (T-0028), not in the spec. `fazon generate` refuses to run while the spec's API no longer matches the approved hash, so a change to the API needs a new approval. The other fields change through review in the pull request.
+`fazon propose` drafts the API; the developer accepts or corrects it. The approved API is the spec's `props`, `events`, `slots`, `methods`, `forward`, `form`, `parts` (without their `states`, `produce` and `a11y`) and `extensions`. Its hash is recorded in the component's provenance file (T-0028), not in the spec. `fazon generate` refuses to run while the spec's API no longer matches the approved hash, so a change to the API needs a new approval. The other fields change through review in the pull request.
 
 ## Validation
 
@@ -260,11 +278,13 @@ Other second-level headings are allowed. Write anything measurable as a field ra
 | SPEC-007 | `forward` names `root` or a part; `form` names props of the component, and `form.value` is a `model` prop; every `prop:` and `part:` in `a11y` and every part in `focus` exists. |
 | SPEC-008 | Every name in `uses` is an existing spec, and every component node in a fixture is listed in `uses`. |
 | SPEC-009 | Fixtures: `extends` names another fixture, with no cycles; after merging, every prop, slot and part a fixture sets exists, and its value fits the type; every part has as many instances as its `count` allows; required props and slots are set; icons exist in the icon set. |
-| SPEC-010 | Matrix: every axis is an enum or boolean prop; every fixture exists; every `exclude` condition is valid (SPEC-014). |
+| SPEC-010 | Matrix: every axis is an enum or boolean prop; every fixture exists; every `exclude` condition is valid (SPEC-014), with `<Part>.<prop>` naming a prop of that part. |
 | SPEC-011 | Tokens: every token exists in the token set and is a role token; every `part` exists; every condition is valid (SPEC-014); no two rules with the same part and condition set the same property. |
 | SPEC-012 | Exemptions: `check` and `rule` exist in the check catalogue; `part`, `fixture` and the condition exist (SPEC-014). |
 | SPEC-013 | Extensions: every `map` and `omit` path exists in the neutral API, and no `add` path does; every `instead` names an existing or added member; a block for an adapter the consumer uses is valid against that adapter's schema. A block for another adapter is reported, not failed. |
 | SPEC-014 | A condition names props of its part (or the component), with values of their type, and a state listed in that part's (or the component's) `states`. |
+| SPEC-015 | Every state other than `default` can be produced: it has a recipe, a boolean prop of its name, or is `hover`, `focus-visible` or `active`. |
+| SPEC-016 | Every `produce` key is a listed state of its component or part; a recipe's props exist there; every input target exists; `instance` is used only on a part's state, and is below the number of instances in every fixture the stories render. |
 
 The command works without an agent, and the spec skill never writes a spec the check would reject.
 

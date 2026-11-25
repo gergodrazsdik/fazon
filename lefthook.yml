@@ -30,7 +30,7 @@ pre-commit:
       glob: ".github/workflows/*.{yml,yaml}"
       run: scripts/with-tool.sh pinact run --check {staged_files}
     - name: spec-examples
-      glob: "{docs/spec/schemas/*.json,docs/spec/examples/**/*.md,scripts/check-spec-examples.sh}"
+      glob: "{docs/spec/schemas/*.json,docs/spec/examples/**/*.md,docs/spec/examples/**/*.json,scripts/check-spec-examples.sh}"
       run: scripts/check-spec-examples.sh
     - name: gitleaks
       run: scripts/with-tool.sh gitleaks git --pre-commit --staged --redact --no-banner
