@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Applies Fazon's GitHub repository settings, or reads them back and reports differences.
 #
 # Usage: scripts/github-settings.sh [--check] [--no-required-checks] <owner/repo>
@@ -20,7 +21,7 @@ for arg in "$@"; do
     --check) check_only=true ;;
     --no-required-checks) required_checks=false ;;
     -h | --help)
-      sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'
+      sed -n '3,12p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
       ;;
     -*)

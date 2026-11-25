@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Conventional Commits checks for commit messages and pull request titles.
 # Usage:
 #   scripts/check-commit-msg.sh <commit-message-file>
