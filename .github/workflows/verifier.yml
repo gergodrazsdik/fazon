@@ -25,8 +25,8 @@ env:
   IMAGE: ghcr.io/gergodrazsdik/fazon-verifier
 
 jobs:
-  build:
-    name: build
+  image:
+    name: verifier-image
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -56,8 +56,8 @@ jobs:
             jq -r '.captures | to_entries[] | "| \(.key) | \(.value.width)x\(.value.height) | `\(.value.sha256)` |"' "$RUNNER_TEMP/smoke/results.json"
           } >> "$GITHUB_STEP_SUMMARY"
 
-  publish:
-    name: publish
+  publish-image:
+    name: verifier-publish
     if: github.event_name == 'push' && github.repository == 'gergodrazsdik/fazon'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
