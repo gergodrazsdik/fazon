@@ -49,6 +49,16 @@ An adapter supplies everything that depends on the framework:
 
 The core calls these through an internal TypeScript interface in `packages/core`; the adapter package implements it. M1 writes the interface.
 
+## Packages
+
+| Package | Directory | What it is |
+|---|---|---|
+| `fazon` | `packages/cli` | The CLI, with the `fazon` command; what an adopter installs |
+| `@fazon/core` | `packages/core` | The core; the CLI and every adapter depend on it |
+| `@fazon/adapter-vue` | `packages/adapter-vue` | The Vue adapter, loaded when `fazon.yaml` says `adapter: vue` |
+
+A later adapter is `@fazon/adapter-<name>`. The `fazon` npm organisation holds the scope ([ADR 0020](../adr/0020-component-list-and-npm-names.md)).
+
 ## The Vue adapter
 
 Version 1 ships one adapter, `vue`: Vue 3 single-file components with `<script setup lang="ts">`, plain CSS with custom properties, scoped per component, and Reka UI for components with complex behaviour.
@@ -89,7 +99,7 @@ The Vue adapter's `extensions` block takes:
 
 ### Headless primitives
 
-Dialog, Select, Tabs and Tooltip are built on Reka UI. Each part maps to the Reka UI part it wraps (`TabsTrigger` wraps `TabsTrigger`), so the agent writes styling and composition and doesn't reimplement focus management. Reka UI's `asChild` is offered only through an extension ([example](examples/specs/valid/tabs.md)).
+Dialog, Menu, Popover, Select, Tabs and Tooltip are built on Reka UI. Each part maps to the Reka UI part it wraps (`TabsTrigger` wraps `TabsTrigger`; Menu wraps Reka UI's `DropdownMenu`), so the agent writes styling and composition and doesn't reimplement focus management. Reka UI's `asChild` is offered only through an extension ([example](examples/specs/valid/tabs.md)).
 
 ### Stories
 
@@ -152,12 +162,13 @@ Until M5, the example repository pins **one framework commit**, and three refere
 | The reusable workflow | `uses: gergodrazsdik/fazon/.github/workflows/<workflow>.yml@<sha>` |
 | The verifier image | `image` in `fazon.yaml`: the digest of the image the framework's CI built from that commit |
 
-For example (package names wait on Q-0018, and the exact git syntax is confirmed in M1):
+For example (the exact git syntax is confirmed in M1):
 
 ```json
 {
   "devDependencies": {
-    "fazon": "github:gergodrazsdik/fazon#<sha>&path:packages/cli"
+    "fazon": "github:gergodrazsdik/fazon#<sha>&path:packages/cli",
+    "@fazon/adapter-vue": "github:gergodrazsdik/fazon#<sha>&path:packages/adapter-vue"
   }
 }
 ```

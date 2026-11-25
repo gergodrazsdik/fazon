@@ -66,7 +66,7 @@ Plain CSS with custom properties, scoped per component. The tokens are built int
 - **Focus:** `:focus-visible` draws an outline of `border-width.focus` in `color.focus.ring`, offset by `outline-offset.focus`. Focus is never shown with colour alone.
 - **Disabled:** text in `color.text.disabled`, borders in `color.border.default`, and no hover style. A disabled control isn't made transparent.
 - **Motion:** transitions use `motion.duration.*` and `motion.easing.*`, and only on colour, shadow, opacity and transform. Under `prefers-reduced-motion: reduce`, a component has no transition or animation, and a spinner shows a still indicator. The verifier renders with reduced motion, so captures are stable.
-- **Surfaces:** cards use `color.surface.raised`, `radius.surface` and `shadow.raised`; popovers and tooltips `shadow.popover`; the dialog `radius.dialog` and `shadow.dialog` over `color.overlay`.
+- **Surfaces:** cards use `color.surface.raised`, `radius.surface` and `shadow.raised`; menus, popovers and tooltips `shadow.popover`; the dialog `radius.dialog` and `shadow.dialog` over `color.overlay`.
 
 ## Accessibility
 
@@ -83,7 +83,7 @@ Plain CSS with custom properties, scoped per component. The tokens are built int
 
 | Component | Builds on |
 |---|---|
-| Dialog, Select, Tabs, Tooltip | Reka UI: each part wraps the Reka UI part of the same name, which owns focus, keyboard and positioning |
+| Dialog, Menu, Popover, Select, Tabs, Tooltip | Reka UI: each part wraps the Reka UI part of the same name (Menu's parts wrap those of `DropdownMenu`), which owns focus, keyboard and positioning |
 | Button, Link, Badge, Avatar, Spinner, Card | native elements |
 | TextField, Textarea, Checkbox, RadioGroup, Switch | native form elements, so forms and labels work without script |
 

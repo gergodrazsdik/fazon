@@ -4,13 +4,13 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0087, F-0007, Q-0019.
+Next free IDs: T-0088, F-0007, Q-0019.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. Q-0008 (the component list), then M0 is complete; Q-0018 before M1's first package
+1. M1: the maintainer creates the `fazon` npm organisation and reserves the scoped names (T-0087), then the example repo (T-0040) and the first package (T-0041); break down the walking skeleton (T-0046) at M1's start
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -52,6 +52,8 @@ Next free IDs: T-0087, F-0007, Q-0019.
 
 Done when every document is merged through a pull request the maintainer reviewed, and the repo holds documents, schemas and example data but no executable product code. Index: [docs/spec/README.md](../spec/README.md).
 
+Complete 2026-11-25: fifteen documents at version 0, with their schemas, examples and ADRs 0005 to 0019, and every M0 question settled ([ADR 0020](../adr/0020-component-list-and-npm-names.md)).
+
 - [x] T-0020 Spec format and its JSON Schema, including fixtures, multi-part components and exemptions (Q-0005, Q-0006) — 2026-11-25: format version 0, with valid and invalid examples checked by `just lint` ([ADR 0005](../adr/0005-spec-format.md)), [#8](https://github.com/gergodrazsdik/fazon/pull/8)
 - [x] T-0021 Story matrix rules, including the icon set that spec fixtures draw from — 2026-11-25: version 0, with the story manifest schema and the example specs' manifests ([ADR 0006](../adr/0006-story-matrix.md)), [#10](https://github.com/gergodrazsdik/fazon/pull/10)
 - [x] T-0022 Check catalogue, with one rule sheet per check — 2026-11-25: version 0, with HTML fixtures for the rendered checks ([ADR 0007](../adr/0007-check-catalogue.md)), [#11](https://github.com/gergodrazsdik/fazon/pull/11)
@@ -80,6 +82,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [ ] T-0045 `just build`, `just test` and `just verify` recipes, with the code
 - [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action; the framework's CI pushes pre-release verifier images to GHCR, a lint rule keeps framework code out of the core, and the example repo checks its three pins name one commit ([ADR 0016](../adr/0016-adapter-boundary.md)); the reusable `verify.yml` with its `verify`, `judge` and `comment` jobs ([ADR 0017](../adr/0017-workflow.md)) ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md)) (break down at M1 start)
 - [ ] T-0085 The tokens pipeline: resolve the resolver document, run Style Dictionary once per theme with references kept (its warning about references the dark block filters out is expected), and build `paths.tokensCss` in `fazon sync`; pin Style Dictionary and `@fontsource-variable/inter`; move the drafts in `docs/spec/example-library/` to the example repo ([ADR 0018](../adr/0018-token-set.md))
+- [ ] T-0087 Create the `fazon` npm organisation and reserve `@fazon/core` and `@fazon/adapter-vue` with placeholder packages, version `0.0.0`, no code, as for `fazon` (T-0082); the maintainer publishes them with their own npm account, before M1's first package ([ADR 0020](../adr/0020-component-list-and-npm-names.md))
 - [ ] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, and template files `MIT-0`, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md), [ADR 0019](../adr/0019-license-terms.md))
 
 ### M2 The loop
@@ -95,7 +98,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 
 ### M4 The library
 
-- [ ] T-0060 The remaining 11 components, the packed library as a CI artifact, the docs site, the second calibration; 15 components pass and the metrics table is on the site
+- [ ] T-0060 The remaining 13 components, the packed library as a CI artifact, the docs site, the second calibration; 17 components pass, Menu and Popover included ([ADR 0020](../adr/0020-component-list-and-npm-names.md)), and the metrics table is on the site
 - [ ] T-0061 GitHub Pages for the docs site: the first deploy job and its `pages: write` permission, as the reusable `pages.yml` ([ADR 0017](../adr/0017-workflow.md))
 
 ### M5 Packaging (end of version 1)
@@ -150,7 +153,7 @@ From the brief's [Open](../design/brief.md#open) table:
 - [x] Q-0005 Is the API in a spec framework-neutral, or written per framework? Proposal: neutral, mapped by the adapter. Settled by M0 (T-0020) — direction from the maintainer, 2026-11-25: framework-neutral wherever it maps cleanly, with framework-specific extensions for what doesn't, their reason optional; the extension shape is in the spec format ([ADR 0005](../adr/0005-spec-format.md))
 - [x] Q-0006 One spec or several for a multi-part component? Proposal: one spec with named parts. Settled by M0 (T-0020) — answered 2026-11-25, from a worked Tabs example of both options: one spec with named parts ([ADR 0005](../adr/0005-spec-format.md))
 - [x] Q-0007 Which part of the token format does the build support? Proposal: the subset the build tool handles today. Settled by M0 (T-0033) — answered 2026-11-25: what Style Dictionary 5.8.0 built in a trial of the draft set (sRGB colours, `px`/`rem` dimensions, `ms` durations, cubic Béziers, font families and weights, numbers, shadows); the resolver document, which it can't read yet, is resolved by Fazon's pipeline ([ADR 0018](../adr/0018-token-set.md))
-- [ ] Q-0008 Is the list of 15 components right? Proposal: the list under Milestones. Settled by M0
+- [x] Q-0008 Is the list of 15 components right? Proposal: the list under Milestones. Settled by M0 — answered 2026-11-25: the 15, plus Menu and Popover as composites on Reka UI: 17 components ([ADR 0020](../adr/0020-component-list-and-npm-names.md))
 - [x] Q-0009 Are baselines kept in git or in Git LFS? Proposal: in git. Settled by M1 — answered 2026-11-25: plain git, losslessly optimised ([ADR 0008](../adr/0008-baseline-lifecycle.md))
 - [ ] Q-0010 What is the budget for the measured API runs? Not set. Settled by M2
 - [ ] Q-0011 Does the tokens' CSS ship inside the component package or as a package of its own? Proposal: inside the component package. Settled by M1
@@ -163,4 +166,4 @@ From the bootstrap:
 - [x] Q-0015 The contributor agreement's governing law (`CLA.md`, Section 6.1) is blank (maintainer, at the review: T-0010) — answered 2026-11-25: Hungary, filled in ([ADR 0003](../adr/0003-bootstrap-answers.md))
 - [x] Q-0016 Confirm the agreement's other fill-ins at the review: the maintainer personally as "We"; CC BY 4.0, CC BY-SA 4.0 and CC0 1.0 as the media licenses; "[or Your Affiliates]" left out of the patent license (maintainer, T-0010) — answered 2026-11-25: confirmed by the maintainer; the legal review still checks them (T-0010, [ADR 0003](../adr/0003-bootstrap-answers.md))
 - [x] Q-0017 How is the contributor agreement's review completed: by a lawyer, working from the review input under T-0010, or does the maintainer accept a revised text without one? Either way the maintainer or the lawyer supplies the revised wording (maintainer, 2026-11-25) — answered 2026-11-25: without a lawyer; the maintainer accepts the findings as best effort ([ADR 0004](../adr/0004-contributor-agreement-amended.md))
-- [ ] Q-0018 Which npm names do the Vue adapter and any core package take, beyond the reserved `fazon`? A scope such as `@fazon/` needs its npm organisation; unscoped names such as `fazon-adapter-vue` don't. Settle before M1's first package, and reserve them as `fazon` was (T-0031, [ADR 0016](../adr/0016-adapter-boundary.md))
+- [x] Q-0018 Which npm names do the Vue adapter and any core package take, beyond the reserved `fazon`? A scope such as `@fazon/` needs its npm organisation; unscoped names such as `fazon-adapter-vue` don't. Settle before M1's first package, and reserve them as `fazon` was (T-0031, [ADR 0016](../adr/0016-adapter-boundary.md)) — answered 2026-11-25: `fazon` for the CLI, `@fazon/core` and `@fazon/adapter-vue`, under the `fazon` npm organisation; later adapters `@fazon/adapter-<name>` (T-0087, [ADR 0020](../adr/0020-component-list-and-npm-names.md))

@@ -34,7 +34,7 @@ Every component is measured **5 times** per measurement round. Every published n
 | Round | When | Components |
 |---|---|---|
 | 1 | end of M2 | Button, Badge, Link, Dialog |
-| 2 | end of M4 | all 15 |
+| 2 | end of M4 | all 17 |
 
 ## Loop metrics
 
@@ -69,7 +69,7 @@ Calibration measures how well the judge catches defects a viewer can see, how of
 | Round | When | Components |
 |---|---|---|
 | 1 | M3 | Button, Badge, Link, Dialog |
-| 2 | after M4 | all 15 |
+| 2 | after M4 | all 17 |
 
 ### Seeded defects
 

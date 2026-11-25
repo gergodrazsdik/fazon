@@ -4,7 +4,7 @@ These instructions are for coding agents (Claude Code, Codex and others) working
 
 ## What Fazon is
 
-A framework that lets a coding agent build UI components from written specs and verifies each one by rendering it, running deterministic checks and asking a vision model to judge what the checks cannot measure. It ships a CLI harness, agent skills, a verifier container image and a reusable CI workflow. Its first consumer is a separate repository, `fazon-vue-example`, with a 15-component Vue 3 library.
+A framework that lets a coding agent build UI components from written specs and verifies each one by rendering it, running deterministic checks and asking a vision model to judge what the checks cannot measure. It ships a CLI harness, agent skills, a verifier container image and a reusable CI workflow. Its first consumer is a separate repository, `fazon-vue-example`, with a 17-component Vue 3 library ([ADR 0020](docs/adr/0020-component-list-and-npm-names.md)).
 
 Where the truth lives:
 

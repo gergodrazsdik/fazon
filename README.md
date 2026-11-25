@@ -1,6 +1,6 @@
 # Fazon
 
-Fazon is a framework that lets a coding agent build UI components from written specs, then verifies each one: it renders the component, runs deterministic checks (build, types, lint, tests, accessibility, token conformance, layout, visual diff) and asks a vision model to judge only what those checks cannot measure. A person decides at three points: the component's API, the local review of the result, and the pull request. Version 1 targets Vue 3, with a 15-component example library in a separate repository, `fazon-vue-example`.
+Fazon is a framework that lets a coding agent build UI components from written specs, then verifies each one: it renders the component, runs deterministic checks (build, types, lint, tests, accessibility, token conformance, layout, visual diff) and asks a vision model to judge only what those checks cannot measure. A person decides at three points: the component's API, the local review of the result, and the pull request. Version 1 targets Vue 3, with a 17-component example library in a separate repository, `fazon-vue-example`.
 
 ## Status
 
