@@ -45,7 +45,7 @@ The states are the component's `states`, then each part's `states` in the order 
 
 ### Fixtures
 
-The fixtures are those in `matrix.fixtures`; without it, the spec's first fixture. The **first fixture** is the first of them. A [forced story](#forced-stories) may also render another fixture of the spec. A spec with no fixtures renders an empty fixture, which SPEC-009 allows only when no prop or slot is required.
+The fixtures are those in `matrix.fixtures`; without it, the spec's first fixture. The **first fixture** is the first of them. A [forced story](#forced-stories) may also render another fixture of the spec. A spec with no fixtures renders an empty fixture named `empty`, which SPEC-009 allows only when no prop or slot is required.
 
 ### Expansion: three grids
 
@@ -87,7 +87,7 @@ The manifest lists the stories in this order: the axes grid in product order (th
 A story is dropped when it matches a condition in `matrix.exclude`. It matches when:
 
 - the condition's `state`, if any, is the story's state, of the condition's `part` (or of the component when the condition names no part);
-- every prop in the condition's `props` has that value in the story. A prop's value in a story is its axis value; otherwise the value the state sets; otherwise the fixture's value; otherwise its default.
+- every prop in the condition's `props` has that value in the story. A prop's value in a story is its axis value; otherwise the value the state sets; otherwise the fixture's value, for a part's prop that of the part's first instance; otherwise its default. A prop with none of these has no value, and matches no condition.
 
 ### Counts
 
@@ -104,13 +104,13 @@ The example specs give:
 The first rule that applies produces a state:
 
 1. **`default`:** nothing.
-2. **A recipe** in the spec's `produce`: its `props` are set and its `input` steps performed.
+2. **A recipe** in the spec's `produce`: its `props` are set and its `input` steps performed. A recipe with neither, only `story` or `instance`, leaves the state to the rules below, applied to the instance it names.
 3. **A boolean prop with the state's name**, such as `disabled` or `loading`: set to `true`.
 4. **A pseudo-state**, produced by real input:
    - `hover`: the `hover` action;
    - `focus-visible`: the `focus` action;
    - `active`: the `pointer-down` action.
-5. Otherwise the state can't be produced, and the spec fails SPEC-015.
+5. Otherwise the state can't be produced. A state whose recipe says `story: false` then needs nothing, and a forced story of it renders the fixture as it is; any other state fails SPEC-015.
 
 Props are applied in order: the fixture, then the axis values, then the state's props, so the state wins.
 
