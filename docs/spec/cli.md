@@ -201,7 +201,7 @@ Writes baselines from the latest qualifying run, and removes orphans, as [writin
 fazon sync [--check]
 ```
 
-Regenerates every component's `generated/` directory (story files, contract tests, story manifest) and the package entry file's exports from the specs, and builds the token set into its CSS file ([the build](tokens.md#the-build)). The entry file exports a component and its parts only once the component's root file exists, such as `src/components/button/Button.vue`; until then the component is listed as not generated yet, so the library builds between `approve` and `generate`. It refuses (2) a token set that breaks a [TOKEN rule](tokens.md#rules). With `--check`, it writes nothing and exits 1 when the committed files differ. CI runs it as the `build` rule `generated`. Result: the files that changed or differ, and the components not generated yet.
+Regenerates every component's `generated/` directory (story files, contract tests, story manifest) and the package entry file's exports from the specs, and builds the token set into its CSS file ([the build](tokens.md#the-build)). Until a component's root file exists, such as `src/components/button/Button.vue`, sync writes only the component's story manifest and API, with no story files, contract tests or export, and lists the component as not generated yet; so the library and its checks build between `approve` and `generate`. It refuses (2) a token set that breaks a [TOKEN rule](tokens.md#rules). With `--check`, it writes nothing and exits 1 when the committed files differ. CI runs it as the `build` rule `generated`. Result: the files that changed or differ, and the components not generated yet.
 
 ### `fazon runs`
 

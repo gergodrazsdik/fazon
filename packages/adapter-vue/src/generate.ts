@@ -24,9 +24,17 @@ export async function generateFiles(input: GenerateInput): Promise<GeneratedFile
     stories: stories.replace(/\.ts$/, ""),
   });
   return [
-    { name: stories, content: await formatTypeScript(storyFileText(input, component)) },
-    { name: `${kebabCase(input.spec.name)}.contract.test.ts`, content: await formatTypeScript(contract) },
-    { name: apiFileName, content: `${JSON.stringify(apiFile(component, input.specFile), null, 2)}\n` },
+    { name: stories, content: await formatTypeScript(storyFileText(input, component)), importsComponent: true },
+    {
+      name: `${kebabCase(input.spec.name)}.contract.test.ts`,
+      content: await formatTypeScript(contract),
+      importsComponent: true,
+    },
+    {
+      name: apiFileName,
+      content: `${JSON.stringify(apiFile(component, input.specFile), null, 2)}\n`,
+      importsComponent: false,
+    },
   ];
 }
 

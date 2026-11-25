@@ -12,6 +12,8 @@ describe("the generated files of the example specs", () => {
       `${name}.contract.test.ts`,
       "api.json",
     ]);
+    // The story file and the contract test import the component; api.json is data.
+    expect(files.map((file) => file.importsComponent)).toEqual([true, true, false]);
     for (const { name: file, content } of files) {
       await expect(content).toMatchFileSnapshot(
         new URL(`src/components/${name}/generated/${file}.golden`, golden).pathname,

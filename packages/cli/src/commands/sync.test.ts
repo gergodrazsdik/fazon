@@ -186,34 +186,49 @@ describe("fazon sync", () => {
     const entry = await read("src/index.ts");
     expect(entry).not.toContain("Tabs");
     expect(entry).toContain('export { default as DialogClose } from "./components/dialog/DialogClose.vue";');
-    // Its other generated files are written all the same.
+    // It gets only its data files: no story file or contract test, which import it.
     expect(await filesUnder(path.join(root, "src/components/tabs"))).toEqual([
-      "generated/Tabs.stories.ts",
       "generated/api.json",
       "generated/stories.json",
-      "generated/tabs.contract.test.ts",
     ]);
     expect((await capture(["sync"], machine())).stdout).toContain("Not generated yet");
 
-    // A pending component's missing export is what --check expects.
+    // A pending component's missing export, story file and contract test are what --check expects.
     const check = await captureJson(["sync", "--check"], machine());
     expect(check.code).toBe(0);
     expect(check.json.result).toMatchObject({ files: [], pending: ["tabs"] });
 
-    // Once the root file exists, --check misses the export, and the next sync adds it.
+    // Once the root file exists, --check misses them, and the next sync writes them.
     await writeFile(path.join(root, rootFiles.tabs), sfc);
+    const expected = [
+      { path: "src/components/tabs/generated/Tabs.stories.ts", change: "added" },
+      { path: "src/components/tabs/generated/tabs.contract.test.ts", change: "added" },
+      { path: "src/index.ts", change: "modified" },
+    ];
     const missing = await captureJson(["sync", "--check"], machine());
     expect(missing.code).toBe(1);
-    expect(missing.json.result).toMatchObject({ files: [{ path: "src/index.ts", change: "modified" }], pending: [] });
+    expect(missing.json.result).toMatchObject({ files: expected, pending: [] });
     const second = await captureJson(["sync"], machine());
-    expect(second.json.result).toMatchObject({ files: [{ path: "src/index.ts", change: "modified" }], pending: [] });
-    expect(await read("src/index.ts")).toBe(await readFile(path.join(golden, "src/index.ts.golden"), "utf8"));
+    expect(second.json.result).toMatchObject({ files: expected, pending: [] });
+    for (const file of ["src/index.ts", ...expected.slice(0, 2).map((change) => change.path)]) {
+      expect(await read(file)).toBe(await readFile(path.join(golden, `${file}.golden`), "utf8"));
+    }
+    expect((await captureJson(["sync", "--check"], machine())).code).toBe(0);
   });
 
-  it("exports nothing before any component is generated", async () => {
+  it("writes only data files and exports nothing before any component is generated", async () => {
     for (const file of Object.values(rootFiles)) await rm(path.join(root, file));
     const { json } = await captureJson(["sync"], machine());
     expect(json.result).toMatchObject({ pending: ["button", "dialog", "tabs"] });
+    expect(await filesUnder(path.join(root, "src"))).toEqual([
+      ...examples.flatMap((name) => [
+        `components/${name}/generated/api.json`,
+        `components/${name}/generated/stories.json`,
+      ]),
+      "index.ts",
+      "tokens.css",
+    ]);
+    expect((await captureJson(["sync", "--check"], machine())).code).toBe(0);
     expect(await read("src/index.ts")).toBe(
       "// fazon:exports:begin `fazon sync` writes the exports up to fazon:exports:end from the specs; edit outside them.\n// fazon:exports:end\n",
     );

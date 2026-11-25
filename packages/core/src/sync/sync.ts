@@ -70,8 +70,8 @@ export type SyncResult =
       /** Component directories whose spec is gone; their `generated/` directory is (or would be) removed. */
       readonly orphanedComponents: readonly string[];
       /**
-       * Components not generated yet: their root file, such as `Button.vue`, doesn't exist, so the
-       * entry file doesn't export them or their parts. Each with the root file it waits for.
+       * Components not generated yet: their root file, such as `Button.vue`, doesn't exist, so they
+       * get only their story manifest and data files, and no export. Each with the root file it waits for.
        */
       readonly pending: readonly PendingComponent[];
     }
@@ -99,9 +99,9 @@ interface Plan {
  * a component's `generated/` directory loses files the adapter no longer writes, except its
  * provenance file.
  *
- * The entry file exports a component and its parts only once the component's root file exists
- * (the adapter's `componentFiles`), so the library builds between `approve` and `generate`; until
- * then the component is pending.
+ * Until a component's root file exists (the adapter's `componentFiles`), the component is pending:
+ * sync writes only its story manifest and the adapter's data files, with no story files, contract
+ * tests or export, so the library and its checks build between `approve` and `generate`.
  *
  * Refuses, without writing anything, when a spec breaks a rule `spec check` checks, the token set
  * breaks a TOKEN rule, or the adapter can't write a component's files.
@@ -219,7 +219,14 @@ async function plan(root: string, config: Config, adapter: Adapter): Promise<Pla
         icons: config.icons,
         baseStyles: styles,
       });
-      for (const { name, content } of generatedFiles) {
+      const own = rootFile(adapter, file.spec, directory);
+      const generatedYet = await exists(path.join(root, own));
+      if (generatedYet) {
+        entryComponents.push({ spec: file.spec, directory });
+      } else {
+        pending.push({ component: file.component, file: own });
+      }
+      for (const { name, content, importsComponent } of generatedFiles) {
         if (
           !/^[^/\\]+$/.test(name) ||
           name === "." ||
@@ -229,18 +236,13 @@ async function plan(root: string, config: Config, adapter: Adapter): Promise<Pla
         ) {
           throw new Error(`The ${adapter.id} adapter may not write '${name}' in ${generated}/ (ADAPTER-002).`);
         }
-        files.set(path.posix.join(generated, name), content);
+        // A pending component gets only its data files: what imports it would break the builds.
+        if (generatedYet || !importsComponent) files.set(path.posix.join(generated, name), content);
       }
     } catch (error) {
       if (!(error instanceof AdapterError)) throw error;
       problems.push(adapterProblem(error, file.file));
       continue;
-    }
-    const own = rootFile(adapter, file.spec, directory);
-    if (await exists(path.join(root, own))) {
-      entryComponents.push({ spec: file.spec, directory });
-    } else {
-      pending.push({ component: file.component, file: own });
     }
   }
 

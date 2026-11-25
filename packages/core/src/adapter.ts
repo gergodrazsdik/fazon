@@ -49,6 +49,11 @@ export interface GeneratedFile {
   /** A file name, without directories: `Button.stories.ts`. */
   readonly name: string;
   readonly content: string;
+  /**
+   * The file imports the component's own files, as a story file or a contract test does: sync
+   * writes it only once the component's root file exists. Data files, such as an API, are always written.
+   */
+  readonly importsComponent: boolean;
 }
 
 /** A component the entry file exports, with its parts. */
