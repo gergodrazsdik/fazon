@@ -31,4 +31,25 @@ export {
   type ResolvedConfig,
 } from "./config/load.js";
 
+export type * from "./matrix/types.js";
+export {
+  buildManifest,
+  emptyFixtureName,
+  pseudoStates,
+  storyViewport,
+  type BuildManifestOptions,
+} from "./matrix/build.js";
+export { MatrixError } from "./matrix/error.js";
+export { resolveFixture } from "./matrix/fixtures.js";
+export { storybookId, storyExportName, storyName } from "./matrix/names.js";
+export {
+  checkManifest,
+  manifestRules,
+  matrixRuleStages,
+  type ManifestCheckInput,
+  type MatrixRule,
+  type MatrixRuleId,
+  type MatrixRuleStage,
+} from "./matrix/rules.js";
+
 export * from "./tokens/index.js";
