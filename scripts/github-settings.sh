@@ -4,9 +4,9 @@
 #
 # Usage: scripts/github-settings.sh [--check] [--no-required-checks] <owner/repo>
 #   --check               only read the settings and report differences (exit 1 if any)
-#   --no-required-checks  leave the required status checks out of the main ruleset; use it on a
-#                         brand-new repo until the `lint`, `zizmor` and `pr-title` checks have
-#                         run once
+#   --no-required-checks  leave the required status checks out of the rulesets (and skip the `cla`
+#                         ruleset, which has nothing else); use it on a brand-new repo until `lint`,
+#                         `zizmor`, `pr-title` and the CLA assistant's `license/cla` have run once
 #
 # Covers: general and merge settings, security features, Actions permissions, labels, topics and
 # the rulesets in .github/rulesets/. It holds no personal data, so it works for any fork.
@@ -223,6 +223,10 @@ apply() {
   for file in "$root"/.github/rulesets/*.json; do
     rs=$(ruleset_json "$file")
     name=$(jq -r .name <<<"$rs")
+    if [[ $(jq '.rules | length' <<<"$rs") -eq 0 ]]; then
+      echo "  $name: skipped (no rules besides required checks)"
+      continue
+    fi
     id=$(gh api "$api/rulesets" --jq ".[] | select(.name == \"$name\") | .id")
     if [[ -n $id ]]; then
       put PUT "$api/rulesets/$id" "$rs"
@@ -302,6 +306,10 @@ check() {
   for file in "$root"/.github/rulesets/*.json; do
     want=$(ruleset_json "$file")
     name=$(jq -r .name <<<"$want")
+    if [[ $(jq '.rules | length' <<<"$want") -eq 0 ]]; then
+      echo "  skip  ruleset $name (no rules besides required checks)"
+      continue
+    fi
     id=$(gh api "$api/rulesets" --jq ".[] | select(.name == \"$name\") | .id")
     if [[ -z $id ]]; then
       report "ruleset $name" false "missing"
