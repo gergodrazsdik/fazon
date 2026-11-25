@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Checks the spec format's and the story manifest's JSON Schemas and their examples
-# (docs/spec/spec-format.md, docs/spec/story-matrix.md):
-#   - both schemas are valid against their metaschema;
+# Checks the JSON Schemas under docs/spec/schemas/ and their examples (docs/spec/spec-format.md,
+# docs/spec/story-matrix.md, docs/spec/baseline-lifecycle.md):
+#   - every schema is valid against its metaschema;
 #   - every spec under valid/ and invalid/semantic/ passes the schema (a semantic example breaks
 #     a rule only `fazon spec check` sees, from M2);
 #   - every spec under invalid/schema/ fails it, at the path its `# expect-error-at:` line names;
-#   - every manifest under docs/spec/examples/manifests/ passes the story manifest schema.
+#   - every manifest under docs/spec/examples/manifests/ passes the story manifest schema;
+#   - the baselines record example passes its schema.
 # Needs yq (mikefarah, v4) to read the front matter, and check-jsonschema.
 #
 # Usage: scripts/check-spec-examples.sh
@@ -19,6 +20,7 @@ shopt -s nullglob
 root=$(cd "$(dirname "$0")/.." && pwd)
 schema="$root/docs/spec/schemas/spec.schema.json"
 manifest_schema="$root/docs/spec/schemas/story-manifest.schema.json"
+baselines_schema="$root/docs/spec/schemas/baselines.schema.json"
 examples="$root/docs/spec/examples/specs"
 manifests="$root/docs/spec/examples/manifests"
 
@@ -50,7 +52,7 @@ check() { # <json>...: check-jsonschema against the spec schema
 }
 
 failed=0
-check-jsonschema --check-metaschema "$schema" "$manifest_schema" || failed=1
+check-jsonschema --check-metaschema "$schema" "$manifest_schema" "$baselines_schema" || failed=1
 
 # Must pass.
 for spec in "$examples"/valid/*.md "$examples"/invalid/semantic/*.md; do
@@ -103,5 +105,15 @@ for manifest in "$manifests"/*.json; do
     echo "ok   $rel passes"
   fi
 done
+
+# The baselines record must pass its schema.
+record="$root/docs/spec/examples/baselines/fazon.json"
+if ! out=$(check-jsonschema --schemafile "$baselines_schema" "$record" 2>&1); then
+  echo "FAIL ${record#"$root"/}: expected to pass the baselines schema" >&2
+  echo "$out" >&2
+  failed=1
+else
+  echo "ok   ${record#"$root"/} passes"
+fi
 
 exit "$failed"

@@ -12,7 +12,7 @@ The rules here decide which stories exist and what each one shows. These parts a
 | What | Defined in |
 |---|---|
 | What each check does with a rendered story | Check catalogue (T-0022) |
-| When a baseline is created, updated or renamed | Baseline lifecycle (T-0023) |
+| When a baseline is created, updated or renamed | [Baseline lifecycle](baseline-lifecycle.md) |
 | That the agent never edits stories or the manifest | Agent permission model (T-0024) |
 | How the judge's crops are batched | Judge (T-0026) |
 | The baselines directory, an icon set of the consumer's own | Config file reference (T-0029) |
@@ -187,11 +187,11 @@ A story's name is:
 
 For example: `button--label--variant-primary--size-md--hover`, `tabs--three--orientation-horizontal--trigger-focus-visible`, `dialog--confirm--content-size-md--closed`.
 
-A baseline's path, inside the baselines directory, is `<theme>/<component>/<story name without "<component>--">.png`, for example `dark/button/label--variant-primary--size-md--hover.png`.
+A baseline's path, inside the [baselines directory](baseline-lifecycle.md#where-baselines-live), is `<theme>/<component>/<story name without "<component>--">.png`, for example `dark/button/label--variant-primary--size-md--hover.png`.
 
 In Storybook, the stories' title is the component name, and the adapter chooses the export names. The manifest records the ID Storybook derives from them (`storybookId`), and the verifier opens each story by that ID.
 
-A change to a fixture's name, an axis, a value or a state renames stories; what happens to their baselines is defined in the baseline lifecycle (T-0023).
+A change to a fixture's name, an axis, a value or a state renames stories; their old baselines become [orphans](baseline-lifecycle.md#orphans).
 
 ## The manifest
 
