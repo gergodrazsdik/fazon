@@ -2,6 +2,7 @@
 import js from "@eslint/js";
 import { defineConfig } from "eslint/config";
 import prettier from "eslint-config-prettier";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
@@ -16,6 +17,14 @@ export default defineConfig(
         tsconfigRootDir: import.meta.dirname,
       },
     },
+  },
+  {
+    // The verifier's smoke test runs inside the image with its own dependencies (verifier/smoke/package.json);
+    // it isn't part of the TypeScript workspace, so it is linted as plain JavaScript.
+    files: ["verifier/**/*.mjs"],
+    extends: [tseslint.configs.disableTypeChecked],
+    // Callbacks passed to page.evaluate() run in the browser, so both sets of globals apply.
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {
     // ADAPTER-001 (docs/spec/adapter-boundary.md#rules): the core never imports framework code.
