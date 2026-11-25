@@ -15,7 +15,7 @@ How the harness runs the loop: the kinds of run, what one iteration is, what blo
 | The judge's rubric, its calibration status and policy | [Judge](judge.md), [measurement protocol](measurement.md#calibrated-status) |
 | What a run record stores | [Run records and provenance](records.md) |
 | The keys for caps and models | [Config file reference](config.md) |
-| The commands that start runs | CLI reference (T-0030) |
+| The commands that start runs | [CLI reference](cli.md) |
 
 ## Runs
 

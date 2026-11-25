@@ -32,7 +32,7 @@ A component's directory is `<components>/<name>/`, where `<components>` comes fr
 | `<components>/<name>/generated/**`: story files, contract tests, the story manifest | reads | the harness, from the spec |
 | Other components' directories, and any other source file | reads | the agent of that component, or a person |
 | The package entry file | reads | the harness |
-| `specs/`, the tokens file, the conventions doc, the config file | reads | a person |
+| `specs/`, the tokens file, the conventions doc, the config file | reads | a person; the harness writes a proposed API into a spec during [`fazon propose`](cli.md#fazon-propose) |
 | `baselines/` | reads | `fazon baseline update`, run by a person |
 | `package.json`, the lockfile, and the lint, TypeScript, Storybook and test configuration | reads | a person |
 | `.github/`, `.claude/`, `.fazon/` | no access | a person; `.fazon/` by the harness |

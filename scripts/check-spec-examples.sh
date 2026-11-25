@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Checks the JSON Schemas under docs/spec/schemas/ and their examples (docs/spec/spec-format.md,
 # docs/spec/story-matrix.md, docs/spec/baseline-lifecycle.md, docs/spec/judge.md, docs/spec/records.md,
-# docs/spec/config.md):
+# docs/spec/config.md, docs/spec/cli.md):
 #   - every schema is valid against its metaschema;
 #   - every spec under valid/ and invalid/semantic/ passes the schema (a semantic example breaks
 #     a rule only `fazon spec check` sees, from M2);
@@ -10,6 +10,7 @@
 #   - every manifest under docs/spec/examples/manifests/ passes the story manifest schema;
 #   - the examples of the baselines record, the judge plan and result, the run record, provenance
 #     and the calibration record pass their schemas;
+#   - the CLI output examples pass the CLI output schema;
 #   - the config examples (YAML) pass the config and local-override schemas, and the local schema's
 #     definitions are the same as the config schema's.
 # Needs yq (mikefarah, v4) to read front matter and YAML, check-jsonschema, and jq.
@@ -32,6 +33,7 @@ provenance_schema="$root/docs/spec/schemas/provenance.schema.json"
 calibration_schema="$root/docs/spec/schemas/calibration-record.schema.json"
 config_schema="$root/docs/spec/schemas/config.schema.json"
 local_schema="$root/docs/spec/schemas/config-local.schema.json"
+cli_schema="$root/docs/spec/schemas/cli-output.schema.json"
 examples="$root/docs/spec/examples/specs"
 manifests="$root/docs/spec/examples/manifests"
 
@@ -64,7 +66,8 @@ check() { # <json>...: check-jsonschema against the spec schema
 
 failed=0
 check-jsonschema --check-metaschema "$schema" "$manifest_schema" "$baselines_schema" "$plan_schema" "$result_schema" \
-  "$run_schema" "$provenance_schema" "$calibration_schema" "$config_schema" "$local_schema" || failed=1
+  "$run_schema" "$provenance_schema" "$calibration_schema" "$config_schema" "$local_schema" \
+  "$cli_schema" || failed=1
 
 # Must pass.
 for spec in "$examples"/valid/*.md "$examples"/invalid/semantic/*.md; do
@@ -138,6 +141,7 @@ expect_pass "$result_schema" "$root"/docs/spec/examples/judge/*-result.json
 expect_pass "$run_schema" "$root/docs/spec/examples/records/run.json"
 expect_pass "$provenance_schema" "$root/docs/spec/examples/records/provenance.json"
 expect_pass "$calibration_schema" "$root"/docs/spec/examples/records/calibration-*.json
+expect_pass "$cli_schema" "$root"/docs/spec/examples/cli/*.json
 
 # YAML examples: converted to JSON, then checked.
 for config in "$root"/docs/spec/examples/config/*/fazon.yaml "$root"/docs/spec/examples/config/*/fazon.local.yaml; do

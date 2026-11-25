@@ -16,7 +16,7 @@ How screenshot baselines are created, compared, changed, renamed and removed, lo
 | Which stories the judge sees in CI, and its policy | [Judge](judge.md) |
 | Run records, where captures are kept | [Run records and provenance](records.md) |
 | The baselines directory key, the judge policy key | [Config file reference](config.md) |
-| `fazon baseline` and its options | CLI reference (T-0030) |
+| `fazon baseline` and its options | [CLI reference](cli.md) |
 | The CI job that compares and summarises baselines | Reusable workflow interface (T-0032) |
 
 ## Where baselines live
