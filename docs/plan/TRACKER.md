@@ -127,8 +127,8 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 
 <!-- problems found along the way; ID F-NNNN -->
 
-- [ ] F-0001 The brief is committed as exported and excluded from the Markdown, spelling and EditorConfig gates rather than edited. With the repo's configs it fails one rule: markdownlint MD040 (a fenced code block without a language, the "Framework repo layout" block, line 393); typos and EditorConfig pass. A fix belongs in the design doc's next export (maintainer, 2026-11-25)
-- [ ] F-0002 The hosted CLA assistant had several outages of 2 to 9 hours in October 2026; a required `license/cla` check with no bypass would block every merge during one (2026-11-25, T-0014)
+- [x] F-0001 The brief was committed as exported and excluded from the Markdown and spelling gates rather than edited. With the repo's configs it failed one rule: markdownlint MD040 (the "Framework repo layout" code block had no language) (maintainer, 2026-11-25) — fixed 2026-11-25: the brief is complete and won't be exported again, so the maintainer asked for the fix; the block is tagged `text` and the brief is no longer excluded from any gate
+- [x] F-0002 The hosted CLA assistant had several outages of 2 to 9 hours in October 2026; a required `license/cla` check with no bypass would block every merge during one (2026-11-25, T-0014) — closed 2026-11-25: the `cla` ruleset's admin bypass covers an outage (T-0014)
 
 - [x] F-0003 The first `lint` run on `main` failed: editorconfig-checker v4's archive holds the binary as `editorconfig-checker`, not `ec-linux-amd64`; the installer's one-match check caught it — fixed 2026-11-25, in the smoke-test pull request
 - [ ] F-0004 Publishing to npm has changed, which matters for M5 (T-0065, T-0066): the first publish of a new package also makes npm create a public `0.0.0-stage` placeholder version (staged publishing, which new packages joined in October 2026), and npm is restricting tokens that bypass 2FA for direct publishing. Release publishing from CI should plan for trusted publishing and staged approval (2026-11-25)
@@ -144,8 +144,8 @@ From the brief's [Open](../design/brief.md#open) table:
 - [ ] Q-0002 Which license covers what Fazon writes into an adopter's repo? Proposal: MIT-0 for all of it. Settled by M0 (T-0034)
 - [ ] Q-0003 Which license does the example repo carry? Proposal: the same permissive license. Settled by M0 (T-0034)
 - [ ] Q-0004 Does the CLA apply to the example repo? Proposal: it takes no outside contributions before the publishing decision. Settled by M0 (T-0034)
-- [ ] Q-0005 Is the API in a spec framework-neutral, or written per framework? Proposal: neutral, mapped by the adapter. Settled by M0 (T-0020)
-- [ ] Q-0006 One spec or several for a multi-part component? Proposal: one spec with named parts. Settled by M0 (T-0020)
+- [ ] Q-0005 Is the API in a spec framework-neutral, or written per framework? Proposal: neutral, mapped by the adapter. Settled by M0 (T-0020) — direction from the maintainer, 2026-11-25: framework-neutral wherever it maps cleanly, with framework-specific extensions for what doesn't, their reason optional; the extension shape is proposed in the T-0020 outline, and the ADR comes with T-0020
+- [x] Q-0006 One spec or several for a multi-part component? Proposal: one spec with named parts. Settled by M0 (T-0020) — answered 2026-11-25, from a worked Tabs example of both options: one spec with named parts; the ADR comes with T-0020
 - [ ] Q-0007 Which part of the token format does the build support? Proposal: the subset the build tool handles today. Settled by M0 (T-0033)
 - [ ] Q-0008 Is the list of 15 components right? Proposal: the list under Milestones. Settled by M0
 - [ ] Q-0009 Are baselines kept in git or in Git LFS? Proposal: in git. Settled by M1

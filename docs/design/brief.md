@@ -390,7 +390,7 @@ The rules for subscription logins are on the [Claude Code legal and compliance p
 
 ### Framework repo layout
 
-```
+```text
 packages/cli/           commands and the harness entry point
 packages/core/          loop, run records, spec schema, checks, judge
 packages/adapter-vue/   the Vue adapter

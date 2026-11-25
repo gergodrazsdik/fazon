@@ -1,7 +1,7 @@
 # typos configuration (https://github.com/crate-ci/typos)
 [files]
-# Upstream texts kept verbatim, and the brief, which is exported and never edited to pass a check.
-extend-exclude = ["LICENSE", "CODE_OF_CONDUCT.md", "CLA.md", "docs/design/brief.md"]
+# Upstream texts kept verbatim.
+extend-exclude = ["LICENSE", "CODE_OF_CONDUCT.md", "CLA.md"]
 
 [default.extend-words]
 # Project vocabulary that is not a typo.
