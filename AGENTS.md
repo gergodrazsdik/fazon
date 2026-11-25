@@ -24,13 +24,13 @@ AGENTS.md CLAUDE.md README.md LICENSE CLA.md CHANGELOG.md
 CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md SUPPORT.md
 justfile  local.just.example  lefthook.yml  .editorconfig  lint configs
 .claude/settings.json    committed Claude Code sandbox and deny rules
-.github/                 workflows/lint.yml, rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
+.github/                 workflows/ (lint.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
 docs/design/brief.md     the design brief (exported; never edited by agents)
 docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker
 docs/spec/               the M0 documents and their index
 docs/dev-setup.md        prerequisites and local setup
-scripts/                 with-tool.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh
+scripts/                 with-tool.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh
 ```
 
 Directories arrive with the milestone that first needs them (`packages/`, `plugin/`, `verifier/` from M1; see the brief's "Framework repo layout"). Keep this tree current when you add top-level folders.
@@ -65,8 +65,10 @@ Use `just` (`just --list`):
 | `just hooks` | Install the lefthook git hooks. |
 | `just lint` | Every linter the `lint` workflow runs: Markdown, YAML, actionlint, zizmor, pinact, shellcheck, typos, EditorConfig, gitleaks. |
 | `just pin` | Pin workflow actions to full commit SHAs. |
+| `just tool-updates` | Which linter versions pinned outside Dependabot's reach have newer releases, and when each is due (7-day cooldown). Read-only. |
 | `just claude` | Start Claude Code in this repo. |
 | `just github-settings <repo>` / `just github-settings-check <repo>` | Maintainer only. Apply or check the repository settings and rulesets. |
+| `just cla-gist-check` | Check that the CLA assistant's Gist is identical to `CLA.md`. After a pull request changes `CLA.md`, the maintainer updates the Gist once it is merged. |
 
 Run `just lint` before every commit. The hooks run the same checks on staged files plus gitleaks and the Conventional Commits header. `build`, `test` and `verify` arrive with the code.
 
