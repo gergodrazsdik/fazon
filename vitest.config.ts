@@ -14,5 +14,7 @@ export default defineConfig({
   },
   test: {
     include: ["packages/*/src/**/*.test.ts"],
+    // @fazon/core reads the JSON Schemas from its dist/schemas/; this copies them from docs/spec/schemas/.
+    globalSetup: ["packages/core/scripts/copy-schemas.ts"],
   },
 });

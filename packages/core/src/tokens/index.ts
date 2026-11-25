@@ -38,7 +38,7 @@ export type {
   TokenFile,
   TokenFileSource,
   TokenFinding,
-  TokenRule,
+  TokenRuleId,
   TokenSet,
   TokenType,
 } from "./types.js";
