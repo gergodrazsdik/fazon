@@ -55,7 +55,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [x] T-0020 Spec format and its JSON Schema, including fixtures, multi-part components and exemptions (Q-0005, Q-0006) — 2026-11-25: format version 0, with valid and invalid examples checked by `just lint` ([ADR 0005](../adr/0005-spec-format.md)), [#8](https://github.com/gergodrazsdik/fazon/pull/8)
 - [x] T-0021 Story matrix rules, including the icon set that spec fixtures draw from — 2026-11-25: version 0, with the story manifest schema and the example specs' manifests ([ADR 0006](../adr/0006-story-matrix.md)), [#10](https://github.com/gergodrazsdik/fazon/pull/10)
 - [x] T-0022 Check catalogue, with one rule sheet per check — 2026-11-25: version 0, with HTML fixtures for the rendered checks ([ADR 0007](../adr/0007-check-catalogue.md)), [#11](https://github.com/gergodrazsdik/fazon/pull/11)
-- [x] T-0023 Baseline lifecycle — 2026-11-25: version 0, with the baselines record's schema ([ADR 0008](../adr/0008-baseline-lifecycle.md))
+- [x] T-0023 Baseline lifecycle — 2026-11-25: version 0, with the baselines record's schema ([ADR 0008](../adr/0008-baseline-lifecycle.md)), [#13](https://github.com/gergodrazsdik/fazon/pull/13)
 - [ ] T-0024 Agent permission model
 - [ ] T-0025 Loop and caps: defaults, enforcement, and what an iteration is
 - [ ] T-0026 Judge: rubric, image batching and the CI cost cap
