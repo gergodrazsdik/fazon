@@ -4,15 +4,14 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0084, F-0004, Q-0017.
+Next free IDs: T-0084, F-0005, Q-0017.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. The maintainer publishes the placeholder package that reserves the npm name `fazon` (T-0082)
-2. Contributor agreement: the legal review, then the CLA assistant, before any outside pull request is merged (T-0010, T-0011)
-3. M0: the spec format and its JSON Schema first, as most other documents build on it (T-0020), then the story matrix rules (T-0021) and the check catalogue (T-0022)
+1. Contributor agreement: the legal review, then the CLA assistant, before any outside pull request is merged (T-0010, T-0011)
+2. M0: the spec format and its JSON Schema first, as most other documents build on it (T-0020), then the story matrix rules (T-0021) and the check catalogue (T-0022)
 
 ## Phase 0: Bootstrap
 
@@ -28,7 +27,7 @@ Next free IDs: T-0084, F-0004, Q-0017.
 - [x] T-0008 Contributor agreement text: Harmony HA-CLA-I 1.0 with outbound Option Five in `CLA.md` ([ADR 0002](../adr/0002-contributor-license-agreement.md)) — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
 - [x] T-0009 The maintainer merges the smoke-test pull request with "Rebase and merge", to confirm the relaxed rules work (maintainer) — 2026-11-25, [#1](https://github.com/gergodrazsdik/fazon/pull/1): the rebase merge went through with no required signatures; GitHub rewrote the commits, so they are unsigned on `main`
 - [ ] T-0015 CI tool pins: the linter versions in `scripts/install-ci-tools.sh` and `.github/workflows/lint.yml` are outside Dependabot's reach; bump them together with the local toolchain (`just doctor`), with a 7-day cooldown like Dependabot's
-- [!] T-0082 Reserve the npm name `fazon` with a placeholder package, version `0.0.0`, no code ([ADR 0003](../adr/0003-bootstrap-answers.md)); the maintainer publishes it with their own npm account (steps in the pull request)
+- [x] T-0082 Reserve the npm name `fazon` with a placeholder package, version `0.0.0`, no code ([ADR 0003](../adr/0003-bootstrap-answers.md)); the maintainer publishes it with their own npm account (steps in the pull request) — 2026-11-25: `fazon@0.0.0` is `latest` on npm, published by the maintainer (F-0004)
 
 ### Contributor agreement (before the first outside contribution)
 
@@ -121,6 +120,7 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 - [ ] F-0002 The hosted CLA assistant had several outages of 2 to 9 hours in October 2026; a required `license/cla` check with no bypass would block every merge during one (2026-11-25, T-0014)
 
 - [x] F-0003 The first `lint` run on `main` failed: editorconfig-checker v4's archive holds the binary as `editorconfig-checker`, not `ec-linux-amd64`; the installer's one-match check caught it — fixed 2026-11-25, in the smoke-test pull request
+- [ ] F-0004 Publishing to npm has changed, which matters for M5 (T-0065, T-0066): the first publish of a new package also makes npm create a public `0.0.0-stage` placeholder version (staged publishing, which new packages joined in October 2026), and npm is restricting tokens that bypass 2FA for direct publishing. Release publishing from CI should plan for trusted publishing and staged approval (2026-11-25)
 
 ## Open questions
 
