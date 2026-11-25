@@ -7,7 +7,10 @@ import type { TokenDefinition, TokenFile, TokenFileSource, TokenFinding, TokenSe
 /** The schemas a token set is validated against: docs/spec/schemas/<name>.schema.json. */
 export type TokenSchemaName = "tokens" | "token-resolver";
 
-/** Reads a text file; resolves to undefined when the file doesn't exist. */
+/**
+ * Reads a text file; resolves to undefined when the file doesn't exist, and rejects when it can't
+ * be read. `resolveTokenSet` reports both as TOKEN-001.
+ */
 export type ReadTextFile = (file: string) => Promise<string | undefined>;
 
 /** Validates a parsed file against a schema and returns TOKEN-001 findings. */
@@ -64,11 +67,8 @@ export async function resolveTokenSet(
     findings.push({ rule: "TOKEN-001", path, message, file });
   };
 
-  const resolverText = await read(resolverFile);
-  if (resolverText === undefined) {
-    problem("The resolver document does not exist.", resolverFile);
-    return { tokenSet: undefined, findings };
-  }
+  const resolverText = await readOrReport(read, resolverFile, "The resolver document", problem);
+  if (resolverText === undefined) return { tokenSet: undefined, findings };
   const resolver = parseJson(resolverText, resolverFile, problem);
   if (resolver === undefined) return { tokenSet: undefined, findings };
   findings.push(...(await validate("token-resolver", resolver, resolverFile)));
@@ -97,6 +97,19 @@ export async function resolveTokenSet(
 }
 
 type Problem = (message: string, file: string, path?: string) => void;
+
+/** Reads a file, reporting a missing or unreadable one as TOKEN-001. */
+async function readOrReport(read: ReadTextFile, file: string, what: string, problem: Problem) {
+  let text: string | undefined;
+  try {
+    text = await read(file);
+  } catch (error) {
+    problem(`${what} can't be read: ${error instanceof Error ? error.message : String(error)}`, file);
+    return undefined;
+  }
+  if (text === undefined) problem(`${what} does not exist.`, file);
+  return text;
+}
 
 function parseJson(text: string, file: string, problem: Problem): unknown {
   try {
@@ -177,11 +190,8 @@ async function readTokenFile(
   findings: TokenFinding[],
   problem: Problem,
 ): Promise<{ text: string; tokens: TokenDefinition[] } | undefined> {
-  const text = await read(file);
-  if (text === undefined) {
-    problem("The token file does not exist.", file);
-    return undefined;
-  }
+  const text = await readOrReport(read, file, "The token file", problem);
+  if (text === undefined) return undefined;
   const data = parseJson(text, file, problem);
   if (data === undefined) return undefined;
   findings.push(...(await validate("tokens", data, file)));

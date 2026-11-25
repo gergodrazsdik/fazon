@@ -70,7 +70,11 @@ It's overwritten when the component is regenerated; git keeps its history. It na
 Hashes are SHA-256, written `sha256:<hex>`:
 
 - **A file** (the spec, the conventions doc, the config): the hash of its bytes, with line endings normalised to LF.
-- **The token set:** the hash of a text with one line per file, `<path> <file hash>`, for the resolver document and then each token file in the resolver's order, with paths relative to the resolver document.
+- **The token set:** the hash of a text with one line per file, `<path> <file hash>`, every line ending in LF, the last one too:
+  - the resolver document first, then each token file in the order the resolver names it: the sets' sources in `resolutionOrder`, then the theme contexts' sources, the contexts in document order;
+  - a file named more than once is listed once, where it first appears;
+  - paths are relative to the resolver document, whose own path is its file name;
+  - a file hash is the hash of the file's UTF-8 text with line endings normalised to LF.
 - **The approved API:** the hash of a canonical JSON form ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)) of the spec's API fields: `props`, `events`, `slots`, `methods`, `forward`, `form`, `parts` without their `states`, `produce` and `a11y`, and `extensions`.
 
 ## Calibration records

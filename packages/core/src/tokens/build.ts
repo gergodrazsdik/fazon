@@ -67,10 +67,12 @@ const filteredReferencesWarning = "filtered out token references were found";
 const filteredReferencesList = "Here are the references that are used but not defined in the file:";
 
 /**
- * Builds the token set: Style Dictionary once per theme, assembled into one CSS file with the
- * default theme in `:root` and each other theme's role tokens under `[data-theme="<theme>"]`, plus
- * the index of every theme's custom properties. Refuses a set that breaks a TOKEN rule.
- * Themes are built one after another: Style Dictionary keeps its messages in module state.
+ * Builds the token set: Style Dictionary once per theme, assembled into one CSS file. `:root` holds
+ * every raw token, every theme-independent role and the default theme's roles; then each theme,
+ * the default first, gets a `[data-theme="<theme>"]` block with its own role tokens, so a subtree
+ * can switch to any theme. Also returns the index of every theme's custom properties. Refuses a set
+ * that breaks a TOKEN rule. Themes are built one after another: Style Dictionary keeps its
+ * messages in module state.
  */
 export async function buildTokens(tokenSet: TokenSet, options: BuildTokensOptions = {}): Promise<TokenBuild> {
   const prefix = options.prefix ?? "";
@@ -83,16 +85,8 @@ export async function buildTokens(tokenSet: TokenSet, options: BuildTokensOption
   const warnings: string[] = [];
   const byTheme = new Map<string, ReadonlyMap<string, IndexedToken>>();
   for (const theme of [tokenSet.defaultTheme, ...others]) {
-    const own =
-      theme === tokenSet.defaultTheme
-        ? undefined
-        : new Set(
-            filesOfTheme(tokenSet, theme)
-              .flatMap((f) => (f.source.kind === "theme" ? f.tokens : []))
-              .map((t) => t.path),
-          );
-    const built = await buildTheme(tokenSet, theme, prefix, own);
-    blocks.push(built.css);
+    const built = await buildTheme(tokenSet, theme, prefix, theme === tokenSet.defaultTheme);
+    blocks.push(...built.blocks);
     warnings.push(...built.warnings);
     byTheme.set(theme, built.index);
   }
@@ -122,23 +116,31 @@ export async function indexTokens(tokenSet: TokenSet, options: BuildTokensOption
 }
 
 interface ThemeBuild {
-  css: string;
+  /** The default theme's `:root` block and its theme block, or another theme's block. */
+  blocks: string[];
   warnings: string[];
   index: Map<string, IndexedToken>;
 }
 
 /**
- * Runs Style Dictionary on one theme's merged tokens. `only` filters the CSS block to a theme
- * context's own tokens; the dictionary, and so the index, keeps every token.
+ * Runs Style Dictionary on one theme's merged tokens and formats its CSS blocks: for the default
+ * theme, `:root` with every token; for every theme, a block filtered to its context's own tokens.
+ * The dictionary, and so the index, keeps every token.
  */
-async function buildTheme(
-  tokenSet: TokenSet,
-  theme: string,
-  prefix: string,
-  only: ReadonlySet<string> | undefined,
-): Promise<ThemeBuild> {
+async function buildTheme(tokenSet: TokenSet, theme: string, prefix: string, isDefault: boolean): Promise<ThemeBuild> {
   const tokens = tokensOfTheme(tokenSet, theme);
-  const selector = only === undefined ? ":root" : `[data-theme="${theme}"]`;
+  const own = new Set(
+    filesOfTheme(tokenSet, theme)
+      .flatMap((f) => (f.source.kind === "theme" ? f.tokens : []))
+      .map((t) => t.path),
+  );
+  const block = (selector: string, only?: ReadonlySet<string>) => ({
+    destination: "tokens.css",
+    format: "css/variables",
+    emitEmptyFiles: true,
+    options: { outputReferences: true, showFileHeader: false, selector },
+    ...(only === undefined ? {} : { filter: (token: TransformedToken) => only.has(token.path.join(".")) }),
+  });
   const sd = new StyleDictionary(
     {
       tokens: toTree(tokens.values()),
@@ -151,15 +153,7 @@ async function buildTheme(
           prefix,
           // The format's warnings come back in its logs (formatFile prints nothing).
           log: { warnings: "warn", verbosity: "verbose" },
-          files: [
-            {
-              destination: "tokens.css",
-              format: "css/variables",
-              emitEmptyFiles: true,
-              options: { outputReferences: true, showFileHeader: false, selector },
-              ...(only === undefined ? {} : { filter: (token: TransformedToken) => only.has(token.path.join(".")) }),
-            },
-          ],
+          files: [...(isDefault ? [block(":root")] : []), block(`[data-theme="${theme}"]`, own)],
         },
       },
     },
@@ -168,15 +162,18 @@ async function buildTheme(
   await sd.hasInitialized;
   const platform = sd.getPlatformConfig("css");
   const dictionary = await sd.getPlatformTokens("css");
-  const file = platform.files?.[0];
-  if (file === undefined) throw new Error("Style Dictionary lost the platform's file.");
-  const { output, logs } = await sd.formatFile(file, platform, dictionary);
-  if (typeof output !== "string") throw new Error(`Style Dictionary built no CSS for the theme ${theme}.`);
-
-  const expected = only === undefined ? new Set<string>() : referencesOutside(tokens, only);
-  const warnings = logs.warning
-    .map((w) => stripVTControlCharacters(w))
-    .filter((w) => !isExpectedFilterWarning(w, expected));
+  const blocks: string[] = [];
+  const warnings: string[] = [];
+  for (const file of platform.files ?? []) {
+    const { output, logs } = await sd.formatFile(file, platform, dictionary);
+    if (typeof output !== "string") throw new Error(`Style Dictionary built no CSS for the theme ${theme}.`);
+    blocks.push(output);
+    const expected = file.filter === undefined ? new Set<string>() : referencesOutside(tokens, own);
+    warnings.push(
+      ...logs.warning.map((w) => stripVTControlCharacters(w)).filter((w) => !isExpectedFilterWarning(w, expected)),
+    );
+  }
+  if (blocks.length !== (isDefault ? 2 : 1)) throw new Error("Style Dictionary lost the platform's files.");
 
   const index = new Map<string, IndexedToken>();
   for (const transformed of dictionary.allTokens) {
@@ -197,7 +194,7 @@ async function buildTheme(
       resolvedValue: typeof value === "string" ? value : JSON.stringify(value),
     });
   }
-  return { css: output, warnings, index };
+  return { blocks, warnings, index };
 }
 
 /** The tokens a theme block references without containing them; they are in `:root`. */

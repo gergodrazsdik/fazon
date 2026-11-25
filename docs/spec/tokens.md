@@ -99,15 +99,21 @@ The prefix keeps a library's properties apart from an app's own. It is lowercase
   --fz-color-action-primary: var(--fz-color-blue-600);
 }
 
+[data-theme="light"] {
+  /* every theme, the default first: only its role tokens */
+  --fz-color-action-primary: var(--fz-color-blue-600);
+}
+
 [data-theme="dark"] {
-  /* each other theme: only its role tokens */
   --fz-color-action-primary: var(--fz-color-blue-400);
 }
 ```
 
+- **Blocks:** `:root` holds every raw token, every theme-independent role token and the default theme's role tokens. Then every theme has a `[data-theme="<theme>"]` block with only its own role tokens: the default theme first, then the others in the order of the theme modifier's contexts.
+- **Stable output:** the file starts with a comment saying that `fazon sync` generated it and that it must not be edited. It holds no timestamp or path, so the same token set and prefix always build the same file.
 - **References stay references:** a role token's property is `var(...)` of the token it references, so a theme only re-points roles, and the `tokens` check can follow a value to its token.
 - **Units:** dimensions keep their unit, durations are written in seconds, colours as hex or `rgba()`, cubic Béziers as `cubic-bezier()`, and font families as a list.
-- **Selecting a theme:** `data-theme="<theme>"` on the root element or any ancestor; without it, the default theme applies. The build doesn't follow `prefers-color-scheme`. An app that wants to sets the attribute itself. The verifier sets it on the root element.
+- **Selecting a theme:** `data-theme="<theme>"` on the root element or any ancestor; without it, the default theme applies. A subtree can switch either way: `data-theme="light"` inside a `data-theme="dark"` ancestor applies the light theme again. The build doesn't follow `prefers-color-scheme`. An app that wants to sets the attribute itself. The verifier sets it on the root element.
 
 How the library's package ships the file is decided in M1 (Q-0011).
 
@@ -138,9 +144,9 @@ A run records the token set's hash ([records](records.md#hashes)): the hash of t
 
 | Rule | What must hold |
 |---|---|
-| TOKEN-001 | The resolver document is valid against its [schema](schemas/token-resolver.schema.json), and every file it names exists and is valid against the [token file schema](schemas/tokens.schema.json). |
+| TOKEN-001 | The resolver document is valid against its [schema](schemas/token-resolver.schema.json), and every file it names exists, can be read, is valid JSON and is valid against the [token file schema](schemas/tokens.schema.json). The theme modifier's `default` is one of its contexts; `resolutionOrder` names `#/modifiers/theme` last and only sets that exist; every `$ref` to a file is relative and contains no `..`. |
 | TOKEN-002 | Every reference resolves, to a token of the same `$type`, without a cycle. A shadow layer's references resolve to a colour or a dimension. |
-| TOKEN-003 | A raw token's value is no single reference; a role token's value is one. A raw token references only raw tokens. |
-| TOKEN-004 | A path is defined once: in one set, or in every theme context. Theme contexts define role tokens only, and all of them the same ones. |
-| TOKEN-005 | The role tokens of the [base styles](#base-styles) exist. |
+| TOKEN-003 | A token's value is a literal or exactly one reference, never a reference mixed with other text. A raw token's composite value, such as a shadow layer's colour, references raw tokens only. |
+| TOKEN-004 | A path is defined once: in one set, or in every theme context. Theme contexts define role tokens only, and all of them the same ones. No path is a token in one place and a group in another. |
+| TOKEN-005 | The six tokens of the [base styles](#base-styles) exist in every theme, and each is a role token. |
 | TOKEN-006 | No two tokens have the same custom property name. |

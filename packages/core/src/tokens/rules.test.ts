@@ -128,6 +128,18 @@ describe("TOKEN-001", () => {
     ]);
   });
 
+  it("reports a token file that can't be read", async () => {
+    const files = minimalFiles();
+    const read = reader(files);
+    const { tokenSet, findings } = await resolveTokenSet("set/tokens.resolver.json", {
+      readFile: (file) => (file.endsWith("roles.json") ? Promise.reject(new Error("EACCES")) : read(file)),
+    });
+    expect(tokenSet).toBeUndefined();
+    expect(findings).toEqual([
+      { rule: "TOKEN-001", path: "", message: "The token file can't be read: EACCES", file: "set/roles.json" },
+    ]);
+  });
+
   it("reports a missing token file and invalid JSON", async () => {
     const { tokenSet, findings } = await resolve((files) => {
       delete files["roles.json"];

@@ -80,19 +80,28 @@ describe("the draft token set", () => {
     expect(second.css).toBe(first.css);
   });
 
-  it("puts every token in :root and only the dark theme's role tokens in its block", async () => {
+  it("puts every token in :root, then each theme's role tokens in its own block, the default first", async () => {
     const tokenSet = await resolveDraft();
     const { css } = await buildTokens(tokenSet, { prefix: "fz" });
+    const names = (paths: Iterable<string>) => [...paths].map((p) => customPropertyName(p, "fz")).sort();
+    const pathsOf = (ref: string) => tokenSet.files.find((f) => f.ref === ref)?.tokens.map((t) => t.path) ?? [];
     const all = new Set(
       tokenSet.files.filter((f) => f.ref !== "themes/dark.json").flatMap((f) => f.tokens.map((t) => t.path)),
     );
-    const dark = tokenSet.files.find((f) => f.ref === "themes/dark.json")?.tokens.map((t) => t.path) ?? [];
+    expect([...css.matchAll(/^(\S.*) \{$/gm)].map((m) => m[1])).toEqual([
+      ":root",
+      '[data-theme="light"]',
+      '[data-theme="dark"]',
+    ]);
     const root = declarations(css, ":root");
-    expect(new Set(root.map(([name]) => name))).toEqual(new Set([...all].map((p) => customPropertyName(p, "fz"))));
+    expect(root.map(([name]) => name).sort()).toEqual(names(all));
+    const lightBlock = declarations(css, '[data-theme="light"]');
+    expect(lightBlock.map(([name]) => name).sort()).toEqual(names(pathsOf("themes/light.json")));
     const darkBlock = declarations(css, '[data-theme="dark"]');
-    expect(darkBlock.map(([name]) => name).sort()).toEqual(dark.map((p) => customPropertyName(p, "fz")).sort());
-    expect(darkBlock).toContainEqual(["--fz-color-surface-base", "var(--fz-color-neutral-950)"]);
+    expect(darkBlock.map(([name]) => name).sort()).toEqual(names(pathsOf("themes/dark.json")));
     expect(root).toContainEqual(["--fz-color-surface-base", "var(--fz-color-neutral-0)"]);
+    expect(lightBlock).toContainEqual(["--fz-color-surface-base", "var(--fz-color-neutral-0)"]);
+    expect(darkBlock).toContainEqual(["--fz-color-surface-base", "var(--fz-color-neutral-950)"]);
     expect(root).toContainEqual(["--fz-duration-100", "0.1s"]);
   });
 
