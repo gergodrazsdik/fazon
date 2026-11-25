@@ -1,5 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-export type { Adapter } from "./adapter.js";
+export {
+  AdapterError,
+  type Adapter,
+  type ComponentFile,
+  type ComponentFiles,
+  type EntryComponent,
+  type EntryInput,
+  type ExtensionSchema,
+  type GeneratedFile,
+  type GenerateInput,
+  type JsonSchema,
+} from "./adapter.js";
 export { formatVersions } from "./versions.js";
 
 export type { Finding } from "./findings.js";
@@ -41,7 +52,14 @@ export {
 } from "./matrix/build.js";
 export { MatrixError } from "./matrix/error.js";
 export { resolveFixture } from "./matrix/fixtures.js";
-export { storybookId, storyExportName, storyName } from "./matrix/names.js";
+export {
+  storybookId,
+  storybookSanitize,
+  storybookStoryNameFromExport,
+  storybookToId,
+  storyExportName,
+  storyName,
+} from "./matrix/names.js";
 export {
   checkManifest,
   manifestRules,
@@ -53,3 +71,16 @@ export {
 } from "./matrix/rules.js";
 
 export * from "./tokens/index.js";
+
+export {
+  generatedDirectory,
+  manifestFileName,
+  provenanceFileName,
+  syncRepository,
+  type FileChange,
+  type FileChangeKind,
+  type PendingComponent,
+  type SyncOptions,
+  type SyncProblem,
+  type SyncResult,
+} from "./sync/sync.js";

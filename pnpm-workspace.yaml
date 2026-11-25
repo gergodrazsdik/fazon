@@ -7,3 +7,8 @@ minimumReleaseAge: 10080
 
 # No dependency runs install scripts unless it's listed here.
 onlyBuiltDependencies: []
+
+# Install scripts pnpm is told not to run, so an install doesn't stop at them: esbuild's (from
+# Storybook) only checks its binary, which arrives in its platform package without a script.
+allowBuilds:
+  esbuild: false

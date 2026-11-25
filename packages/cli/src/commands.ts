@@ -3,6 +3,7 @@ import type { ParseArgsOptionsConfig } from "node:util";
 import type { Context, Invocation } from "./commands/context.js";
 import { doctor } from "./commands/doctor.js";
 import { specCheck } from "./commands/spec-check.js";
+import { sync } from "./commands/sync.js";
 import type { Outcome } from "./outcome.js";
 
 /** One command of docs/spec/cli.md. */
@@ -125,8 +126,10 @@ export const commands: readonly Command[] = [
     name: "sync",
     group: "Repository",
     usage: "fazon sync [--check]",
-    summary: "Regenerate the generated files and the token CSS.",
-    arrives: "M1 steps 4 and 5",
+    summary: "Regenerate the generated files, the entry file's exports and the token CSS; --check only compares.",
+    options: { check: { type: "boolean" } },
+    maxPositionals: 0,
+    run: sync,
   },
   {
     name: "runs",

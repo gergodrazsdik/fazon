@@ -1,0 +1,431 @@
+{
+  "fazon": 0,
+  "component": "Tabs",
+  "spec": "specs/tabs.md",
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "viewport": {
+    "width": 1024,
+    "height": 768,
+    "scale": 2
+  },
+  "fixtures": {
+    "three": {
+      "props": {
+        "value": "overview"
+      },
+      "parts": {
+        "List": [
+          {
+            "props": {
+              "label": "Project sections"
+            }
+          }
+        ],
+        "Trigger": [
+          {
+            "props": {
+              "value": "overview"
+            },
+            "slots": {
+              "default": "Overview"
+            }
+          },
+          {
+            "props": {
+              "value": "activity"
+            },
+            "slots": {
+              "default": "Activity"
+            }
+          },
+          {
+            "props": {
+              "value": "settings"
+            },
+            "slots": {
+              "default": "Settings"
+            }
+          }
+        ],
+        "Panel": [
+          {
+            "props": {
+              "value": "overview"
+            },
+            "slots": {
+              "default": "The project's summary and its latest changes."
+            }
+          },
+          {
+            "props": {
+              "value": "activity"
+            },
+            "slots": {
+              "default": "Every change to the project, newest first."
+            }
+          },
+          {
+            "props": {
+              "value": "settings"
+            },
+            "slots": {
+              "default": "Name, visibility and members of the project."
+            }
+          }
+        ]
+      }
+    },
+    "long-labels": {
+      "props": {
+        "value": "overview"
+      },
+      "parts": {
+        "List": [
+          {
+            "props": {
+              "label": "Project sections"
+            }
+          }
+        ],
+        "Trigger": [
+          {
+            "props": {
+              "value": "overview"
+            },
+            "slots": {
+              "default": "Overview and summary of recent work"
+            }
+          },
+          {
+            "props": {
+              "value": "activity"
+            },
+            "slots": {
+              "default": "Activity across every member"
+            }
+          },
+          {
+            "props": {
+              "value": "settings"
+            },
+            "slots": {
+              "default": "Settings, members and integrations"
+            }
+          }
+        ],
+        "Panel": [
+          {
+            "props": {
+              "value": "overview"
+            },
+            "slots": {
+              "default": "The project's summary and its latest changes."
+            }
+          },
+          {
+            "props": {
+              "value": "activity"
+            },
+            "slots": {
+              "default": "Every change to the project, newest first."
+            }
+          },
+          {
+            "props": {
+              "value": "settings"
+            },
+            "slots": {
+              "default": "Name, visibility and members of the project."
+            }
+          }
+        ]
+      }
+    },
+    "one-disabled": {
+      "props": {
+        "value": "overview"
+      },
+      "parts": {
+        "List": [
+          {
+            "props": {
+              "label": "Project sections"
+            }
+          }
+        ],
+        "Trigger": [
+          {
+            "props": {
+              "value": "overview"
+            },
+            "slots": {
+              "default": "Overview"
+            }
+          },
+          {
+            "props": {
+              "value": "activity",
+              "disabled": true
+            },
+            "slots": {
+              "default": "Activity"
+            }
+          },
+          {
+            "props": {
+              "value": "settings"
+            },
+            "slots": {
+              "default": "Settings"
+            }
+          }
+        ],
+        "Panel": [
+          {
+            "props": {
+              "value": "overview"
+            },
+            "slots": {
+              "default": "The project's summary and its latest changes."
+            }
+          },
+          {
+            "props": {
+              "value": "activity"
+            },
+            "slots": {
+              "default": "Every change to the project, newest first."
+            }
+          },
+          {
+            "props": {
+              "value": "settings"
+            },
+            "slots": {
+              "default": "Name, visibility and members of the project."
+            }
+          }
+        ]
+      }
+    }
+  },
+  "stories": [
+    {
+      "name": "tabs--three--orientation-horizontal--default",
+      "storybookId": "tabs--three-orientation-horizontal-default",
+      "grid": "axes",
+      "fixture": "three",
+      "axes": {
+        "orientation": "horizontal"
+      },
+      "state": {
+        "name": "default"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "orientation": "horizontal"
+          }
+        }
+      ],
+      "judge": [
+        "light",
+        "dark"
+      ]
+    },
+    {
+      "name": "tabs--three--orientation-vertical--default",
+      "storybookId": "tabs--three-orientation-vertical-default",
+      "grid": "axes",
+      "fixture": "three",
+      "axes": {
+        "orientation": "vertical"
+      },
+      "state": {
+        "name": "default"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "orientation": "vertical"
+          }
+        }
+      ],
+      "judge": [
+        "light",
+        "dark"
+      ]
+    },
+    {
+      "name": "tabs--three--orientation-horizontal--trigger-hover",
+      "storybookId": "tabs--three-orientation-horizontal-trigger-hover",
+      "grid": "states",
+      "fixture": "three",
+      "axes": {
+        "orientation": "horizontal"
+      },
+      "state": {
+        "name": "hover",
+        "part": "Trigger"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "orientation": "horizontal"
+          }
+        }
+      ],
+      "input": [
+        {
+          "action": "hover",
+          "target": "Trigger[default]"
+        }
+      ],
+      "judge": [
+        "light"
+      ]
+    },
+    {
+      "name": "tabs--three--orientation-vertical--trigger-hover",
+      "storybookId": "tabs--three-orientation-vertical-trigger-hover",
+      "grid": "states",
+      "fixture": "three",
+      "axes": {
+        "orientation": "vertical"
+      },
+      "state": {
+        "name": "hover",
+        "part": "Trigger"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "orientation": "vertical"
+          }
+        }
+      ],
+      "input": [
+        {
+          "action": "hover",
+          "target": "Trigger[default]"
+        }
+      ],
+      "judge": [
+        "light"
+      ]
+    },
+    {
+      "name": "tabs--three--orientation-horizontal--trigger-focus-visible",
+      "storybookId": "tabs--three-orientation-horizontal-trigger-focus-visible",
+      "grid": "states",
+      "fixture": "three",
+      "axes": {
+        "orientation": "horizontal"
+      },
+      "state": {
+        "name": "focus-visible",
+        "part": "Trigger"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "orientation": "horizontal"
+          }
+        }
+      ],
+      "input": [
+        {
+          "action": "focus",
+          "target": "Trigger[default]"
+        }
+      ],
+      "judge": [
+        "light"
+      ]
+    },
+    {
+      "name": "tabs--three--orientation-vertical--trigger-focus-visible",
+      "storybookId": "tabs--three-orientation-vertical-trigger-focus-visible",
+      "grid": "states",
+      "fixture": "three",
+      "axes": {
+        "orientation": "vertical"
+      },
+      "state": {
+        "name": "focus-visible",
+        "part": "Trigger"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "orientation": "vertical"
+          }
+        }
+      ],
+      "input": [
+        {
+          "action": "focus",
+          "target": "Trigger[default]"
+        }
+      ],
+      "judge": [
+        "light"
+      ]
+    },
+    {
+      "name": "tabs--long-labels--orientation-horizontal--default",
+      "storybookId": "tabs--long-labels-orientation-horizontal-default",
+      "grid": "fixtures",
+      "fixture": "long-labels",
+      "axes": {
+        "orientation": "horizontal"
+      },
+      "state": {
+        "name": "default"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "orientation": "horizontal"
+          }
+        }
+      ],
+      "judge": [
+        "light"
+      ]
+    },
+    {
+      "name": "tabs--one-disabled--orientation-horizontal--default",
+      "storybookId": "tabs--one-disabled-orientation-horizontal-default",
+      "grid": "fixtures",
+      "fixture": "one-disabled",
+      "axes": {
+        "orientation": "horizontal"
+      },
+      "state": {
+        "name": "default"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "orientation": "horizontal"
+          }
+        }
+      ],
+      "judge": [
+        "light"
+      ]
+    }
+  ]
+}

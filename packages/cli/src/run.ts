@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { createRequire } from "node:module";
 import { parseArgs, type ParseArgsOptionsConfig } from "node:util";
-import type { Adapter } from "@fazon/core";
-import { vueAdapter } from "@fazon/adapter-vue";
+import { adapters } from "./adapters.js";
 import { commandGroups, commands, findCommand, type Command } from "./commands.js";
 import type { Context, GlobalOptions } from "./commands/context.js";
 import { isSet, systemEnvironment, type Environment } from "./environment.js";
@@ -10,8 +9,6 @@ import { envelope, exitCodes, refused, type ExitCode, type Message, type Outcome
 
 const require = createRequire(import.meta.url);
 const { version } = require("../package.json") as { version: string };
-
-const adapters: readonly Adapter[] = [vueAdapter];
 
 const globalOptions = {
   help: { type: "boolean", short: "h" },

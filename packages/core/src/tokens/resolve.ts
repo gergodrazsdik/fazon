@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { validateFile } from "../validation/validate.js";
 import { isRecord } from "./reference.js";
 import type { TokenDefinition, TokenFile, TokenFileSource, TokenFinding, TokenSet } from "./types.js";
 
@@ -23,7 +24,7 @@ export type ValidateTokenData = (
 export interface ResolveTokenSetOptions {
   /** Reads the resolver document and the token files. Default: the file system, as UTF-8. */
   readonly readFile?: ReadTextFile;
-  /** Schema validation (TOKEN-001). */
+  /** Schema validation (TOKEN-001). Default: the Fazon schemas (`validateTokenData`). */
   readonly validate?: ValidateTokenData;
 }
 
@@ -44,9 +45,17 @@ export const readTextFile: ReadTextFile = async (file) => {
   }
 };
 
-// TODO(step 2): wire the default to core's schema validator (Ajv, docs/spec/schemas/), which reports
-// TOKEN-001 for a resolver document or token file that isn't valid against its schema.
-const noValidation: ValidateTokenData = () => [];
+/**
+ * Validates a resolver document or token file against its schema in docs/spec/schemas/; each place
+ * it breaks the schema is a TOKEN-001 finding about the file, with the JSON path in its message.
+ */
+export const validateTokenData: ValidateTokenData = (schema, data, file) =>
+  validateFile(schema, data, file).map((finding) => ({
+    rule: "TOKEN-001",
+    path: "",
+    message: `${finding.path}: ${finding.message}`,
+    file,
+  }));
 
 const themeRef = "#/modifiers/theme";
 const setRef = /^#\/sets\/(.+)$/;
@@ -61,7 +70,7 @@ export async function resolveTokenSet(
   options: ResolveTokenSetOptions = {},
 ): Promise<ResolveTokenSetResult> {
   const read = options.readFile ?? readTextFile;
-  const validate = options.validate ?? noValidation;
+  const validate = options.validate ?? validateTokenData;
   const findings: TokenFinding[] = [];
   const problem = (message: string, file: string, path = ""): void => {
     findings.push({ rule: "TOKEN-001", path, message, file });
