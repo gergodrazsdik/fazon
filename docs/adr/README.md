@@ -8,6 +8,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 |---|---|---|
 | [0001](0001-baseline.md) | Baseline decisions from the design brief | accepted |
 | [0002](0002-contributor-license-agreement.md) | Contributor License Agreement: Harmony, any outbound license | accepted |
+| [0003](0003-bootstrap-answers.md) | License headers, run-record path, npm name and the agreement's governing law | accepted |
 
 ## Numbering and status
 

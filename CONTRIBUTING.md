@@ -79,6 +79,12 @@ These files are personal and gitignored. Put anything machine-specific or secret
 
 Committed files never contain personal or machine-specific data: no absolute paths, hostnames, usernames, secret-manager entries or credentials. Fazon never ships, stores or proxies credentials; every adopter brings their own.
 
+Every source file starts with the license identifier as a comment, on the first line or right after a shebang:
+
+```text
+SPDX-License-Identifier: GPL-3.0-or-later
+```
+
 ## Workflow approvals
 
 Workflows from outside contributors need the maintainer's approval before they run. That is a GitHub setting for every external contributor, not a judgement on you.
