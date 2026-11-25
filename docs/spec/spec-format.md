@@ -22,7 +22,7 @@ This document defines what a spec may contain and which rules make it valid. The
 
 ## Files
 
-- One spec per component, at `specs/<name>.md` in the consumer repo, where `<name>` is the component name in kebab-case: `Button` is `specs/button.md`, `RadioGroup` is `specs/radio-group.md`.
+- One spec per component, at `specs/<name>.md` in the consumer repo, where `<name>` is the component name in kebab-case: `Button` is `specs/button.md`, `RadioGroup` is `specs/radio-group.md`. A run of capitals is one word, which ends before the capital that starts the next word, and digits stay with the word before them: `HTMLEditor` is `html-editor`, `Heading2` is `heading2`.
 - UTF-8, LF line endings.
 - The file starts with YAML front matter between two `---` lines, followed by the Markdown body.
 - A multi-part component, such as Tabs or Dialog, is one spec with named parts, not one spec per part.

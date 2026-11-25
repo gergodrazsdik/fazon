@@ -37,7 +37,7 @@ fazon verify                        after a token change: what moved
 
 ## Common behaviour
 
-- **Config:** every command except `init` and `doctor` reads and validates `fazon.yaml` and any `fazon.local.yaml` first ([validation](config.md#validation)).
+- **Config:** every command except `init` and `doctor` reads and validates `fazon.yaml` and any `fazon.local.yaml` first ([validation](config.md#validation)). They are read from the current directory; commands don't search the parent directories.
 - **Component names:** a component is named in kebab-case (`button`, `radio-group`), as in its spec's file name.
 - **Output:** human-readable text on standard output by default; warnings and errors on standard error.
 - **`--json`:** every command accepts it. The command then prints one JSON document on standard output, valid against the [CLI output schema](schemas/cli-output.schema.json) ([examples](examples/cli/)): the command, its status and exit code, its messages with hints, and a `result` specific to the command. Each command's result schema arrives with the command's implementation; the fields are listed below.
@@ -87,7 +87,7 @@ It refuses (2) when `fazon.yaml` exists, and never overwrites a file. `--dry-run
 fazon doctor
 ```
 
-Checks the environment: Node.js, a container runtime, the required Claude Code version, whether `ANTHROPIC_API_KEY` is set (without showing it), whether the verifier image is available, and whether the config is valid. Exits 3 when something needed is missing, with install hints. Result: each check and its state.
+Checks the environment: Node.js, a container runtime, the required Claude Code version, whether `ANTHROPIC_API_KEY` is set (without showing it), whether the verifier image is available, and whether the config is valid. It exits 3 when something needed is missing (Node.js, a container runtime), with install hints; 1 when the config is invalid; and 2 when a `fazon.local.yaml` exists in CI. A missing config is only a warning, as `doctor` also runs before `init`, and so are a missing Claude Code and API key, which CI's `verify` job doesn't need. Result: each check and its state.
 
 ### `fazon upgrade`
 
