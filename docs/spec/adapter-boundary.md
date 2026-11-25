@@ -41,7 +41,7 @@ An adapter supplies everything that depends on the framework:
 | **Entry exports** | the components and their parts → the package entry file's exports | `fazon sync` |
 | **Source-check commands** | → the commands for `build`, `lint`, `test` and `package`, run in the verifier | the source checks |
 | **Self-check commands** | a component → the type-check, lint and test commands the agent may run on the host | the agent's permissions |
-| **Storybook setup** | → the framework's Storybook configuration, with the story frame and the theme switch | `fazon init`, the Storybook build |
+| **Storybook setup** | → the framework's Storybook configuration, with the story frame, the theme switch, and the icon set's license notice in the static build ([license terms](licensing.md#lucide)) | `fazon init`, the Storybook build |
 | **Scaffold** | → the library build, type declarations, exports map, lint and test configuration | `fazon init` |
 | **Conventions template** | → a conventions doc to start from | `fazon init` |
 | **Generation skill** | → the skill with the framework's idioms, in the Claude Code plugin | the agent |

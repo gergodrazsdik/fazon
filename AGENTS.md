@@ -23,6 +23,7 @@ If the brief conflicts with an ADR, a spec, these instructions or a request, sto
 AGENTS.md CLAUDE.md README.md LICENSE CLA.md CHANGELOG.md
 CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md SUPPORT.md
 justfile  local.just.example  lefthook.yml  .editorconfig  lint configs
+LICENSES/                MIT-0.txt: the license of template text Fazon writes into other repositories
 .claude/settings.json    committed Claude Code sandbox and deny rules
 .github/                 workflows/ (lint.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
 docs/design/brief.md     the design brief (complete; changes only when the maintainer asks)
@@ -42,7 +43,7 @@ Directories arrive with the milestone that first needs them (`packages/`, `plugi
 - **Never merge a pull request, never enable auto-merge on one, and never create, move or delete a tag.** The maintainer does those.
 - Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `ci:`, `build:`, `test:`…) for commits and pull request titles; a squash merge uses the title as the commit header. Small, logical commits.
 - Write commit messages to a file outside the repo and commit with `git commit -F <file>`. Signing is welcome; if your git config signs, keep it on.
-- Every source file starts with `SPDX-License-Identifier: GPL-3.0-or-later` as a comment, on the first line or after a shebang. Files Fazon writes into an adopter's repository don't carry it ([ADR 0003](docs/adr/0003-bootstrap-answers.md)).
+- Every source file starts with `SPDX-License-Identifier: GPL-3.0-or-later` as a comment, on the first line or after a shebang. Template files, whose text Fazon writes into an adopter's repository, carry `SPDX-License-Identifier: MIT-0` instead, and the files written from them carry no header ([license terms](docs/spec/licensing.md), [ADR 0003](docs/adr/0003-bootstrap-answers.md)).
 - Never bypass a hook (`--no-verify`), never weaken or skip a check, and never relax a lint rule to get a change through. Fix the cause, or raise it.
 - Ask before any GitHub write other than pushing your branch and creating or editing your pull requests: comments, reviews, closing, labels, settings, force pushes outside your own stack.
 

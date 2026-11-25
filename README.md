@@ -20,3 +20,5 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). Outside contributions need a signed [Con
 Fazon is licensed under the GNU General Public License, version 3 or later (SPDX: `GPL-3.0-or-later`). See [LICENSE](LICENSE).
 
 Copyright (C) 2026 Gergő Drazsdik
+
+What Fazon writes into your repository (the files from `fazon init`, scaffolds, generated stories and tests, baselines) is licensed under [MIT-0](LICENSES/MIT-0.txt) and carries no header, so it doesn't bring your repository under the GPL. See the [license terms](docs/spec/licensing.md).

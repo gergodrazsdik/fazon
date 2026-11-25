@@ -52,7 +52,7 @@ The agreement covers only work you own. If your contribution includes material y
 
 - say so in the pull request description: what the material is, where it comes from, who holds the copyright and under which license you received it;
 - keep its copyright and license notices intact;
-- submit it only if its license is compatible with GPL-3.0-or-later.
+- submit it only if its license is compatible with GPL-3.0-or-later, and, for a template that Fazon writes into other repositories, only if it allows MIT-0 terms ([license terms](docs/spec/licensing.md)).
 
 The maintainer decides whether such material can be included.
 
@@ -89,6 +89,8 @@ Every source file starts with the license identifier as a comment, on the first 
 ```text
 SPDX-License-Identifier: GPL-3.0-or-later
 ```
+
+Template files, whose text Fazon writes into other repositories, use `SPDX-License-Identifier: MIT-0` instead, and that line isn't written out. Your contribution to a template is licensed under MIT-0 as well as the GPL ([license terms](docs/spec/licensing.md#what-fazon-writes-into-another-repository)).
 
 ## Workflow approvals
 
