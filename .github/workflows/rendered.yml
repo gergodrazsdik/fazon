@@ -1,0 +1,56 @@
+---
+# Runs the rendered checks' fixture tests inside the verifier image built from the same commit:
+# every page in docs/spec/examples/checks/ and packages/core/src/checks/__fixtures__/ through its
+# own check (`just test-rendered`, scripts/test-rendered.sh). Nothing is pushed.
+name: rendered
+
+on:
+  pull_request:
+    paths:
+      - "packages/core/**"
+      - "verifier/**"
+      - "docs/spec/examples/checks/**"
+      - "docs/spec/schemas/**"
+      - "scripts/test-rendered.sh"
+      - "vitest.rendered.config.ts"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/rendered.yml"
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  LOCAL_TAG: localhost/fazon-verifier:ci
+
+jobs:
+  fixtures:
+    name: rendered-fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      # The exact pnpm version package.json's packageManager names; no third-party setup action.
+      - name: Install pnpm
+        run: npm install -g "pnpm@$(jq -r '.packageManager | sub("^pnpm@"; "")' package.json)"  # zizmor: ignore[adhoc-packages]
+      # On the runner, which is linux/amd64 like the image: the container mounts them read-only.
+      - name: Install the dependencies (lockfile only)
+        run: pnpm install --frozen-lockfile
+      - name: Build the verifier image
+        run: >-
+          docker build --platform linux/amd64 --provenance=false --sbom=false
+          --build-arg "REVISION=$GITHUB_SHA" --tag "$LOCAL_TAG" --file verifier/Containerfile verifier
+      - name: Run the fixtures in the image
+        run: scripts/test-rendered.sh "$LOCAL_TAG"

@@ -13,8 +13,8 @@
     "clean": "tsc --build --clean",
     "test": "vitest run",
     "lint": "eslint .",
-    "format": "prettier --write packages eslint.config.js vitest.config.ts package.json pnpm-workspace.yaml tsconfig.json tsconfig.base.json .prettierrc.json",
-    "format:check": "prettier --check packages eslint.config.js vitest.config.ts package.json pnpm-workspace.yaml tsconfig.json tsconfig.base.json .prettierrc.json"
+    "format": "prettier --write packages eslint.config.js vitest.config.ts vitest.rendered.config.ts package.json pnpm-workspace.yaml tsconfig.json tsconfig.base.json .prettierrc.json",
+    "format:check": "prettier --check packages eslint.config.js vitest.config.ts vitest.rendered.config.ts package.json pnpm-workspace.yaml tsconfig.json tsconfig.base.json .prettierrc.json"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

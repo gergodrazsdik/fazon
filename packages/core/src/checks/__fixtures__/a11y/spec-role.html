@@ -1,0 +1,33 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=a11y expect=spec-role -->
+<!-- fazon-spec: {"name":"Switch","a11y":{"role":"switch","name":"content"}} -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>a11y: a switch rendered with the checkbox role</title>
+    <style>
+      body {
+        margin: 0;
+        background: #ffffff;
+        color: #1c1f25;
+        font-family: system-ui, sans-serif;
+      }
+      [data-fazon-frame] {
+        display: inline-block;
+        padding: 16px;
+      }
+      .switch {
+        display: inline-block;
+        padding: 8px 16px;
+        border: 1px solid #1c1f25;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <div class="switch" role="checkbox" aria-checked="false" tabindex="0" data-part="Switch">Notifications</div>
+    </div>
+  </body>
+</html>

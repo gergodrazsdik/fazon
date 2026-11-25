@@ -1,0 +1,39 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=pass -->
+<!-- fazon-token-rules: [{"use":{"background-color":"color.action.primary","padding":"space.inset.sm"}}] -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokens: role tokens through a component-local property, an icon and a layer</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      /* Important declarations in a layer beat unlayered ones. */
+      @layer base {
+        .button {
+          color: var(--color-text-on-action) !important;
+        }
+      }
+      .button {
+        --_background: var(--color-action-primary);
+        background: var(--_background);
+        padding: var(--space-inset-sm);
+        color: red !important;
+      }
+      .button svg {
+        display: block;
+        width: 16px;
+        height: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <button class="button" type="button" data-part="Button">
+        <svg viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M2 8l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" />
+        </svg>
+      </button>
+    </div>
+  </body>
+</html>

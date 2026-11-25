@@ -1,0 +1,63 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=a11y expect=pass -->
+<!-- fazon-spec: {"name":"Dialog","a11y":{"role":"dialog","name":"part:Title","describedBy":"part:Description","aria":{"aria-modal":"true while open"}},"parts":{"Title":{"a11y":{"role":"heading","name":"content"}},"Close":{"a11y":{"role":"button","name":"prop:label"}}}} -->
+<!-- fazon-props: {"Close":[{"label":"Close"}]} -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>a11y: a dialog whose roles and names come from where its spec says</title>
+    <style>
+      body {
+        margin: 0;
+        background: #ffffff;
+        color: #1c1f25;
+        font-family: system-ui, sans-serif;
+      }
+      [data-fazon-frame] {
+        display: inline-block;
+        padding: 16px;
+      }
+      .dialog {
+        padding: 16px;
+        border: 1px solid #1c1f25;
+        border-radius: 6px;
+      }
+      .dialog h2 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+      .dialog p {
+        margin: 0 0 8px;
+      }
+      .close {
+        min-width: 32px;
+        min-height: 32px;
+        border: 0;
+        border-radius: 6px;
+        background-color: #1f4fd1;
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <div
+        class="dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="title"
+        aria-describedby="description"
+        data-part="Dialog"
+      >
+        <h2 id="title" data-part="Title">Delete the file?</h2>
+        <p id="description" data-part="Description">It can't be restored.</p>
+        <button class="close" type="button" aria-label="Close" data-part="Close">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="2" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=a11y expect=spec-name -->
+<!-- fazon-spec: {"name":"Button","a11y":{"role":"button","name":"content"}} -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>a11y: a button named by aria-label where its spec says by its content</title>
+    <style>
+      body {
+        margin: 0;
+        background: #ffffff;
+        font-family: system-ui, sans-serif;
+      }
+      [data-fazon-frame] {
+        display: inline-block;
+        padding: 16px;
+      }
+      .button {
+        padding: 8px 16px;
+        border: 0;
+        border-radius: 6px;
+        background-color: #1f4fd1;
+        color: #ffffff;
+        font-size: 16px;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <button class="button" type="button" aria-label="Save changes" data-part="Button">Save changes</button>
+    </div>
+  </body>
+</html>

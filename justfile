@@ -85,6 +85,11 @@ build:
 test:
     pnpm test
 
+# Run the rendered checks' fixtures in the verifier image (default: localhost/fazon-verifier:dev, built when missing); needs `just install`
+[group('dev')]
+test-rendered image="":
+    scripts/test-rendered.sh {{ image }}
+
 # Everything CI checks: the linters, the TypeScript lint and format check, the build and the tests
 [group('dev')]
 check: lint lint-ts build test

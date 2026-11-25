@@ -1,0 +1,33 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=layout expect=overflow -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>layout: a label that spills out of its badge</title>
+    <style>
+      body {
+        margin: 0;
+        background: #ffffff;
+        font-family: system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 24px;
+      }
+      [data-fazon-frame] {
+        display: inline-block;
+        padding: 16px;
+        width: 200px;
+      }
+      .badge {
+        display: block;
+        width: 80px;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <span class="badge" data-part="Badge">Twelve unread messages</span>
+    </div>
+  </body>
+</html>
