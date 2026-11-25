@@ -7,6 +7,7 @@ import { format } from "prettier";
 import { apiFile, mapComponent } from "./api.js";
 import { relativeImport, storyFileName, storyFileText } from "./stories.js";
 import { template } from "./template.js";
+import { withOneTrailingNewline } from "./text.js";
 
 /** The API file's name in `generated/`. */
 export const apiFileName = "api.json";
@@ -65,7 +66,7 @@ export async function entryFileText({ file, text, components }: EntryInput): Pro
   const begins = at(begin);
   const ends = at(end);
   if (begins.length === 0 && ends.length === 0) {
-    return `${text.replace(/\n*$/, "\n")}\n${block}`;
+    return `${withOneTrailingNewline(text)}\n${block}`;
   }
   const [first] = begins;
   const [last] = ends;

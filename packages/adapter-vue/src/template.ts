@@ -4,6 +4,7 @@
 // written out (LICENSE-002), and holds named sections: a `#: <name>` line, then the section's text.
 // A section's `{{placeholder}}`s are filled with the adopter's own data, or with other sections.
 import { readFileSync } from "node:fs";
+import { withoutTrailingNewlines } from "./text.js";
 
 const licenseLine = "SPDX-License-Identifier: MIT-0";
 const sectionLine = /^#: ([a-z][a-z-]*)$/;
@@ -47,7 +48,7 @@ export function parseTemplate(name: string, text: string): Template {
       throw new Error(`The template ${name} has text before its first section.`);
     }
   }
-  const texts = new Map([...sections].map(([section, body]) => [section, body.join("\n").replace(/\n+$/, "")]));
+  const texts = new Map([...sections].map(([section, body]) => [section, withoutTrailingNewlines(body.join("\n"))]));
 
   return {
     fill(section, values = {}) {
