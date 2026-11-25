@@ -32,7 +32,7 @@ A component's directory is `<components>/<name>/`, where `<components>` comes fr
 | `<components>/<name>/generated/**`: story files, contract tests, the story manifest | reads | the harness, from the spec |
 | Other components' directories, and any other source file | reads | the agent of that component, or a person |
 | The package entry file | reads | the harness |
-| `specs/`, the tokens file, the conventions doc, the config file | reads | a person; the harness writes a proposed API into a spec during [`fazon propose`](cli.md#fazon-propose) |
+| `specs/`, the token set, the conventions doc, the config file | reads | a person; the harness writes a proposed API into a spec during [`fazon propose`](cli.md#fazon-propose) |
 | `baselines/` | reads | `fazon baseline update`, run by a person |
 | `package.json`, the lockfile, and the lint, TypeScript, Storybook and test configuration | reads | a person |
 | `.github/`, `.claude/`, `.fazon/` | no access | a person; `.fazon/` by the harness |
@@ -106,6 +106,7 @@ The exact keys and flags follow the Claude Code version the harness requires; M2
 
 - **Generated files:** at the start of each run, the harness regenerates the component's `generated/` directory from the spec: the story files and contract tests (written by the adapter) and the story manifest. They are committed with the component.
 - **The package entry file:** when a component is first generated, the harness adds exports for it and its parts.
+- **The token CSS:** `fazon sync` builds it from the token set ([the build](tokens.md#the-build)); the agent reads the role tokens, never this file's raw values.
 - **[Provenance and run records](records.md).**
 
 CI regenerates the generated files from the committed specs and fails when they differ from the committed ones (the `build` check's rule `generated`).

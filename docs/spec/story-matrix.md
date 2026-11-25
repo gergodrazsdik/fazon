@@ -17,7 +17,8 @@ The rules here decide which stories exist and what each one shows. These parts a
 | How the judge's crops are batched | [Judge](judge.md#batching) |
 | The baselines directory, an icon set of the consumer's own | [Config file reference](config.md) |
 | How an adapter writes story files from the manifest | [Adapter boundary](adapter-boundary.md) |
-| The themes, from the token set; the `data-part` and state attribute rule | Token set and conventions doc (T-0033) |
+| The themes, from the token set; the base styles | [Token set](tokens.md) |
+| The `data-part` and state attribute rule, as a convention | [Example library's conventions doc](example-library/conventions.md#parts-and-states) |
 
 ## From spec to screenshots
 
@@ -141,22 +142,22 @@ Two attributes let the verifier find elements and know their state:
 - The component's root element carries `data-part="<Component>"`, and each part's root element carries `data-part="<Part>"`.
 - Every state that isn't a pseudo-state is **reflected**: while an element is in the state, it carries the attribute `data-<state>` (for example `data-selected`, `data-disabled`).
 
-The verifier uses them to find targets, to pick `<Part>[default]`, to know each element's state when it applies token rules and exemptions, and to confirm that a `story: false` state is shown. The rule becomes part of the conventions doc (T-0033), and a check confirms it (MATRIX-004, MATRIX-005). Attributes a headless library sets, such as Reka UI's `data-state`, are unaffected.
+The verifier uses them to find targets, to pick `<Part>[default]`, to know each element's state when it applies token rules and exemptions, and to confirm that a `story: false` state is shown. The rule is part of the [conventions doc](example-library/conventions.md#parts-and-states), and a check confirms it (MATRIX-004, MATRIX-005). Attributes a headless library sets, such as Reka UI's `data-state`, are unaffected.
 
 ## Content
 
 - Stories render fixtures only: the agent doesn't choose what a story shows.
 - **Icons:** the fixture icon set is [Lucide](https://lucide.dev), from the `lucide-static` npm package (ISC license), at a version the framework pins from M1. Icon names in fixtures are Lucide's, such as `check`, `x` or `chevron-down`. A consumer can replace the set with a directory of their own SVG files through the [config file](config.md#keys) (`icons`). An icon name that isn't in the set in use fails SPEC-009.
 - Text is English. Right-to-left layouts are out of scope for version 1.
-- Fonts come from the verifier image.
+- Fonts are those the library bundles in its own styles, such as the example library's Inter; generic families such as `system-ui` come from the verifier image.
 
 ## Rendering
 
 Every rendered check uses the same conditions:
 
 - **Viewport:** 1024 by 768 CSS pixels at a device scale factor of 2. One render serves both the baselines and the judge's 2x crops. A full-viewport capture is 2048 by 1536 pixels, about 4,000 visual tokens.
-- **Frame:** the story renders inside a frame element generated with the story, with 16 px of padding. The frame's content box is as wide as the fixture's `frame.width`, or fits its content when there's none.
-- **Theme:** the verifier selects a theme the way the token build expects, for example `data-theme="dark"` on the document root.
+- **Frame:** the story renders inside a frame element generated with the story, with 16 px of padding and the token set's [base styles](tokens.md#base-styles). The frame's content box is as wide as the fixture's `frame.width`, or fits its content when there's none.
+- **Theme:** the verifier sets `data-theme="<theme>"` on the document's root element ([selecting a theme](tokens.md#the-build)).
 - **Motion:** `prefers-reduced-motion: reduce`. Animations and transitions are finished before the capture, and the text caret is hidden.
 - **Readiness:** before input, the story has rendered and its fonts have loaded. After input, the layout is stable.
 
@@ -168,7 +169,7 @@ Every rendered check uses the same conditions:
 
 ## Themes
 
-Every story renders in every theme of the token set; the first theme is the default.
+Every story renders in every theme of the token set; the `theme` modifier's `default` is the default theme ([themes](tokens.md#themes)).
 
 - The deterministic checks run, and baselines are kept, for every story in every theme.
 - The judge sees every story in the default theme, and the axes and include grids in the other themes. The manifest's `judge` field lists the themes for each story.

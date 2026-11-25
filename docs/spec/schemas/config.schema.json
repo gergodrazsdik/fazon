@@ -24,9 +24,21 @@
         "specs": { "description": "Default `specs`.", "$ref": "#/$defs/path" },
         "components": { "description": "Default `src/components`.", "$ref": "#/$defs/path" },
         "entry": { "description": "The package entry file. Default `src/index.ts`.", "$ref": "#/$defs/path" },
-        "tokens": { "description": "Default `tokens/tokens.json`.", "$ref": "#/$defs/path" },
+        "tokens": { "description": "The token set's resolver document. Default `tokens/tokens.resolver.json`.", "$ref": "#/$defs/path" },
+        "tokensCss": { "description": "The CSS built from the token set. Default `src/tokens.css`.", "$ref": "#/$defs/path" },
         "conventions": { "description": "Default `docs/conventions.md`.", "$ref": "#/$defs/path" },
         "baselines": { "description": "Default `baselines`.", "$ref": "#/$defs/path" }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "prefix": {
+          "description": "The prefix of the token set's custom properties. Default none.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        }
       }
     },
     "icons": {

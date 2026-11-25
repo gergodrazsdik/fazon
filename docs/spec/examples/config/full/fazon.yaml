@@ -9,7 +9,8 @@ paths:
   specs: specs
   components: src/components
   entry: src/index.ts
-  tokens: tokens/tokens.json
+  tokens: tokens/tokens.resolver.json
+  tokensCss: src/tokens.css
   conventions: docs/conventions.md
   baselines: baselines
 
@@ -32,8 +33,11 @@ judge:
   ciBudgetUsd: 3
   repeats: 1
 
-# effort and prices have no entries by default: each model runs at its own default effort,
-# and costs use the framework's price table. For example:
+# tokens, effort and prices have no entries by default: custom properties have no prefix,
+# each model runs at its own default effort, and costs use the framework's price table.
+# For example:
+# tokens:
+#   prefix: fz
 # effort:
 #   judge: high
 # prices:

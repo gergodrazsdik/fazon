@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The token set, version 0: a DTCG 2025.10 resolver and token files in the subset the build supports, raw and role tokens, themes, custom property names with a configurable prefix, the CSS `fazon sync` builds and the story frame's base styles, with schemas; and the example library's drafts: a neutral token set in light and dark with its contrast table, and its conventions doc.
 - The repository: license, contributor agreement, community files, lint tooling and agent instructions. No product code yet.
 - The spec format, version 0: the document, the JSON Schema of the front matter, and valid and invalid example specs, checked by `just lint`.
 - The reusable workflow interface, version 0: how a consumer calls it, inputs, secrets and permissions, the `verify`, `judge` and `comment` jobs, artifacts and summary, with the caller workflow `fazon init` writes.

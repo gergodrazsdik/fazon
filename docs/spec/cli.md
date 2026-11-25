@@ -73,7 +73,7 @@ fazon init [--adapter vue] [--dry-run]
 Sets up a repository to use Fazon. It writes:
 
 - `fazon.yaml`, with `image` set to the digest this CLI version supports;
-- a starter tokens file and a conventions doc (from the adapter);
+- a starter [token set](tokens.md#files) and a conventions doc (from the adapter);
 - an empty `specs/` directory;
 - a short CI workflow that calls the [reusable one](workflow.md#calling-it);
 - `.gitignore` entries for `.fazon/` and `fazon.local.yaml`;
@@ -201,7 +201,7 @@ Writes baselines from the latest qualifying run, and removes orphans, as [writin
 fazon sync [--check]
 ```
 
-Regenerates every component's `generated/` directory (story files, contract tests, story manifest) and the package entry file's exports from the specs. With `--check`, it writes nothing and exits 1 when the committed files differ. CI runs it as the `build` rule `generated`. Result: the files that changed or differ.
+Regenerates every component's `generated/` directory (story files, contract tests, story manifest) and the package entry file's exports from the specs, and builds the token set into its CSS file ([the build](tokens.md#the-build)). It refuses (2) a token set that breaks a [TOKEN rule](tokens.md#rules). With `--check`, it writes nothing and exits 1 when the committed files differ. CI runs it as the `build` rule `generated`. Result: the files that changed or differ.
 
 ### `fazon runs`
 

@@ -4,13 +4,13 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0085, F-0007, Q-0019.
+Next free IDs: T-0086, F-0007, Q-0019.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M0: the conventions doc and token set (T-0033), then the license terms (T-0034); Q-0018 before M1's first package
+1. M0: the license terms (T-0034); Q-0018 before M1's first package
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -65,8 +65,8 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [x] T-0030 CLI reference, covering every command, including `fazon baseline update` ([ADR 0008](../adr/0008-baseline-lifecycle.md)) and reading and pruning `.fazon/` ([ADR 0013](../adr/0013-records.md)); `fazon init` writes `fazon.yaml` and gitignores `fazon.local.yaml` and `.fazon/`, and an upgrade command updates `image` ([ADR 0014](../adr/0014-config.md)) — 2026-11-25: version 0, with the JSON output schema ([ADR 0015](../adr/0015-cli.md)), [#22](https://github.com/gergodrazsdik/fazon/pull/22)
 - [x] T-0031 Adapter boundary, including how the example repo consumes the framework before M5, the source checks' and self-checks' commands, the file patterns allowed in a component's directory, and reading a component's API for the contract tests (Q-0001) — 2026-11-25: version 0 ([ADR 0016](../adr/0016-adapter-boundary.md)), [#23](https://github.com/gergodrazsdik/fazon/pull/23)
 - [x] T-0032 Reusable workflow interface: inputs, secrets and permissions; it compares baselines and lists those a pull request changes, and never writes them ([ADR 0008](../adr/0008-baseline-lifecycle.md)); the judge step's secret, fork skipping and cap ([ADR 0011](../adr/0011-judge.md)); it uploads the report but no transcript ([ADR 0013](../adr/0013-records.md)) — 2026-11-25: version 0, with the caller workflow `init` writes ([ADR 0017](../adr/0017-workflow.md)), [#25](https://github.com/gergodrazsdik/fazon/pull/25)
-- [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples; the conventions doc requires the `data-part` and `data-<state>` attributes ([ADR 0006](../adr/0006-story-matrix.md)); say which tokens are role tokens, how custom properties are named, and the story frame's base styles ([ADR 0007](../adr/0007-check-catalogue.md)) (Q-0007)
-- [ ] T-0034 License terms for generated and scaffolded files, and for the example repo, and Lucide's license notice for the fixture icons (Q-0002, Q-0003, Q-0004)
+- [x] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples; the conventions doc requires the `data-part` and `data-<state>` attributes ([ADR 0006](../adr/0006-story-matrix.md)); say which tokens are role tokens, how custom properties are named, and the story frame's base styles ([ADR 0007](../adr/0007-check-catalogue.md)) (Q-0007) — 2026-11-25: the token set spec, version 0, with token file and resolver schemas, and the example library's drafts ([ADR 0018](../adr/0018-token-set.md)), PR pending
+- [ ] T-0034 License terms for generated and scaffolded files, and for the example repo, and the license notices of Lucide (the fixture icons) and Inter (the example library's font, SIL OFL 1.1, [ADR 0018](../adr/0018-token-set.md)) (Q-0002, Q-0003, Q-0004)
 
 ## Phase 2: Foundation (M1 to M3)
 
@@ -79,6 +79,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [ ] T-0044 Sandbox network allowlist for Playwright and Storybook (browser downloads, registries), and any MCP servers, in `.claude/settings.json`
 - [ ] T-0045 `just build`, `just test` and `just verify` recipes, with the code
 - [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action; the framework's CI pushes pre-release verifier images to GHCR, a lint rule keeps framework code out of the core, and the example repo checks its three pins name one commit ([ADR 0016](../adr/0016-adapter-boundary.md)); the reusable `verify.yml` with its `verify`, `judge` and `comment` jobs ([ADR 0017](../adr/0017-workflow.md)) ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md)) (break down at M1 start)
+- [ ] T-0085 The tokens pipeline: resolve the resolver document, run Style Dictionary once per theme with references kept (its warning about references the dark block filters out is expected), and build `paths.tokensCss` in `fazon sync`; pin Style Dictionary and `@fontsource-variable/inter`; move the drafts in `docs/spec/example-library/` to the example repo ([ADR 0018](../adr/0018-token-set.md))
 - [ ] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md))
 
 ### M2 The loop
@@ -147,7 +148,7 @@ From the brief's [Open](../design/brief.md#open) table:
 - [ ] Q-0004 Does the CLA apply to the example repo? Proposal: it takes no outside contributions before the publishing decision. Settled by M0 (T-0034)
 - [x] Q-0005 Is the API in a spec framework-neutral, or written per framework? Proposal: neutral, mapped by the adapter. Settled by M0 (T-0020) — direction from the maintainer, 2026-11-25: framework-neutral wherever it maps cleanly, with framework-specific extensions for what doesn't, their reason optional; the extension shape is in the spec format ([ADR 0005](../adr/0005-spec-format.md))
 - [x] Q-0006 One spec or several for a multi-part component? Proposal: one spec with named parts. Settled by M0 (T-0020) — answered 2026-11-25, from a worked Tabs example of both options: one spec with named parts ([ADR 0005](../adr/0005-spec-format.md))
-- [ ] Q-0007 Which part of the token format does the build support? Proposal: the subset the build tool handles today. Settled by M0 (T-0033)
+- [x] Q-0007 Which part of the token format does the build support? Proposal: the subset the build tool handles today. Settled by M0 (T-0033) — answered 2026-11-25: what Style Dictionary 5.8.0 built in a trial of the draft set (sRGB colours, `px`/`rem` dimensions, `ms` durations, cubic Béziers, font families and weights, numbers, shadows); the resolver document, which it can't read yet, is resolved by Fazon's pipeline ([ADR 0018](../adr/0018-token-set.md))
 - [ ] Q-0008 Is the list of 15 components right? Proposal: the list under Milestones. Settled by M0
 - [x] Q-0009 Are baselines kept in git or in Git LFS? Proposal: in git. Settled by M1 — answered 2026-11-25: plain git, losslessly optimised ([ADR 0008](../adr/0008-baseline-lifecycle.md))
 - [ ] Q-0010 What is the budget for the measured API runs? Not set. Settled by M2

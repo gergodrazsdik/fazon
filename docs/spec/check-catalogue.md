@@ -16,7 +16,7 @@ The deterministic checks that verify a component, with one rule sheet per check:
 | What the loop does with findings | [Loop and caps](loop-and-caps.md) |
 | How findings are stored | [Run records and provenance](records.md) |
 | The commands an adapter supplies for the source checks, and how it reads a component's API | [Adapter boundary](adapter-boundary.md) |
-| Which tokens are role tokens, their custom property names, the base styles | Token set and conventions doc (T-0033) |
+| Which tokens are role tokens, their custom property names, the base styles | [Token set](tokens.md) |
 
 ## The checks
 
@@ -86,7 +86,7 @@ Component files carry no inline suppressions, such as `eslint-disable`, `styleli
 | Elevation | `box-shadow` |
 | Motion | `transition-duration`, `transition-delay`, `transition-timing-function`, `animation-duration`, `animation-delay`, `animation-timing-function` |
 
-A value is valid when it is a role token's custom property (`var(--color-action-primary)`), a component-local custom property whose value is valid, or one of the **allowed values**: `0` (with any unit), `auto`, `none`, `normal`, `inherit`, `initial`, `unset`, `revert`, `currentColor`, `transparent` and `100%`. Inside `calc()`, `min()`, `max()` and `clamp()`, every operand is a valid value or a unitless number. Positioning (`top`, `left`, `inset`, `transform`), sizing (`width`, `height`) and the inline styles a headless library sets for positioning are out of scope.
+A value is valid when it is a role token's custom property (`var(--color-action-primary)`, with the [prefix](tokens.md#custom-properties) if one is set), a component-local custom property whose value is valid, or one of the **allowed values**: `0` (with any unit), `auto`, `none`, `normal`, `inherit`, `initial`, `unset`, `revert`, `currentColor`, `transparent` and `100%`. Inside `calc()`, `min()`, `max()` and `clamp()`, every operand is a valid value or a unitless number. Positioning (`top`, `left`, `inset`, `transform`), sizing (`width`, `height`) and the inline styles a headless library sets for positioning are out of scope.
 
 ## build
 
@@ -97,7 +97,7 @@ A value is valid when it is a role token's custom property (`var(--color-action-
 | `compile` | The library build fails. |
 | `types` | The type-check reports an error. The type-check configuration is the adapter's, in strict mode; the agent doesn't change it. |
 | `storybook` | The static Storybook build fails. |
-| `generated` | The committed generated files (story files, contract tests, story manifest) differ from what the harness generates from the committed spec ([agent permissions](agent-permissions.md#files-the-harness-maintains)). |
+| `generated` | The committed generated files (story files, contract tests, story manifest, the token CSS) differ from what the harness generates from the committed spec ([agent permissions](agent-permissions.md#files-the-harness-maintains)). |
 
 **Allowed:** nothing; every error and warning is a finding.
 
@@ -232,4 +232,4 @@ Each check has a passing and a failing fixture; the framework's own tests run th
 - Each fixture runs through its own check only.
 - The source checks' fixtures are framework-specific; they arrive with the Vue adapter in M1, as described in each sheet.
 
-The token names in the fixtures are placeholders until the token set (T-0033) fixes them. Two provisional rules hold until then: a role token is one whose value references another token, and a token's custom property is `--` followed by its path joined with `-` (`color.action.primary` is `--color-action-primary`).
+The fixtures' token names come from the example library's [draft token set](example-library/README.md), with no prefix, and their frames set the [base styles](tokens.md#base-styles).

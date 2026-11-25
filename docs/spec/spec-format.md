@@ -18,7 +18,7 @@ This document defines what a spec may contain and which rules make it valid. The
 | Where specs live in a consumer repo | [Config file reference](config.md) |
 | Adapter-wide defaults for the API mapping | [Adapter boundary](adapter-boundary.md) |
 | Each adapter's mapping of the neutral API, and its schema for `extensions` | [Adapter boundary](adapter-boundary.md) |
-| The token names a spec may reference | Token set (T-0033) |
+| The token names a spec may reference | [Token set](tokens.md) |
 
 ## Files
 
@@ -36,7 +36,7 @@ Every member of the API is written in long form, as a mapping, even when it only
 | Component, part | PascalCase | `Button`, `Trigger` |
 | Prop, event, slot, method, parameter | camelCase | `variant`, `asChild`, `default` |
 | Enum value, state, fixture, check, rule, adapter ID | kebab-case | `focus-visible`, `long-labels`, `web-components` |
-| Token | dotted path, as in the tokens file | `color.action.primary` |
+| Token | dotted path, as in the [token set](tokens.md) | `color.action.primary` |
 
 ### Top-level fields
 
@@ -196,7 +196,7 @@ A condition (`when`) is `props` (prop values that must hold) and `state` (a stat
 
 The token conformance check uses the rules for each story: for a property, the rule with the most specific matching condition sets the token the computed value must match. A property no rule covers must still match some role token, as for every component.
 
-Specs name role tokens only, never raw tokens. The token names in the examples are placeholders until the token set is drafted (T-0033).
+Specs name role tokens only, never raw tokens. The examples use role tokens of the example library's [draft token set](example-library/README.md).
 
 ### Exemptions
 
