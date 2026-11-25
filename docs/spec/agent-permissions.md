@@ -11,7 +11,7 @@ What the agent may read, write and run while it generates a component, what the 
 |---|---|
 | Iterations, caps and what ends a run | [Loop and caps](loop-and-caps.md) |
 | How hand edits and violations are recorded | [Run records and provenance](records.md) |
-| The components directory and other paths | Config file reference (T-0029) |
+| The components directory and other paths | [Config file reference](config.md) |
 | The adapter's file patterns and self-check commands | Adapter boundary (T-0031) |
 
 ## How it's enforced

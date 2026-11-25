@@ -22,8 +22,9 @@ What you need to work on Fazon, and how to check it. Fazon is in its specificati
 | gitleaks | 8.30 | <https://github.com/gitleaks/gitleaks#installing> |
 | yq (mikefarah) | 4.54 | <https://github.com/mikefarah/yq#install> (not the Python `yq`) |
 | check-jsonschema | 0.39 | `pipx install check-jsonschema` or `uv tool install check-jsonschema` |
+| jq | 1.7 or newer | <https://jqlang.org/download/> |
 
-CI runs the versions pinned in `.github/workflows/lint.yml` and `scripts/install-ci-tools.sh`. Recommended: the [GitHub CLI](https://cli.github.com/) (`gh`), [jq](https://jqlang.org/download/) and [Claude Code](https://code.claude.com/docs/en/setup).
+CI runs the versions pinned in `.github/workflows/lint.yml` and `scripts/install-ci-tools.sh`. Recommended: the [GitHub CLI](https://cli.github.com/) (`gh`) and [Claude Code](https://code.claude.com/docs/en/setup).
 
 ### From milestone M1
 

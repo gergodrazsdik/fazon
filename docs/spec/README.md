@@ -13,7 +13,7 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 | 7 | [Judge](judge.md): rubric, image batching and the CI cost cap, with the [plan](schemas/judge-plan.schema.json) and [result](schemas/judge-result.schema.json) schemas | merged | T-0026 |
 | 8 | [Measurement protocol](measurement.md), including judge calibration and its thresholds | merged | T-0027 |
 | 9 | [Run records and provenance](records.md), with the run record, provenance and calibration record schemas | merged | T-0028 |
-| 10 | Config file reference: name, format and keys | not written yet | T-0029 |
+| 10 | [Config file reference](config.md): name, format and keys, with the [config](schemas/config.schema.json) and [local override](schemas/config-local.schema.json) schemas | merged | T-0029 |
 | 11 | CLI reference, covering every command | not written yet | T-0030 |
 | 12 | Adapter boundary, including how the example repo consumes the framework before M5 | not written yet | T-0031 |
 | 13 | Reusable workflow interface: inputs, secrets and permissions | not written yet | T-0032 |

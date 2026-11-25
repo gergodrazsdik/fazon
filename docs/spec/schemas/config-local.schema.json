@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:config-local:0",
+  "title": "Fazon local overrides, fazon.local.yaml (format version 0)",
+  "description": "A developer's uncommitted overrides of a few keys of fazon.yaml. Measured runs and CI refuse to start while it exists. The definitions repeat those of config.schema.json; scripts/check-spec-examples.sh checks they stay identical. See docs/spec/config.md.",
+  "type": "object",
+  "required": [
+    "fazon"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": {
+      "const": 0
+    },
+    "loop": {
+      "$ref": "#/$defs/loop"
+    },
+    "models": {
+      "$ref": "#/$defs/models"
+    },
+    "effort": {
+      "$ref": "#/$defs/effort"
+    },
+    "judge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "localPolicy": {
+          "description": "`off` skips the judge in local runs; `on` (the default) runs it as the judge document says.",
+          "enum": [
+            "on",
+            "off"
+          ]
+        }
+      }
+    }
+  },
+  "$defs": {
+    "model": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]*$"
+    },
+    "loop": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "iterations": {
+          "description": "Default 5.",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "budgetUsd": {
+          "description": "Default 10.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "runMinutes": {
+          "description": "Default 90.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "callMinutes": {
+          "description": "Default 20.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "escalateAfter": {
+          "description": "Failed iterations before the escalation model. Default 2.",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "generator": {
+          "description": "Default `claude-sonnet-5-5`.",
+          "$ref": "#/$defs/model"
+        },
+        "escalation": {
+          "description": "Default `claude-opus-5-5`.",
+          "$ref": "#/$defs/model"
+        },
+        "judge": {
+          "description": "Default `claude-sonnet-5-5`.",
+          "$ref": "#/$defs/model"
+        }
+      }
+    },
+    "effort": {
+      "description": "Effort per role; each model's own default when left out.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "generator": {
+          "$ref": "#/$defs/effortLevel"
+        },
+        "escalation": {
+          "$ref": "#/$defs/effortLevel"
+        },
+        "judge": {
+          "$ref": "#/$defs/effortLevel"
+        }
+      }
+    },
+    "effortLevel": {
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ]
+    }
+  }
+}

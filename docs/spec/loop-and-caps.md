@@ -14,7 +14,7 @@ How the harness runs the loop: the kinds of run, what one iteration is, what blo
 | Visual diffs of the component being generated | [Baseline lifecycle](baseline-lifecycle.md#the-visual-check-by-context) |
 | The judge's rubric, its calibration status and policy | [Judge](judge.md), [measurement protocol](measurement.md#calibrated-status) |
 | What a run record stores | [Run records and provenance](records.md) |
-| The keys for caps and models | Config file reference (T-0029) |
+| The keys for caps and models | [Config file reference](config.md) |
 | The commands that start runs | CLI reference (T-0030) |
 
 ## Runs
@@ -62,7 +62,7 @@ Nothing else changes what blocks: the harness never relaxes a check, and the age
 | **Run time** | 90 minutes per run | wall-clock time since the run started | before each call and before each check phase; the run stops when it's exceeded |
 | **Call time** | 20 minutes per agent call | wall-clock time of one call | during the call: the harness stops a call that exceeds it, and the iteration fails |
 
-The config file sets all four (T-0029). A propose run has the same budget and call-time caps, and one call.
+The [config file](config.md#keys) sets all four. A propose run has the same budget and call-time caps, and one call.
 
 - **Cost of an agent call:** what Claude Code reports for the call. With an API key it's exact; under a subscription login it's Claude Code's local estimate, and the run record says so.
 - **Cost of a judge call:** computed by the harness from the API's token usage and the prices in the config.
