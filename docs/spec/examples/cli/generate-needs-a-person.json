@@ -1,0 +1,22 @@
+{
+  "fazon": 0,
+  "command": "generate",
+  "status": "needs-a-person",
+  "exitCode": 1,
+  "messages": [
+    {
+      "level": "error",
+      "text": "Button: 5 of 5 iterations used; 1 blocking finding remains (layout/target-size).",
+      "hint": "fazon report button"
+    }
+  ],
+  "result": {
+    "run": "20261125T164012Z-button-3f9a",
+    "component": "Button",
+    "reason": "iterations",
+    "iterations": 5,
+    "costUsd": 7.85,
+    "record": ".fazon/runs/20261125T164012Z-button-3f9a/run.json",
+    "report": ".fazon/runs/20261125T164012Z-button-3f9a/report/index.html"
+  }
+}

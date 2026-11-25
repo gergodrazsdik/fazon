@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:cli-output:0",
+  "title": "Fazon CLI JSON output (format version 0)",
+  "description": "What every `fazon` command prints with `--json`: one document on standard output. `result` is specific to the command; see docs/spec/cli.md.",
+  "type": "object",
+  "required": ["fazon", "command", "status", "exitCode", "messages"],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": { "const": 0 },
+    "command": {
+      "description": "The command, with its subcommand: `generate`, `spec check`, `baseline update`.",
+      "type": "string",
+      "pattern": "^[a-z]+( [a-z]+)?$"
+    },
+    "status": {
+      "description": "`ok`; `failed` (checks or validation failed); `needs-a-person` (a run stopped); `refused` (a precondition isn't met); `error` (the environment or the tool failed); `interrupted`.",
+      "enum": ["ok", "failed", "needs-a-person", "refused", "error", "interrupted"]
+    },
+    "exitCode": { "enum": [0, 1, 2, 3, 130] },
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["level", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "level": { "enum": ["info", "warning", "error"] },
+          "text": { "type": "string", "minLength": 1 },
+          "hint": { "description": "A command to run next.", "type": "string" }
+        }
+      }
+    },
+    "result": {
+      "description": "The command's own result.",
+      "type": "object"
+    }
+  },
+  "allOf": [
+    { "if": { "properties": { "status": { "const": "ok" } } }, "then": { "properties": { "exitCode": { "const": 0 } } } },
+    { "if": { "properties": { "status": { "enum": ["failed", "needs-a-person"] } } }, "then": { "properties": { "exitCode": { "const": 1 } } } },
+    { "if": { "properties": { "status": { "const": "refused" } } }, "then": { "properties": { "exitCode": { "const": 2 } } } },
+    { "if": { "properties": { "status": { "const": "interrupted" } } }, "then": { "properties": { "exitCode": { "const": 130 } } } }
+  ]
+}

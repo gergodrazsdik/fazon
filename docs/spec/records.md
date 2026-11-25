@@ -13,7 +13,7 @@ What Fazon writes down about its work: a run record for every run, kept locally;
 | Findings | [Check catalogue](check-catalogue.md#findings) |
 | Judge plans and results | [Judge](judge.md) |
 | What is measured and published | [Measurement protocol](measurement.md) |
-| `fazon report` and the commands that read records | CLI reference (T-0030) |
+| `fazon report` and the commands that read records | [CLI reference](cli.md) |
 
 ## The `.fazon/` directory
 

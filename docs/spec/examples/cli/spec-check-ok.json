@@ -1,0 +1,16 @@
+{
+  "fazon": 0,
+  "command": "spec check",
+  "status": "ok",
+  "exitCode": 0,
+  "messages": [
+    { "level": "info", "text": "3 specs checked: no findings." }
+  ],
+  "result": {
+    "specs": [
+      { "spec": "specs/button.md", "findings": [] },
+      { "spec": "specs/dialog.md", "findings": [] },
+      { "spec": "specs/tabs.md", "findings": [] }
+    ]
+  }
+}
