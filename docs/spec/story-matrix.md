@@ -147,7 +147,7 @@ The verifier uses them to find targets, to pick `<Part>[default]`, to know each 
 ## Content
 
 - Stories render fixtures only: the agent doesn't choose what a story shows.
-- **Icons:** the fixture icon set is [Lucide](https://lucide.dev), from the `lucide-static` npm package (ISC license), at a version the framework pins from M1. Icon names in fixtures are Lucide's, such as `check`, `x` or `chevron-down`. A consumer can replace the set with a directory of their own SVG files through the [config file](config.md#keys) (`icons`). An icon name that isn't in the set in use fails SPEC-009.
+- **Icons:** the fixture icon set is [Lucide](https://lucide.dev), from the `lucide-static` npm package (ISC license, and MIT for the icons derived from Feather; [notices](licensing.md#lucide)), at a version the framework pins from M1. Icon names in fixtures are Lucide's, such as `check`, `x` or `chevron-down`. A consumer can replace the set with a directory of their own SVG files through the [config file](config.md#keys) (`icons`). An icon name that isn't in the set in use fails SPEC-009.
 - Text is English. Right-to-left layouts are out of scope for version 1.
 - Fonts are those the library bundles in its own styles, such as the example library's Inter; generic families such as `system-ui` come from the verifier image.
 

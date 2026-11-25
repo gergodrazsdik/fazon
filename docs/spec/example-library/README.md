@@ -9,8 +9,11 @@ The token set and the conventions doc of the example library, `fazon-vue-example
 | [tokens/roles.json](tokens/roles.json) | Role tokens that are the same in both themes | `tokens/roles.json` |
 | [tokens/themes/light.json](tokens/themes/light.json), [dark.json](tokens/themes/dark.json) | Colour roles per theme | `tokens/themes/` |
 | [conventions.md](conventions.md) | The conventions doc | `docs/conventions.md` |
+| [LICENSE](LICENSE) | MIT-0 | `LICENSE` |
+| [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) | Inter's and Lucide's licenses | `THIRD-PARTY-NOTICES.md` |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | No outside contributions yet | `CONTRIBUTING.md` |
 
-The example repository's `fazon.yaml` sets `tokens.prefix: fz`, so `color.action.primary` is `--fz-color-action-primary`.
+Everything in this directory is under [MIT-0](LICENSE), as the example repository will be ([license terms](../licensing.md#the-example-repository)). The example repository's `fazon.yaml` sets `tokens.prefix: fz`, so `color.action.primary` is `--fz-color-action-primary`.
 
 ## Approval
 

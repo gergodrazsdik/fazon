@@ -191,7 +191,7 @@ fazon baseline update <component>... [--story <name>]...
 fazon baseline update --all
 ```
 
-Writes baselines from the latest qualifying run, and removes orphans, as [writing baselines](baseline-lifecycle.md#writing-baselines) defines. It refuses (2) when no run qualifies, and says which condition failed. Result: the baselines written, unchanged and removed.
+Writes baselines from the latest qualifying run, and removes orphans, as [writing baselines](baseline-lifecycle.md#writing-baselines) defines. It keeps the directory's `NOTICE.md` current ([license terms](licensing.md#lucide)). It refuses (2) when no run qualifies, and says which condition failed. Result: the baselines written, unchanged and removed.
 
 ## Repository
 

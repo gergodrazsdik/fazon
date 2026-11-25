@@ -26,6 +26,7 @@ Baselines are PNG files committed in the consumer repo, in plain git. By default
 ```text
 baselines/
   fazon.json                                     the verifier image they were made with
+  NOTICE.md                                      the icon set's license notice, when it is Lucide
   light/button/label--variant-primary--size-md--default.png
   dark/button/label--variant-primary--size-md--default.png
   light/dialog/confirm--content-size-md--default.png
@@ -34,6 +35,7 @@ baselines/
 
 - A baseline's path is `<theme>/<component>/<story name without "<component>--">.png` ([story matrix rules](story-matrix.md#names)).
 - `fazon.json` records the verifier image, by digest, that made every baseline in the directory ([schema](schemas/baselines.schema.json), [example](examples/baselines/fazon.json)).
+- `NOTICE.md` holds the license notice of the fixture icon set, which the baselines show, when the set is Lucide ([license terms](licensing.md#lucide)). `fazon baseline update` writes it, and removes it when the config names another icon set.
 - PNG files are losslessly optimised when they are written. The comparison decodes pixels, so optimisation never changes a result.
 - `fazon init` marks `*.png` in the directory as binary in `.gitattributes`.
 
@@ -119,7 +121,7 @@ CI never writes, updates or commits a baseline, and no bot commits to `main`.
 
 | Rule | What must hold | Checked by |
 |---|---|---|
-| BASELINE-001 | Every file in the baselines directory is `fazon.json` or a PNG at a story's baseline path. | the visual check (`orphan`) |
+| BASELINE-001 | Every file in the baselines directory is `fazon.json`, `NOTICE.md` or a PNG at a story's baseline path. | the visual check (`orphan`) |
 | BASELINE-002 | `fazon.json` is valid against its schema, and names the image the check runs in. | the visual check (`image`) |
 | BASELINE-003 | `fazon baseline update` writes only from a run that meets the four conditions in [Writing baselines](#writing-baselines). | the CLI |
 | BASELINE-004 | Nothing but `fazon baseline update` writes into the baselines directory: not the agent, not CI. | the harness ([PERM-002](agent-permissions.md#rules)), the reusable workflow |
