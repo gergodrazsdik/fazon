@@ -12,10 +12,12 @@ export {
   type TokenBuild,
   type TokenIndex,
 } from "./build.js";
+export { baseStyles, type BaseStyle } from "./base-styles.js";
 export { hashText, hashTokenSet } from "./hash.js";
 export { customPropertyName, referencedPath, tokenKind } from "./reference.js";
 export {
   readTextFile,
+  validateTokenData,
   resolveTokenSet,
   tokensOfTheme,
   type ReadTextFile,

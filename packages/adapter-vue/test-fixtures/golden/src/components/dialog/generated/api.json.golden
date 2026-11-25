@@ -1,0 +1,116 @@
+{
+  "fazon": 0,
+  "adapter": "vue",
+  "component": "Dialog",
+  "spec": "specs/dialog.md",
+  "forward": "DialogContent",
+  "components": {
+    "Dialog": {
+      "file": "Dialog.vue",
+      "props": {
+        "open": {
+          "type": "boolean",
+          "required": false,
+          "default": false
+        }
+      },
+      "events": {
+        "update:open": {
+          "payload": {
+            "type": "boolean"
+          }
+        }
+      },
+      "slots": {
+        "default": {
+          "required": true,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    },
+    "DialogTrigger": {
+      "file": "DialogTrigger.vue",
+      "props": {},
+      "events": {},
+      "slots": {
+        "default": {
+          "required": true,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    },
+    "DialogOverlay": {
+      "file": "DialogOverlay.vue",
+      "props": {},
+      "events": {},
+      "slots": {},
+      "exposed": {}
+    },
+    "DialogContent": {
+      "file": "DialogContent.vue",
+      "props": {
+        "size": {
+          "type": "enum",
+          "values": [
+            "sm",
+            "md",
+            "lg"
+          ],
+          "required": false,
+          "default": "md"
+        }
+      },
+      "events": {},
+      "slots": {
+        "default": {
+          "required": true,
+          "props": {}
+        },
+        "footer": {
+          "required": false,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    },
+    "DialogTitle": {
+      "file": "DialogTitle.vue",
+      "props": {},
+      "events": {},
+      "slots": {
+        "default": {
+          "required": true,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    },
+    "DialogDescription": {
+      "file": "DialogDescription.vue",
+      "props": {},
+      "events": {},
+      "slots": {
+        "default": {
+          "required": true,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    },
+    "DialogClose": {
+      "file": "DialogClose.vue",
+      "props": {
+        "label": {
+          "type": "string",
+          "required": false,
+          "default": "Close"
+        }
+      },
+      "events": {},
+      "slots": {},
+      "exposed": {}
+    }
+  }
+}

@@ -1,0 +1,14 @@
+// fazon:exports:begin `fazon sync` writes the exports up to fazon:exports:end from the specs; edit outside them.
+export { default as Button } from "./components/button/Button.vue";
+export { default as Dialog } from "./components/dialog/Dialog.vue";
+export { default as DialogTrigger } from "./components/dialog/DialogTrigger.vue";
+export { default as DialogOverlay } from "./components/dialog/DialogOverlay.vue";
+export { default as DialogContent } from "./components/dialog/DialogContent.vue";
+export { default as DialogTitle } from "./components/dialog/DialogTitle.vue";
+export { default as DialogDescription } from "./components/dialog/DialogDescription.vue";
+export { default as DialogClose } from "./components/dialog/DialogClose.vue";
+export { default as Tabs } from "./components/tabs/Tabs.vue";
+export { default as TabsList } from "./components/tabs/TabsList.vue";
+export { default as TabsTrigger } from "./components/tabs/TabsTrigger.vue";
+export { default as TabsPanel } from "./components/tabs/TabsPanel.vue";
+// fazon:exports:end

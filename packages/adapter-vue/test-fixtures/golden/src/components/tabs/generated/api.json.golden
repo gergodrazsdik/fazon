@@ -1,0 +1,115 @@
+{
+  "fazon": 0,
+  "adapter": "vue",
+  "component": "Tabs",
+  "spec": "specs/tabs.md",
+  "forward": "Tabs",
+  "components": {
+    "Tabs": {
+      "file": "Tabs.vue",
+      "props": {
+        "modelValue": {
+          "type": "string",
+          "required": false
+        },
+        "orientation": {
+          "type": "enum",
+          "values": [
+            "horizontal",
+            "vertical"
+          ],
+          "required": false,
+          "default": "horizontal"
+        },
+        "activation": {
+          "type": "enum",
+          "values": [
+            "automatic",
+            "manual"
+          ],
+          "required": false,
+          "default": "automatic"
+        }
+      },
+      "events": {
+        "update:modelValue": {
+          "payload": {
+            "type": "string"
+          }
+        }
+      },
+      "slots": {
+        "default": {
+          "required": true,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    },
+    "TabsList": {
+      "file": "TabsList.vue",
+      "props": {
+        "label": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "events": {},
+      "slots": {
+        "default": {
+          "required": false,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    },
+    "TabsTrigger": {
+      "file": "TabsTrigger.vue",
+      "props": {
+        "value": {
+          "type": "string",
+          "required": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "required": false,
+          "default": false
+        },
+        "asChild": {
+          "type": "boolean",
+          "required": false,
+          "default": false
+        }
+      },
+      "events": {},
+      "slots": {
+        "default": {
+          "required": true,
+          "props": {}
+        },
+        "icon": {
+          "required": false,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    },
+    "TabsPanel": {
+      "file": "TabsPanel.vue",
+      "props": {
+        "value": {
+          "type": "string",
+          "required": true
+        }
+      },
+      "events": {},
+      "slots": {
+        "default": {
+          "required": true,
+          "props": {}
+        }
+      },
+      "exposed": {}
+    }
+  }
+}
