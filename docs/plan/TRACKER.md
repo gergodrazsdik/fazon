@@ -57,7 +57,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [x] T-0022 Check catalogue, with one rule sheet per check — 2026-11-25: version 0, with HTML fixtures for the rendered checks ([ADR 0007](../adr/0007-check-catalogue.md)), [#11](https://github.com/gergodrazsdik/fazon/pull/11)
 - [x] T-0023 Baseline lifecycle — 2026-11-25: version 0, with the baselines record's schema ([ADR 0008](../adr/0008-baseline-lifecycle.md)), [#13](https://github.com/gergodrazsdik/fazon/pull/13)
 - [x] T-0024 Agent permission model — 2026-11-25: version 0 ([ADR 0009](../adr/0009-agent-permissions.md)), [#14](https://github.com/gergodrazsdik/fazon/pull/14)
-- [x] T-0025 Loop and caps: defaults, enforcement, and what an iteration is — 2026-11-25: version 0 ([ADR 0010](../adr/0010-loop-and-caps.md))
+- [x] T-0025 Loop and caps: defaults, enforcement, and what an iteration is — 2026-11-25: version 0 ([ADR 0010](../adr/0010-loop-and-caps.md)), [#16](https://github.com/gergodrazsdik/fazon/pull/16)
 - [ ] T-0026 Judge: rubric, image batching and the CI cost cap
 - [ ] T-0027 Measurement protocol, including judge calibration and its thresholds; count linked feedback runs together and report models per iteration ([ADR 0010](../adr/0010-loop-and-caps.md))
 - [ ] T-0028 Run record and provenance schemas (Q-0012)
