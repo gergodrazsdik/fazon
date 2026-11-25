@@ -12,7 +12,7 @@ How screenshot baselines are created, compared, changed, renamed and removed, lo
 | Story names, themes and capture conditions | [Story matrix rules](story-matrix.md) |
 | The comparison, its tolerance and platform | [Check catalogue: visual](check-catalogue.md#visual) |
 | That the agent never edits baselines | [Agent permission model](agent-permissions.md) |
-| How the loop treats findings | Loop and caps (T-0025) |
+| How the loop treats findings | [Loop and caps](loop-and-caps.md) |
 | Which stories the judge sees in CI, and its policy | Judge (T-0026) |
 | Run records, where captures are kept | Run record and provenance schemas (T-0028) |
 | The baselines directory key, the judge policy key | Config file reference (T-0029) |

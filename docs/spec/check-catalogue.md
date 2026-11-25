@@ -13,7 +13,7 @@ The deterministic checks that verify a component, with one rule sheet per check:
 | How a spec waives a check | [Spec format: exemptions](spec-format.md#exemptions) |
 | When a baseline is created or updated | [Baseline lifecycle](baseline-lifecycle.md) |
 | Which commands the agent may run itself | [Agent permission model](agent-permissions.md) |
-| What the loop does with findings | Loop and caps (T-0025) |
+| What the loop does with findings | [Loop and caps](loop-and-caps.md) |
 | How findings are stored | Run record and provenance schemas (T-0028) |
 | The commands an adapter supplies for the source checks, and how it reads a component's API | Adapter boundary (T-0031) |
 | Which tokens are role tokens, their custom property names, the base styles | Token set and conventions doc (T-0033) |

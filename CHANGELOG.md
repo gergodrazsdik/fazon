@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - The repository: license, contributor agreement, community files, lint tooling and agent instructions. No product code yet.
 - The spec format, version 0: the document, the JSON Schema of the front matter, and valid and invalid example specs, checked by `just lint`.
+- The loop and caps, version 0: the kinds of run, what an iteration is and what blocks, the default caps and where they're enforced, escalation, feedback runs and how a run ends.
 - The agent permission model, version 0: the paths the agent may read and write, the commands it may run, the files the harness maintains, and how breaches and hand edits are detected.
 - The baseline lifecycle, version 0: where baselines live, how `fazon baseline update` writes them, and how the visual check treats them locally and in CI.
 - The check catalogue, version 0: one rule sheet per check, and passing and failing HTML fixtures for the rendered checks.
