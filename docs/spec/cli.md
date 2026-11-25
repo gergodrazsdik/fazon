@@ -14,7 +14,7 @@ Every `fazon` command: what it does, its arguments and options, what it refuses,
 | What the agent may do during a run | [Agent permission model](agent-permissions.md) |
 | Baselines | [Baseline lifecycle](baseline-lifecycle.md) |
 | Run records, provenance, `.fazon/` | [Run records and provenance](records.md) |
-| What `fazon init` writes for the Vue adapter, and the CI workflow stub | Adapter boundary (T-0031), reusable workflow interface (T-0032) |
+| What `fazon init` writes for the Vue adapter, and the CI workflow stub | [Adapter boundary](adapter-boundary.md#what-fazon-init-writes-for-vue), reusable workflow interface (T-0032) |
 
 ## The journey
 

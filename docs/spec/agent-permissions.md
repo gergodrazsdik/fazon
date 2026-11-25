@@ -12,7 +12,7 @@ What the agent may read, write and run while it generates a component, what the 
 | Iterations, caps and what ends a run | [Loop and caps](loop-and-caps.md) |
 | How hand edits and violations are recorded | [Run records and provenance](records.md) |
 | The components directory and other paths | [Config file reference](config.md) |
-| The adapter's file patterns and self-check commands | Adapter boundary (T-0031) |
+| The adapter's file patterns and self-check commands | [Adapter boundary](adapter-boundary.md) |
 
 ## How it's enforced
 
@@ -63,7 +63,7 @@ pnpm exec stylelint "src/components/button/**/*.{vue,css}"
 pnpm exec vitest run src/components/button
 ```
 
-The adapter boundary (T-0031) fixes the exact commands. They run on the host, inside the sandbox, using the dependencies the developer installed. Their results are advisory: the harness runs every check in the verifier image after the call, and only those results count. No other command is allowed: no package manager install, no git, no network tools.
+The [adapter boundary](adapter-boundary.md#commands) fixes the exact commands. They run on the host, inside the sandbox, using the dependencies the developer installed. Their results are advisory: the harness runs every check in the verifier image after the call, and only those results count. No other command is allowed: no package manager install, no git, no network tools.
 
 ## The headless call
 
