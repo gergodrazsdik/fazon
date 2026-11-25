@@ -1,0 +1,25 @@
+{
+  "question": "axis-variant",
+  "results": [
+    {
+      "story": "button--label--variant-primary--size-md--default",
+      "verdict": "pass",
+      "findings": []
+    },
+    {
+      "story": "button--label--variant-secondary--size-md--default",
+      "verdict": "fail",
+      "findings": [
+        {
+          "severity": "high",
+          "message": "Secondary reads as more prominent than primary: its dark border and text draw more attention than primary's fill, against the spec's order of emphasis."
+        }
+      ]
+    },
+    {
+      "story": "button--label--variant-ghost--size-md--default",
+      "verdict": "pass",
+      "findings": []
+    }
+  ]
+}

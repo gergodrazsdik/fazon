@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:judge-result:0",
+  "title": "Fazon judge result (format version 0)",
+  "description": "The structured output of one judge call: a verdict for every image of the question's batch, with findings. The harness passes this schema to the API as the response format; see docs/spec/judge.md.",
+  "type": "object",
+  "required": ["question", "results"],
+  "additionalProperties": false,
+  "properties": {
+    "question": {
+      "description": "The question's ID, as the prompt gives it.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["story", "verdict", "findings"],
+        "additionalProperties": false,
+        "properties": {
+          "story": {
+            "description": "The story's label, as the prompt gives it.",
+            "type": "string"
+          },
+          "verdict": { "enum": ["pass", "fail", "unsure"] },
+          "findings": {
+            "description": "What is wrong or uncertain; empty for a pass.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["severity", "message"],
+              "additionalProperties": false,
+              "properties": {
+                "severity": { "enum": ["high", "medium", "low"] },
+                "message": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

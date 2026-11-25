@@ -10,7 +10,7 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 | 4 | [Baseline lifecycle](baseline-lifecycle.md), with the [baselines record schema](schemas/baselines.schema.json) | merged | T-0023 |
 | 5 | [Agent permission model](agent-permissions.md) | merged | T-0024 |
 | 6 | [Loop and caps](loop-and-caps.md): defaults, enforcement, and what an iteration is | merged | T-0025 |
-| 7 | Judge: rubric, image batching and the CI cost cap | not written yet | T-0026 |
+| 7 | [Judge](judge.md): rubric, image batching and the CI cost cap, with the [plan](schemas/judge-plan.schema.json) and [result](schemas/judge-result.schema.json) schemas | merged | T-0026 |
 | 8 | Measurement protocol, including judge calibration and its thresholds | not written yet | T-0027 |
 | 9 | Run record and provenance schemas | not written yet | T-0028 |
 | 10 | Config file reference: name, format and keys | not written yet | T-0029 |

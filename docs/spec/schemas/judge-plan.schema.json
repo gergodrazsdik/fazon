@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:judge-plan:0",
+  "title": "Fazon judge plan (format version 0)",
+  "description": "The judge calls the harness derives for one component from its spec and story manifest: one call per question, theme and batch of at most 20 images. See docs/spec/judge.md.",
+  "type": "object",
+  "required": ["fazon", "component", "calls"],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": { "const": 0 },
+    "component": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
+    "calls": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/call" }
+    }
+  },
+  "$defs": {
+    "call": {
+      "type": "object",
+      "required": ["question", "source", "kind", "text", "theme", "images"],
+      "additionalProperties": false,
+      "properties": {
+        "question": {
+          "description": "The question's ID; a derived question's ID says what it was derived from.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        },
+        "source": {
+          "description": "`derived` by the harness, or from the spec's `judge` field.",
+          "enum": ["derived", "spec"]
+        },
+        "kind": {
+          "description": "`each`: every image is judged on its own. `compare`: the images are judged against each other.",
+          "enum": ["each", "compare"]
+        },
+        "text": { "type": "string", "minLength": 1 },
+        "theme": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+        "images": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "required": ["kind", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "description": "A story's capture, its committed baseline, the diff between them, the spec's reference image, or another component's baseline.",
+                "enum": ["capture", "baseline", "diff", "reference", "component"]
+              },
+              "label": {
+                "description": "What the prompt calls the image; the judge's result names it.",
+                "type": "string",
+                "minLength": 1
+              },
+              "story": { "type": "string", "pattern": "^[a-z][a-z0-9-]*(--[a-z0-9-]+)+$" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

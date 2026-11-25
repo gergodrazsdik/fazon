@@ -13,7 +13,7 @@ How screenshot baselines are created, compared, changed, renamed and removed, lo
 | The comparison, its tolerance and platform | [Check catalogue: visual](check-catalogue.md#visual) |
 | That the agent never edits baselines | [Agent permission model](agent-permissions.md) |
 | How the loop treats findings | [Loop and caps](loop-and-caps.md) |
-| Which stories the judge sees in CI, and its policy | Judge (T-0026) |
+| Which stories the judge sees in CI, and its policy | [Judge](judge.md) |
 | Run records, where captures are kept | Run record and provenance schemas (T-0028) |
 | The baselines directory key, the judge policy key | Config file reference (T-0029) |
 | `fazon baseline` and its options | CLI reference (T-0030) |
@@ -110,7 +110,7 @@ A framework upgrade can bring a new verifier image, with another browser or font
 The reusable workflow (T-0032) treats baselines as read-only:
 
 1. It renders every story in the verifier image and compares each with its committed baseline. Any `changed`, `orphan` or `image` finding fails the check; a new story doesn't.
-2. It lists the baselines the pull request adds, changes, removes or renames against the base branch. The judge looks at the stories of added and changed baselines (T-0026).
+2. It lists the baselines the pull request adds, changes, removes or renames against the base branch. The judge looks at the stories of added and changed baselines ([judge](judge.md#when-the-judge-runs)).
 3. The job summary lists those baselines by component, and the report artifact shows each changed one before and after.
 
 CI never writes, updates or commits a baseline, and no bot commits to `main`.
