@@ -1,0 +1,51 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=pass -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>tokens: a button styled with role tokens</title>
+<style>
+body { margin: 0; background: #ffffff; font-family: system-ui, sans-serif; }
+[data-fazon-frame] { display: inline-block; padding: 16px; }
+:root {
+  --color-blue-600: #1f4fd1;
+  --color-white: #ffffff;
+  --space-2: 8px;
+  --space-4: 16px;
+  --radius-2: 6px;
+  --font-family-system: system-ui, sans-serif;
+  --font-size-3: 16px;
+  --font-weight-500: 500;
+  --line-height-3: 1.5;
+  --color-action-primary: var(--color-blue-600);
+  --color-text-on-action: var(--color-white);
+  --space-inset-sm: var(--space-2);
+  --space-inset-md: var(--space-4);
+  --radius-control: var(--radius-2);
+  --font-family-body: var(--font-family-system);
+  --font-size-body: var(--font-size-3);
+  --font-weight-strong: var(--font-weight-500);
+  --line-height-body: var(--line-height-3);
+}
+.button {
+  margin: 0;
+  padding: var(--space-inset-sm) var(--space-inset-md);
+  border: 0 solid transparent;
+  border-radius: var(--radius-control);
+  background-color: var(--color-action-primary);
+  color: var(--color-text-on-action);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-strong);
+  line-height: var(--line-height-body);
+  letter-spacing: normal;
+}
+</style>
+</head>
+<body>
+<div data-fazon-frame>
+<button class="button" type="button" data-part="Button">Save changes</button>
+</div>
+</body>
+</html>

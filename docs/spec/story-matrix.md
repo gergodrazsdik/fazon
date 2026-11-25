@@ -155,7 +155,7 @@ The verifier uses them to find targets, to pick `<Part>[default]`, to know each 
 Every rendered check uses the same conditions:
 
 - **Viewport:** 1024 by 768 CSS pixels at a device scale factor of 2. One render serves both the baselines and the judge's 2x crops. A full-viewport capture is 2048 by 1536 pixels, about 4,000 visual tokens.
-- **Frame:** the story renders inside a frame element generated with the story, with 16 px of padding. The frame is as wide as the fixture's `frame.width`, or fits its content when there's none.
+- **Frame:** the story renders inside a frame element generated with the story, with 16 px of padding. The frame's content box is as wide as the fixture's `frame.width`, or fits its content when there's none.
 - **Theme:** the verifier selects a theme the way the token build expects, for example `data-theme="dark"` on the document root.
 - **Motion:** `prefers-reduced-motion: reduce`. Animations and transitions are finished before the capture, and the text caret is hidden.
 - **Readiness:** before input, the story has rendered and its fonts have loaded. After input, the layout is stable.

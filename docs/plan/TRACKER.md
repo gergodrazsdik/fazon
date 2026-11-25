@@ -10,7 +10,7 @@ Next free IDs: T-0085, F-0007, Q-0018.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M0: the check catalogue (T-0022), which defines the check and rule IDs that exemptions name, then the baseline lifecycle (T-0023)
+1. M0: the baseline lifecycle (T-0023), which the story names and the visual check build on, then the agent permission model (T-0024)
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -54,7 +54,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 
 - [x] T-0020 Spec format and its JSON Schema, including fixtures, multi-part components and exemptions (Q-0005, Q-0006) — 2026-11-25: format version 0, with valid and invalid examples checked by `just lint` ([ADR 0005](../adr/0005-spec-format.md)), [#8](https://github.com/gergodrazsdik/fazon/pull/8)
 - [x] T-0021 Story matrix rules, including the icon set that spec fixtures draw from — 2026-11-25: version 0, with the story manifest schema and the example specs' manifests ([ADR 0006](../adr/0006-story-matrix.md)), [#10](https://github.com/gergodrazsdik/fazon/pull/10)
-- [ ] T-0022 Check catalogue, with one rule sheet per check
+- [x] T-0022 Check catalogue, with one rule sheet per check — 2026-11-25: version 0, with HTML fixtures for the rendered checks ([ADR 0007](../adr/0007-check-catalogue.md)), [#11](https://github.com/gergodrazsdik/fazon/pull/11)
 - [ ] T-0023 Baseline lifecycle
 - [ ] T-0024 Agent permission model
 - [ ] T-0025 Loop and caps: defaults, enforcement, and what an iteration is
@@ -63,9 +63,9 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [ ] T-0028 Run record and provenance schemas (Q-0012)
 - [ ] T-0029 Config file reference: name, format and keys, including a consumer's own fixture icon set ([ADR 0006](../adr/0006-story-matrix.md))
 - [ ] T-0030 CLI reference, covering every command
-- [ ] T-0031 Adapter boundary, including how the example repo consumes the framework before M5 (Q-0001)
+- [ ] T-0031 Adapter boundary, including how the example repo consumes the framework before M5, the source checks' commands, and reading a component's API for the contract tests (Q-0001)
 - [ ] T-0032 Reusable workflow interface: inputs, secrets and permissions
-- [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples; the conventions doc requires the `data-part` and `data-<state>` attributes ([ADR 0006](../adr/0006-story-matrix.md)) (Q-0007)
+- [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples; the conventions doc requires the `data-part` and `data-<state>` attributes ([ADR 0006](../adr/0006-story-matrix.md)); say which tokens are role tokens, how custom properties are named, and the story frame's base styles ([ADR 0007](../adr/0007-check-catalogue.md)) (Q-0007)
 - [ ] T-0034 License terms for generated and scaffolded files, and for the example repo, and Lucide's license notice for the fixture icons (Q-0002, Q-0003, Q-0004)
 
 ## Phase 2: Foundation (M1 to M3)
@@ -78,7 +78,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [ ] T-0043 CodeQL default setup: add `javascript-typescript` once code exists (`scripts/github-settings.sh`)
 - [ ] T-0044 Sandbox network allowlist for Playwright and Storybook (browser downloads, registries), and any MCP servers, in `.claude/settings.json`
 - [ ] T-0045 `just build`, `just test` and `just verify` recipes, with the code
-- [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build (break down at M1 start)
+- [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md)) (break down at M1 start)
 - [ ] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md))
 
 ### M2 The loop

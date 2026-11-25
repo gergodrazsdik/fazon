@@ -1,0 +1,19 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=visual expect=pass -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>visual: the same pixels from different markup</title>
+<style>
+body { margin: 0; background: #ffffff; font-family: system-ui, sans-serif; }
+[data-fazon-frame] { display: inline-block; padding: 16px; }
+.action { padding-block: 8px; padding-inline: 16px; border: 0 none; border-radius: 6px; background: #1f4fd1; color: #fff; font-size: 1rem; line-height: 24px; }
+</style>
+</head>
+<body>
+<div data-fazon-frame>
+<button class="action" type="button" data-part="Button"><span>Save changes</span></button>
+</div>
+</body>
+</html>

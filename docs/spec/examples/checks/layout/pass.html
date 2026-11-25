@@ -1,0 +1,20 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=layout expect=pass -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>layout: a long label that wraps</title>
+<style>
+body { margin: 0; background: #ffffff; font-family: system-ui, sans-serif; }
+[data-fazon-frame] { display: inline-block; padding: 16px; }
+[data-fazon-frame] { width: 160px; }
+.button { display: inline-block; max-width: 100%; padding: 8px 16px; border: 0; border-radius: 6px; background-color: #1f4fd1; color: #ffffff; font-size: 16px; line-height: 1.5; text-align: center; }
+</style>
+</head>
+<body>
+<div data-fazon-frame>
+<button class="button" type="button" data-part="Button">Save changes and notify every member of the workspace</button>
+</div>
+</body>
+</html>
