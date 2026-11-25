@@ -12,18 +12,22 @@ export const checkExamples = fileURLToPath(new URL("../../../../docs/spec/exampl
 
 /**
  * The token index of the tokens check's fixtures: their tokens.json as the one set of a resolver
- * document with a single theme, `light`.
+ * document whose two themes, `light` (the default) and `dark`, add no tokens of their own.
  */
 export async function fixtureTokenIndex(tokensJson = join(checkExamples, "tokens/tokens.json")): Promise<TokenIndex> {
   const dir = dirname(tokensJson);
   const resolver = join(dir, "tokens.resolver.json");
   const files: Record<string, string> = {
     [resolver]: JSON.stringify({
+      version: "2025.10",
       sets: { fixtures: { sources: [{ $ref: "tokens.json" }] } },
-      modifiers: { theme: { contexts: { light: [{ $ref: "light.json" }] }, default: "light" } },
+      modifiers: {
+        theme: { contexts: { light: [{ $ref: "light.json" }], dark: [{ $ref: "dark.json" }] }, default: "light" },
+      },
       resolutionOrder: [{ $ref: "#/sets/fixtures" }, { $ref: "#/modifiers/theme" }],
     }),
     [join(dir, "light.json")]: "{}",
+    [join(dir, "dark.json")]: "{}",
     [join(dir, "tokens.json")]: await readFile(tokensJson, "utf8"),
   };
   const { tokenSet, findings } = await resolveTokenSet(resolver, { readFile: (file) => Promise.resolve(files[file]) });
