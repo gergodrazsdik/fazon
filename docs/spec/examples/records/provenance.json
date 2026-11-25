@@ -1,0 +1,32 @@
+{
+  "fazon": 0,
+  "component": "Button",
+  "spec": {
+    "path": "specs/button.md",
+    "hash": "sha256:d4f02eaafd1a9e9de7d10972ca8e47fa7a985825c3c9c1e249c72683cb3e4f19"
+  },
+  "api": {
+    "hash": "sha256:14c2529eb4498c5d1ffd6915d05bf58a91bdda796af59f41d480d11c099d0479",
+    "approved": "2026-11-25"
+  },
+  "generation": {
+    "framework": "0.1.0",
+    "accepted": "2026-11-25",
+    "runs": [
+      {
+        "id": "20261125T164012Z-button-3f9a",
+        "kind": "generate",
+        "status": "passed",
+        "iterations": 3,
+        "models": [
+          "claude-sonnet-5-5",
+          "claude-opus-5-5"
+        ],
+        "costUsd": 4.2
+      }
+    ],
+    "handEdits": 0,
+    "costUsd": 4.2,
+    "costEstimated": false
+  }
+}

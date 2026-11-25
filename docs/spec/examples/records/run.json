@@ -1,0 +1,360 @@
+{
+  "fazon": 0,
+  "id": "20261125T164012Z-button-3f9a",
+  "kind": "generate",
+  "component": "Button",
+  "status": "passed",
+  "started": "2026-11-25T16:40:12Z",
+  "ended": "2026-11-25T17:09:47Z",
+  "versions": {
+    "framework": "0.1.0",
+    "adapter": "0.1.0",
+    "claudeCode": "2.1.332",
+    "image": "ghcr.io/gergodrazsdik/fazon-verifier@sha256:4f1c2a9e7b0d3c58a6e21f9047bd8c3e5a1f6d2b9c7e0a4f8d3b6c1e9a2f5d70",
+    "judge": 1
+  },
+  "inputs": {
+    "spec": "sha256:d4f02eaafd1a9e9de7d10972ca8e47fa7a985825c3c9c1e249c72683cb3e4f19",
+    "api": "sha256:14c2529eb4498c5d1ffd6915d05bf58a91bdda796af59f41d480d11c099d0479",
+    "tokens": "sha256:c51e455b41df6c017327e16001dd064b8b6733faeaa69b23d9bd79c8079237d5",
+    "conventions": "sha256:04214ab48a17be412c75b225b33e7ca08edbea71558435f32362ee259723c13d",
+    "config": "sha256:b79606fb3afea5bd1609ed40b622142f1c98125abcfe89a76a661b0e8e343910"
+  },
+  "config": {
+    "caps": {
+      "iterations": 5,
+      "budgetUsd": 10,
+      "runMinutes": 90,
+      "callMinutes": 20
+    },
+    "models": {
+      "generator": "claude-sonnet-5-5",
+      "escalation": "claude-opus-5-5",
+      "judge": "claude-sonnet-5-5"
+    },
+    "escalateAfter": 2,
+    "judgePolicy": "advisory",
+    "judgeCalibrated": false
+  },
+  "iterations": [
+    {
+      "n": 1,
+      "call": {
+        "model": "claude-sonnet-5-5",
+        "started": "2026-11-25T16:40:15Z",
+        "durationSeconds": 412.6,
+        "end": "completed",
+        "tokens": {
+          "input": 182340,
+          "cacheRead": 1462110,
+          "cacheWrite": 61200,
+          "output": 28410
+        },
+        "costUsd": 1.1,
+        "transcript": "calls/1.jsonl",
+        "filesChanged": [
+          "src/components/button/Button.vue",
+          "src/components/button/button.test.ts"
+        ]
+      },
+      "violations": [],
+      "verification": {
+        "checks": [
+          {
+            "check": "build",
+            "status": "pass",
+            "durationSeconds": 41.2,
+            "findings": []
+          },
+          {
+            "check": "lint",
+            "status": "fail",
+            "durationSeconds": 6.3,
+            "findings": [
+              {
+                "check": "lint",
+                "rule": "raw-value",
+                "message": "padding-inline: 12px is a raw value; use a spacing token.",
+                "file": "src/components/button/Button.vue",
+                "line": 48,
+                "column": 3,
+                "blocking": true
+              }
+            ]
+          },
+          {
+            "check": "test",
+            "status": "pass",
+            "durationSeconds": 28.7,
+            "findings": []
+          },
+          {
+            "check": "package",
+            "status": "pass",
+            "durationSeconds": 12.4,
+            "findings": []
+          },
+          {
+            "check": "a11y",
+            "status": "pass",
+            "durationSeconds": 19.8,
+            "findings": []
+          },
+          {
+            "check": "tokens",
+            "status": "fail",
+            "durationSeconds": 22.1,
+            "findings": [
+              {
+                "check": "tokens",
+                "rule": "raw-value",
+                "message": "padding-inline is declared as 12px, not a token.",
+                "story": "button--label--variant-primary--size-sm--default",
+                "theme": "light",
+                "part": "Button",
+                "selector": "button[data-part=\"Button\"]",
+                "expected": "a role token or an allowed value",
+                "actual": "12px",
+                "blocking": true
+              }
+            ]
+          },
+          {
+            "check": "layout",
+            "status": "fail",
+            "durationSeconds": 9.6,
+            "findings": [
+              {
+                "check": "layout",
+                "rule": "target-size",
+                "message": "The button is 64 by 20 px, and a 24 px circle centred on it overlaps the next button's circle.",
+                "story": "button--label--variant-primary--size-sm--default",
+                "theme": "light",
+                "part": "Button",
+                "selector": "button[data-part=\"Button\"]",
+                "expected": "at least 24 x 24 px, or the spacing exception",
+                "actual": "64 x 20 px",
+                "blocking": true
+              }
+            ]
+          },
+          {
+            "check": "visual",
+            "status": "pass",
+            "durationSeconds": 14.9,
+            "findings": []
+          }
+        ],
+        "captures": "captures/1"
+      },
+      "outcome": "fail"
+    },
+    {
+      "n": 2,
+      "call": {
+        "model": "claude-sonnet-5-5",
+        "started": "2026-11-25T16:51:02Z",
+        "durationSeconds": 298.4,
+        "end": "completed",
+        "tokens": {
+          "input": 151220,
+          "cacheRead": 1301870,
+          "cacheWrite": 40310,
+          "output": 21880
+        },
+        "costUsd": 0.95,
+        "transcript": "calls/2.jsonl",
+        "filesChanged": [
+          "src/components/button/Button.vue"
+        ]
+      },
+      "violations": [],
+      "verification": {
+        "checks": [
+          {
+            "check": "build",
+            "status": "pass",
+            "durationSeconds": 41.2,
+            "findings": []
+          },
+          {
+            "check": "lint",
+            "status": "pass",
+            "durationSeconds": 6.3,
+            "findings": []
+          },
+          {
+            "check": "test",
+            "status": "pass",
+            "durationSeconds": 28.7,
+            "findings": []
+          },
+          {
+            "check": "package",
+            "status": "pass",
+            "durationSeconds": 12.4,
+            "findings": []
+          },
+          {
+            "check": "a11y",
+            "status": "pass",
+            "durationSeconds": 19.8,
+            "findings": []
+          },
+          {
+            "check": "tokens",
+            "status": "pass",
+            "durationSeconds": 22.1,
+            "findings": []
+          },
+          {
+            "check": "layout",
+            "status": "fail",
+            "durationSeconds": 9.6,
+            "findings": [
+              {
+                "check": "layout",
+                "rule": "target-size",
+                "message": "The button is 64 by 20 px, and a 24 px circle centred on it overlaps the next button's circle.",
+                "story": "button--label--variant-primary--size-sm--default",
+                "theme": "light",
+                "part": "Button",
+                "selector": "button[data-part=\"Button\"]",
+                "expected": "at least 24 x 24 px, or the spacing exception",
+                "actual": "64 x 20 px",
+                "blocking": true
+              }
+            ]
+          },
+          {
+            "check": "visual",
+            "status": "pass",
+            "durationSeconds": 14.9,
+            "findings": []
+          }
+        ],
+        "captures": "captures/2"
+      },
+      "outcome": "fail"
+    },
+    {
+      "n": 3,
+      "call": {
+        "model": "claude-opus-5-5",
+        "started": "2026-11-25T17:00:11Z",
+        "durationSeconds": 356.9,
+        "end": "completed",
+        "tokens": {
+          "input": 160410,
+          "cacheRead": 1190220,
+          "cacheWrite": 52110,
+          "output": 24730
+        },
+        "costUsd": 1.8,
+        "transcript": "calls/3.jsonl",
+        "filesChanged": [
+          "src/components/button/Button.vue",
+          "src/components/button/button.test.ts"
+        ]
+      },
+      "violations": [],
+      "verification": {
+        "checks": [
+          {
+            "check": "build",
+            "status": "pass",
+            "durationSeconds": 41.2,
+            "findings": []
+          },
+          {
+            "check": "lint",
+            "status": "pass",
+            "durationSeconds": 6.3,
+            "findings": []
+          },
+          {
+            "check": "test",
+            "status": "pass",
+            "durationSeconds": 28.7,
+            "findings": []
+          },
+          {
+            "check": "package",
+            "status": "pass",
+            "durationSeconds": 12.4,
+            "findings": []
+          },
+          {
+            "check": "a11y",
+            "status": "pass",
+            "durationSeconds": 19.8,
+            "findings": []
+          },
+          {
+            "check": "tokens",
+            "status": "pass",
+            "durationSeconds": 22.1,
+            "findings": []
+          },
+          {
+            "check": "layout",
+            "status": "pass",
+            "durationSeconds": 9.6,
+            "findings": []
+          },
+          {
+            "check": "visual",
+            "status": "pass",
+            "durationSeconds": 14.9,
+            "findings": []
+          }
+        ],
+        "captures": "captures/3",
+        "judge": {
+          "calls": 17,
+          "costUsd": 0.35,
+          "tokens": {
+            "input": 61240,
+            "cacheRead": 48300,
+            "output": 30110
+          },
+          "stories": {
+            "pass": 36,
+            "fail": 0,
+            "unsure": 1,
+            "notJudged": 0
+          },
+          "blocking": false,
+          "results": "judge/3.json",
+          "findings": [
+            {
+              "question": "loading-spinner",
+              "story": "button--label--variant-ghost--size-md--loading",
+              "theme": "light",
+              "verdict": "unsure",
+              "severity": "low",
+              "message": "The spinner and the ghost variant's text are both low-contrast at this size; I can't tell whether the label shifts."
+            }
+          ]
+        }
+      },
+      "outcome": "pass"
+    }
+  ],
+  "handEdits": [],
+  "totals": {
+    "iterations": 3,
+    "agentCostUsd": 3.85,
+    "judgeCostUsd": 0.35,
+    "costUsd": 4.2,
+    "costEstimated": false,
+    "tokens": {
+      "input": 555210,
+      "cacheRead": 4002500,
+      "cacheWrite": 153620,
+      "output": 105130
+    },
+    "durationSeconds": 1775,
+    "escalated": true
+  }
+}

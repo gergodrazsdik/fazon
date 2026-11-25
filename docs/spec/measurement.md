@@ -11,7 +11,7 @@ How Fazon's published numbers are produced: what a measured run is, which loop m
 |---|---|
 | Runs, iterations and caps | [Loop and caps](loop-and-caps.md) |
 | The judge, its rubric and authority | [Judge](judge.md) |
-| The fields of run records and calibration records | Run record and provenance schemas (T-0028) |
+| The fields of run records and calibration records | [Run records and provenance](records.md) |
 | The budget for measured API runs | Q-0010, settled in M2 |
 
 ## Measured runs
@@ -122,7 +122,7 @@ A round that doesn't reach the sample sizes is published, but can't make the jud
 
 ### Calibrated status
 
-A calibration round produces a **calibration record** (T-0028) for one judge model and one **judge version**. The judge version changes whenever the framework changes the judge's instructions, the rubric rules or the result schema. A framework release ships the records of its judge version. The judge counts as calibrated when the release has a record that meets every threshold for the configured model. A new judge version, or a model without a record, is advisory until it is calibrated again.
+A calibration round produces a [calibration record](records.md#calibration-records) for one judge model and one **judge version**. The judge version changes whenever the framework changes the judge's instructions, the rubric rules or the result schema. A framework release ships the records of its judge version. The judge counts as calibrated when the release has a record that meets every threshold for the configured model. A new judge version, or a model without a record, is advisory until it is calibrated again.
 
 ## Publishing
 

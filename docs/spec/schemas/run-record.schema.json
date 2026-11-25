@@ -1,0 +1,303 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:run-record:0",
+  "title": "Fazon run record (format version 0)",
+  "description": "`.fazon/runs/<run-id>/run.json`: everything one run did, rewritten atomically after every step. The report and every metric are built from these records. See docs/spec/records.md.",
+  "type": "object",
+  "required": ["fazon", "id", "kind", "status", "started", "versions", "config", "iterations", "handEdits", "totals"],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": { "const": 0 },
+    "id": { "$ref": "#/$defs/runId" },
+    "kind": { "enum": ["propose", "generate", "feedback", "verify"] },
+    "parent": {
+      "description": "For a feedback run: the run it answers.",
+      "$ref": "#/$defs/runId"
+    },
+    "component": {
+      "description": "The component; absent for a verify run, which covers them all.",
+      "$ref": "#/$defs/componentName"
+    },
+    "status": { "enum": ["running", "passed", "needs-a-person", "stopped"] },
+    "reason": {
+      "description": "Why a run needs a person.",
+      "enum": ["iterations", "budget", "run-time", "violation", "dependency", "shared-code", "check-error", "inputs-changed"]
+    },
+    "started": { "type": "string", "format": "date-time" },
+    "ended": { "type": "string", "format": "date-time" },
+    "measurement": {
+      "description": "Set on a measured run.",
+      "type": "object",
+      "required": ["round", "repeat"],
+      "additionalProperties": false,
+      "properties": {
+        "round": { "type": "integer", "minimum": 1 },
+        "repeat": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "versions": {
+      "type": "object",
+      "required": ["framework", "claudeCode", "image", "judge"],
+      "additionalProperties": false,
+      "properties": {
+        "framework": { "type": "string", "minLength": 1 },
+        "adapter": { "type": "string", "minLength": 1 },
+        "claudeCode": { "type": "string", "minLength": 1 },
+        "image": { "type": "string", "pattern": "^.+@sha256:[0-9a-f]{64}$" },
+        "judge": { "description": "The judge version.", "type": "integer", "minimum": 1 }
+      }
+    },
+    "inputs": {
+      "description": "Hashes of what the run started from; a run passes only if they didn't change.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "spec": { "$ref": "#/$defs/hash" },
+        "api": { "$ref": "#/$defs/hash" },
+        "tokens": { "$ref": "#/$defs/hash" },
+        "conventions": { "$ref": "#/$defs/hash" },
+        "config": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "config": {
+      "description": "The settings in force for this run.",
+      "type": "object",
+      "required": ["caps", "models", "escalateAfter", "judgePolicy"],
+      "additionalProperties": false,
+      "properties": {
+        "caps": {
+          "type": "object",
+          "required": ["iterations", "budgetUsd", "runMinutes", "callMinutes"],
+          "additionalProperties": false,
+          "properties": {
+            "iterations": { "type": "integer", "minimum": 1 },
+            "budgetUsd": { "type": "number", "exclusiveMinimum": 0 },
+            "runMinutes": { "type": "number", "exclusiveMinimum": 0 },
+            "callMinutes": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        },
+        "models": {
+          "type": "object",
+          "required": ["generator", "escalation", "judge"],
+          "additionalProperties": false,
+          "properties": {
+            "generator": { "type": "string", "minLength": 1 },
+            "escalation": { "type": "string", "minLength": 1 },
+            "judge": { "type": "string", "minLength": 1 }
+          }
+        },
+        "escalateAfter": { "type": "integer", "minimum": 1 },
+        "judgePolicy": { "enum": ["advisory", "blocking", "off"] },
+        "judgeCalibrated": { "type": "boolean" }
+      }
+    },
+    "iterations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/iteration" }
+    },
+    "verification": {
+      "description": "A verify run's checks and judge, which have no agent call.",
+      "$ref": "#/$defs/verification"
+    },
+    "proposal": {
+      "description": "A propose run's output: the proposed API, for the developer to approve.",
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": { "path": { "$ref": "#/$defs/path" } }
+    },
+    "handEdits": {
+      "description": "Changes a person made between agent calls.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["after", "files"],
+        "additionalProperties": false,
+        "properties": {
+          "after": { "description": "The iteration they followed.", "type": "integer", "minimum": 1 },
+          "files": { "type": "array", "items": { "$ref": "#/$defs/path" }, "minItems": 1 }
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "required": ["iterations", "agentCostUsd", "judgeCostUsd", "costUsd", "escalated"],
+      "additionalProperties": false,
+      "properties": {
+        "iterations": { "type": "integer", "minimum": 0 },
+        "agentCostUsd": { "type": "number", "minimum": 0 },
+        "judgeCostUsd": { "type": "number", "minimum": 0 },
+        "costUsd": { "type": "number", "minimum": 0 },
+        "costEstimated": {
+          "description": "True when any agent call's cost was Claude Code's estimate under a subscription login.",
+          "type": "boolean"
+        },
+        "overrunUsd": { "type": "number", "minimum": 0 },
+        "tokens": { "$ref": "#/$defs/tokens" },
+        "durationSeconds": { "type": "number", "minimum": 0 },
+        "escalated": { "type": "boolean" }
+      }
+    }
+  },
+  "$defs": {
+    "runId": {
+      "description": "`<UTC time>-<component or verify>-<4 hex digits>`, which sorts by start time.",
+      "type": "string",
+      "pattern": "^[0-9]{8}T[0-9]{6}Z-[a-z][a-z0-9-]*-[0-9a-f]{4}$"
+    },
+    "componentName": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
+    "hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "path": {
+      "description": "Relative to the run's directory, or to the repository root for source files.",
+      "type": "string",
+      "pattern": "^[^/].*$"
+    },
+    "tokens": {
+      "type": "object",
+      "required": ["input", "output"],
+      "additionalProperties": false,
+      "properties": {
+        "input": { "type": "integer", "minimum": 0 },
+        "cacheRead": { "type": "integer", "minimum": 0 },
+        "cacheWrite": { "type": "integer", "minimum": 0 },
+        "output": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "call": {
+      "description": "One headless agent call.",
+      "type": "object",
+      "required": ["model", "started", "durationSeconds", "end", "tokens", "costUsd", "transcript"],
+      "additionalProperties": false,
+      "properties": {
+        "model": { "type": "string", "minLength": 1 },
+        "effort": { "enum": ["low", "medium", "high", "xhigh", "max"] },
+        "started": { "type": "string", "format": "date-time" },
+        "durationSeconds": { "type": "number", "minimum": 0 },
+        "end": { "enum": ["completed", "call-time", "budget", "error"] },
+        "tokens": { "$ref": "#/$defs/tokens" },
+        "costUsd": { "type": "number", "minimum": 0 },
+        "costEstimated": { "type": "boolean" },
+        "transcript": {
+          "description": "The call's transcript in the run's directory; local only.",
+          "$ref": "#/$defs/path"
+        },
+        "filesChanged": { "type": "array", "items": { "$ref": "#/$defs/path" } }
+      }
+    },
+    "finding": {
+      "description": "A check's finding, as the check catalogue defines it.",
+      "type": "object",
+      "required": ["check", "rule", "message", "blocking"],
+      "additionalProperties": false,
+      "properties": {
+        "check": { "enum": ["build", "lint", "test", "package", "a11y", "tokens", "layout", "visual"] },
+        "rule": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+        "message": { "type": "string", "minLength": 1 },
+        "file": { "$ref": "#/$defs/path" },
+        "line": { "type": "integer", "minimum": 1 },
+        "column": { "type": "integer", "minimum": 1 },
+        "story": { "type": "string" },
+        "theme": { "type": "string" },
+        "part": { "$ref": "#/$defs/componentName" },
+        "selector": { "type": "string" },
+        "expected": { "type": "string" },
+        "actual": { "type": "string" },
+        "evidence": { "$ref": "#/$defs/path" },
+        "exempt": {
+          "description": "The index of the spec exemption that waives it.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocking": {
+          "description": "False when an exemption waives it, or when it is advisory in this run.",
+          "type": "boolean"
+        }
+      }
+    },
+    "checkResult": {
+      "type": "object",
+      "required": ["check", "status", "durationSeconds", "findings"],
+      "additionalProperties": false,
+      "properties": {
+        "check": { "enum": ["build", "lint", "test", "package", "a11y", "tokens", "layout", "visual"] },
+        "status": { "enum": ["pass", "fail", "skipped", "error"] },
+        "durationSeconds": { "type": "number", "minimum": 0 },
+        "message": { "description": "Why it was skipped or ended in error.", "type": "string" },
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } }
+      }
+    },
+    "judgeSummary": {
+      "type": "object",
+      "required": ["calls", "costUsd", "stories", "results"],
+      "additionalProperties": false,
+      "properties": {
+        "calls": { "type": "integer", "minimum": 0 },
+        "costUsd": { "type": "number", "minimum": 0 },
+        "tokens": { "$ref": "#/$defs/tokens" },
+        "stories": {
+          "description": "How many story-theme pairs got each verdict.",
+          "type": "object",
+          "required": ["pass", "fail", "unsure", "notJudged"],
+          "additionalProperties": false,
+          "properties": {
+            "pass": { "type": "integer", "minimum": 0 },
+            "fail": { "type": "integer", "minimum": 0 },
+            "unsure": { "type": "integer", "minimum": 0 },
+            "notJudged": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "blocking": { "description": "Whether its fails blocked in this run.", "type": "boolean" },
+        "results": {
+          "description": "The plan and every call's result, in the run's directory.",
+          "$ref": "#/$defs/path"
+        },
+        "findings": {
+          "description": "The findings of fail and unsure verdicts.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["question", "story", "theme", "verdict", "severity", "message"],
+            "additionalProperties": false,
+            "properties": {
+              "question": { "type": "string" },
+              "story": { "type": "string" },
+              "theme": { "type": "string" },
+              "verdict": { "enum": ["fail", "unsure"] },
+              "severity": { "enum": ["high", "medium", "low"] },
+              "message": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["checks"],
+      "additionalProperties": false,
+      "properties": {
+        "checks": { "type": "array", "items": { "$ref": "#/$defs/checkResult" } },
+        "captures": {
+          "description": "The directory of the captures and diff images.",
+          "$ref": "#/$defs/path"
+        },
+        "judge": { "$ref": "#/$defs/judgeSummary" }
+      }
+    },
+    "iteration": {
+      "type": "object",
+      "required": ["n", "call", "outcome"],
+      "additionalProperties": false,
+      "properties": {
+        "n": { "type": "integer", "minimum": 1 },
+        "call": { "$ref": "#/$defs/call" },
+        "violations": {
+          "description": "Files outside the allowed paths that changed during the call.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/path" }
+        },
+        "verification": { "$ref": "#/$defs/verification" },
+        "outcome": { "enum": ["pass", "fail", "stopped"] }
+      }
+    }
+  }
+}

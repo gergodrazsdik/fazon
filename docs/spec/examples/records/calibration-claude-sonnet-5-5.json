@@ -1,0 +1,200 @@
+{
+  "fazon": 0,
+  "judge": 1,
+  "model": "claude-sonnet-5-5",
+  "framework": "0.4.0",
+  "round": 2,
+  "date": "2027-03-15",
+  "components": [
+    "Button",
+    "Link",
+    "Badge",
+    "Avatar",
+    "Spinner",
+    "TextField",
+    "Textarea",
+    "Checkbox",
+    "RadioGroup",
+    "Switch",
+    "Select",
+    "Card",
+    "Dialog",
+    "Tabs",
+    "Tooltip"
+  ],
+  "operators": [
+    {
+      "id": "raw-color",
+      "class": "measurable",
+      "cases": 15,
+      "caught": 9,
+      "unsure": 1,
+      "checksCaught": {
+        "withBaselines": 15,
+        "withoutBaselines": 15
+      }
+    },
+    {
+      "id": "low-contrast",
+      "class": "measurable",
+      "cases": 15,
+      "caught": 10,
+      "unsure": 2,
+      "checksCaught": {
+        "withBaselines": 15,
+        "withoutBaselines": 15
+      }
+    },
+    {
+      "id": "clipped-text",
+      "class": "measurable",
+      "cases": 12,
+      "caught": 7,
+      "unsure": 2,
+      "checksCaught": {
+        "withBaselines": 12,
+        "withoutBaselines": 12
+      }
+    },
+    {
+      "id": "target-shrunk",
+      "class": "measurable",
+      "cases": 10,
+      "caught": 4,
+      "unsure": 3,
+      "checksCaught": {
+        "withBaselines": 10,
+        "withoutBaselines": 10
+      }
+    },
+    {
+      "id": "padding-step",
+      "class": "measurable",
+      "cases": 15,
+      "caught": 8,
+      "unsure": 4,
+      "checksCaught": {
+        "withBaselines": 15,
+        "withoutBaselines": 0
+      }
+    },
+    {
+      "id": "focus-ring-removed",
+      "class": "measurable",
+      "cases": 13,
+      "caught": 11,
+      "unsure": 1,
+      "checksCaught": {
+        "withBaselines": 13,
+        "withoutBaselines": 0
+      }
+    },
+    {
+      "id": "emphasis-swapped",
+      "class": "viewer-only",
+      "cases": 11,
+      "caught": 10,
+      "unsure": 1,
+      "checksCaught": {
+        "withBaselines": 11,
+        "withoutBaselines": 0
+      }
+    },
+    {
+      "id": "variants-collapsed",
+      "class": "viewer-only",
+      "cases": 14,
+      "caught": 12,
+      "unsure": 1,
+      "checksCaught": {
+        "withBaselines": 14,
+        "withoutBaselines": 0
+      }
+    },
+    {
+      "id": "state-indistinct",
+      "class": "viewer-only",
+      "cases": 30,
+      "caught": 25,
+      "unsure": 3,
+      "checksCaught": {
+        "withBaselines": 30,
+        "withoutBaselines": 0
+      }
+    },
+    {
+      "id": "state-misleading",
+      "class": "viewer-only",
+      "cases": 10,
+      "caught": 8,
+      "unsure": 1,
+      "checksCaught": {
+        "withBaselines": 10,
+        "withoutBaselines": 0
+      }
+    },
+    {
+      "id": "icon-misaligned",
+      "class": "viewer-only",
+      "cases": 12,
+      "caught": 8,
+      "unsure": 2,
+      "checksCaught": {
+        "withBaselines": 12,
+        "withoutBaselines": 0
+      }
+    },
+    {
+      "id": "out-of-family",
+      "class": "viewer-only",
+      "cases": 14,
+      "caught": 12,
+      "unsure": 1,
+      "checksCaught": {
+        "withBaselines": 14,
+        "withoutBaselines": 0
+      }
+    }
+  ],
+  "measures": {
+    "catchRate": {
+      "value": 0.824,
+      "n": 91,
+      "interval": [
+        0.733,
+        0.889
+      ]
+    },
+    "falsePositiveRate": {
+      "value": 0.034,
+      "n": 412,
+      "interval": [
+        0.02,
+        0.056
+      ]
+    },
+    "selfAgreement": {
+      "value": 0.94,
+      "n": 412,
+      "interval": [
+        0.912,
+        0.959
+      ]
+    },
+    "costUsd": {
+      "total": 38.4,
+      "perComponent": 2.56
+    }
+  },
+  "thresholds": {
+    "catchRate": 0.8,
+    "catchRatePerOperator": 0.6,
+    "falsePositiveRate": 0.05,
+    "selfAgreement": 0.9,
+    "minCases": 40,
+    "minCasesPerOperator": 10,
+    "minUnmodifiedStories": 40
+  },
+  "calibrated": true,
+  "records": "https://github.com/gergodrazsdik/fazon-vue-example/releases/download/measurement-2/records.tar.gz"
+}

@@ -14,7 +14,7 @@ This document defines what a spec may contain and which rules make it valid. The
 | How a state is produced (prop, pseudo-state, interaction), how `matrix` expands into stories, story names, the icon set fixtures draw from | [Story matrix rules](story-matrix.md) (T-0021) |
 | Check and rule IDs that `exemptions` name, and what each rule allows | [Check catalogue](check-catalogue.md) (T-0022) |
 | How the judge's rubric is built from the spec | [Judge](judge.md) |
-| Where the approved API's hash is recorded, and its canonical form | Run record and provenance schemas (T-0028) |
+| Where the approved API's hash is recorded, and its canonical form | [Run records and provenance](records.md) |
 | Where specs live in a consumer repo, adapter-wide defaults | Config file reference (T-0029) |
 | Each adapter's mapping of the neutral API, and its schema for `extensions` | Adapter boundary (T-0031) |
 | The token names a spec may reference | Token set (T-0033) |
@@ -279,7 +279,7 @@ Other second-level headings are allowed. Write anything measurable as a field ra
 
 ## Approval
 
-`fazon propose` drafts the API; the developer accepts or corrects it. The approved API is the spec's `props`, `events`, `slots`, `methods`, `forward`, `form`, `parts` (without their `states`, `produce` and `a11y`) and `extensions`. Its hash is recorded in the component's provenance file (T-0028), not in the spec. `fazon generate` refuses to run while the spec's API no longer matches the approved hash, so a change to the API needs a new approval. The other fields change through review in the pull request.
+`fazon propose` drafts the API; the developer accepts or corrects it. The approved API is the spec's `props`, `events`, `slots`, `methods`, `forward`, `form`, `parts` (without their `states`, `produce` and `a11y`) and `extensions`. Its hash is recorded in the component's [provenance file](records.md#provenance), not in the spec. `fazon generate` refuses to run while the spec's API no longer matches the approved hash, so a change to the API needs a new approval. The other fields change through review in the pull request.
 
 ## Validation
 

@@ -13,7 +13,7 @@ How the harness runs the loop: the kinds of run, what one iteration is, what blo
 | The checks and their findings | [Check catalogue](check-catalogue.md) |
 | Visual diffs of the component being generated | [Baseline lifecycle](baseline-lifecycle.md#the-visual-check-by-context) |
 | The judge's rubric, its calibration status and policy | [Judge](judge.md), [measurement protocol](measurement.md#calibrated-status) |
-| What a run record stores | Run record and provenance schemas (T-0028) |
+| What a run record stores | [Run records and provenance](records.md) |
 | The keys for caps and models | Config file reference (T-0029) |
 | The commands that start runs | CLI reference (T-0030) |
 
@@ -120,4 +120,4 @@ The run passes on iteration 3 and goes to the local review. Had iteration 5 fail
 | LOOP-002 | No agent call runs longer than the call-time cap. | the harness |
 | LOOP-003 | After the configured number of failed iterations, the run's later calls use the escalation model. | the harness |
 | LOOP-004 | A run passes only through an iteration with no blocking finding, with the spec, checks and config unchanged since the run started. | the harness |
-| LOOP-005 | Every call's model, effort, tokens, cost and duration, and every iteration's findings, are in the run record. | the harness (T-0028) |
+| LOOP-005 | Every call's model, effort, tokens, cost and duration, and every iteration's findings, are in the [run record](records.md#the-run-record). | the harness |

@@ -10,7 +10,7 @@ What the agent may read, write and run while it generates a component, what the 
 | What | Defined in |
 |---|---|
 | Iterations, caps and what ends a run | [Loop and caps](loop-and-caps.md) |
-| How hand edits and violations are recorded | Run record and provenance schemas (T-0028) |
+| How hand edits and violations are recorded | [Run records and provenance](records.md) |
 | The components directory and other paths | Config file reference (T-0029) |
 | The adapter's file patterns and self-check commands | Adapter boundary (T-0031) |
 
@@ -106,7 +106,7 @@ The exact keys and flags follow the Claude Code version the harness requires; M2
 
 - **Generated files:** at the start of each run, the harness regenerates the component's `generated/` directory from the spec: the story files and contract tests (written by the adapter) and the story manifest. They are committed with the component.
 - **The package entry file:** when a component is first generated, the harness adds exports for it and its parts.
-- **Provenance and run records** (T-0028).
+- **[Provenance and run records](records.md).**
 
 CI regenerates the generated files from the committed specs and fails when they differ from the committed ones (the `build` check's rule `generated`).
 
