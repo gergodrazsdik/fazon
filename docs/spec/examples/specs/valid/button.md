@@ -87,6 +87,11 @@ tokens:
   - when: { state: focus-visible }
     use:
       outline-color: color.focus.ring
+judge:
+  - id: loading-spinner
+    question: Does the spinner take the icon's place without moving the label?
+    select:
+      when: { state: loading }
 extensions:
   angular:
     reason: Native button semantics on the host element, as Angular libraries usually do

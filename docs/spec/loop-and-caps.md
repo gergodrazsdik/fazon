@@ -12,7 +12,7 @@ How the harness runs the loop: the kinds of run, what one iteration is, what blo
 | What the agent may touch and run during a call | [Agent permission model](agent-permissions.md) |
 | The checks and their findings | [Check catalogue](check-catalogue.md) |
 | Visual diffs of the component being generated | [Baseline lifecycle](baseline-lifecycle.md#the-visual-check-by-context) |
-| The judge's rubric, its calibration status and policy | Judge (T-0026), measurement protocol (T-0027) |
+| The judge's rubric, its calibration status and policy | [Judge](judge.md), measurement protocol (T-0027) |
 | What a run record stores | Run record and provenance schemas (T-0028) |
 | The keys for caps and models | Config file reference (T-0029) |
 | The commands that start runs | CLI reference (T-0030) |
@@ -47,7 +47,7 @@ The run **passes** with its first passing iteration and goes to the local review
 |---|---|
 | An unwaived finding of any check | yes |
 | A visual diff (`changed`, `orphan`) of the component being generated | no: shown in the report for the person |
-| A judge `fail` | only once the judge's calibration meets the thresholds (T-0026, T-0027); before that, shown in the report |
+| A judge `fail` | only once the judge's calibration meets the thresholds ([judge](judge.md#authority-and-policy), T-0027); before that, shown in the report |
 | A judge `unsure` | never |
 | A finding a spec exemption waives | no |
 

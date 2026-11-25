@@ -14,7 +14,7 @@ The rules here decide which stories exist and what each one shows. These parts a
 | What each check does with a rendered story | Check catalogue (T-0022) |
 | When a baseline is created, updated or renamed | [Baseline lifecycle](baseline-lifecycle.md) |
 | That the agent never edits stories or the manifest | [Agent permission model](agent-permissions.md) |
-| How the judge's crops are batched | Judge (T-0026) |
+| How the judge's crops are batched | [Judge](judge.md#batching) |
 | The baselines directory, an icon set of the consumer's own | Config file reference (T-0029) |
 | How an adapter writes story files from the manifest | Adapter boundary (T-0031) |
 | The themes, from the token set; the `data-part` and state attribute rule | Token set and conventions doc (T-0033) |

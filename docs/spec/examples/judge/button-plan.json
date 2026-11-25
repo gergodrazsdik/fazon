@@ -1,0 +1,669 @@
+{
+  "fazon": 0,
+  "component": "Button",
+  "calls": [
+    {
+      "question": "story",
+      "source": "derived",
+      "kind": "each",
+      "text": "Does each story look the way the spec describes for its props, state and content?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-sm--default",
+          "story": "button--label--variant-primary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-lg--default",
+          "story": "button--label--variant-primary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-sm--default",
+          "story": "button--label--variant-secondary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--default",
+          "story": "button--label--variant-secondary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-lg--default",
+          "story": "button--label--variant-secondary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-sm--default",
+          "story": "button--label--variant-ghost--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--default",
+          "story": "button--label--variant-ghost--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--default",
+          "story": "button--label--variant-ghost--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--hover",
+          "story": "button--label--variant-primary--size-md--hover"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--hover",
+          "story": "button--label--variant-secondary--size-md--hover"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--hover",
+          "story": "button--label--variant-ghost--size-md--hover"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--focus-visible",
+          "story": "button--label--variant-primary--size-md--focus-visible"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--focus-visible",
+          "story": "button--label--variant-secondary--size-md--focus-visible"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--focus-visible",
+          "story": "button--label--variant-ghost--size-md--focus-visible"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--active",
+          "story": "button--label--variant-primary--size-md--active"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--active",
+          "story": "button--label--variant-secondary--size-md--active"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--active",
+          "story": "button--label--variant-ghost--size-md--active"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--disabled",
+          "story": "button--label--variant-primary--size-md--disabled"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--disabled",
+          "story": "button--label--variant-secondary--size-md--disabled"
+        }
+      ]
+    },
+    {
+      "question": "story",
+      "source": "derived",
+      "kind": "each",
+      "text": "Does each story look the way the spec describes for its props, state and content?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--disabled",
+          "story": "button--label--variant-ghost--size-md--disabled"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--loading",
+          "story": "button--label--variant-primary--size-md--loading"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--loading",
+          "story": "button--label--variant-secondary--size-md--loading"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--loading",
+          "story": "button--label--variant-ghost--size-md--loading"
+        },
+        {
+          "kind": "capture",
+          "label": "button--with-icon--variant-primary--size-md--default",
+          "story": "button--with-icon--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--long-label--variant-primary--size-md--default",
+          "story": "button--long-label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--hover",
+          "story": "button--label--variant-ghost--size-lg--hover"
+        }
+      ]
+    },
+    {
+      "question": "story",
+      "source": "derived",
+      "kind": "each",
+      "text": "Does each story look the way the spec describes for its props, state and content?",
+      "theme": "dark",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-sm--default",
+          "story": "button--label--variant-primary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-lg--default",
+          "story": "button--label--variant-primary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-sm--default",
+          "story": "button--label--variant-secondary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--default",
+          "story": "button--label--variant-secondary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-lg--default",
+          "story": "button--label--variant-secondary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-sm--default",
+          "story": "button--label--variant-ghost--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--default",
+          "story": "button--label--variant-ghost--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--default",
+          "story": "button--label--variant-ghost--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--hover",
+          "story": "button--label--variant-ghost--size-lg--hover"
+        }
+      ]
+    },
+    {
+      "question": "axis-variant",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Do the values of `variant` (primary, secondary, ghost) read as distinct, and as the spec describes them?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--default",
+          "story": "button--label--variant-secondary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--default",
+          "story": "button--label--variant-ghost--size-md--default"
+        }
+      ]
+    },
+    {
+      "question": "axis-variant",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Do the values of `variant` (primary, secondary, ghost) read as distinct, and as the spec describes them?",
+      "theme": "dark",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--default",
+          "story": "button--label--variant-secondary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--default",
+          "story": "button--label--variant-ghost--size-md--default"
+        }
+      ]
+    },
+    {
+      "question": "axis-size",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Do the values of `size` (sm, md, lg) read as distinct, and as the spec describes them?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-sm--default",
+          "story": "button--label--variant-primary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-lg--default",
+          "story": "button--label--variant-primary--size-lg--default"
+        }
+      ]
+    },
+    {
+      "question": "axis-size",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Do the values of `size` (sm, md, lg) read as distinct, and as the spec describes them?",
+      "theme": "dark",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-sm--default",
+          "story": "button--label--variant-primary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-lg--default",
+          "story": "button--label--variant-primary--size-lg--default"
+        }
+      ]
+    },
+    {
+      "question": "state-hover",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Is the component's `hover` state visibly different from default, in the way the spec describes?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--hover",
+          "story": "button--label--variant-primary--size-md--hover"
+        }
+      ]
+    },
+    {
+      "question": "state-focus-visible",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Is the component's `focus-visible` state visibly different from default, in the way the spec describes?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--focus-visible",
+          "story": "button--label--variant-primary--size-md--focus-visible"
+        }
+      ]
+    },
+    {
+      "question": "state-active",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Is the component's `active` state visibly different from default, in the way the spec describes?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--active",
+          "story": "button--label--variant-primary--size-md--active"
+        }
+      ]
+    },
+    {
+      "question": "state-disabled",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Is the component's `disabled` state visibly different from default, in the way the spec describes?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--disabled",
+          "story": "button--label--variant-primary--size-md--disabled"
+        }
+      ]
+    },
+    {
+      "question": "state-loading",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Is the component's `loading` state visibly different from default, in the way the spec describes?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--loading",
+          "story": "button--label--variant-primary--size-md--loading"
+        }
+      ]
+    },
+    {
+      "question": "appearance-1",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Do these stories meet this statement from the spec: “Primary reads as more prominent than secondary, and secondary more than ghost.”",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-sm--default",
+          "story": "button--label--variant-primary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-lg--default",
+          "story": "button--label--variant-primary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-sm--default",
+          "story": "button--label--variant-secondary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--default",
+          "story": "button--label--variant-secondary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-lg--default",
+          "story": "button--label--variant-secondary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-sm--default",
+          "story": "button--label--variant-ghost--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--default",
+          "story": "button--label--variant-ghost--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--default",
+          "story": "button--label--variant-ghost--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--hover",
+          "story": "button--label--variant-ghost--size-lg--hover"
+        }
+      ]
+    },
+    {
+      "question": "appearance-1",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Do these stories meet this statement from the spec: “Primary reads as more prominent than secondary, and secondary more than ghost.”",
+      "theme": "dark",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-sm--default",
+          "story": "button--label--variant-primary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-lg--default",
+          "story": "button--label--variant-primary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-sm--default",
+          "story": "button--label--variant-secondary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--default",
+          "story": "button--label--variant-secondary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-lg--default",
+          "story": "button--label--variant-secondary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-sm--default",
+          "story": "button--label--variant-ghost--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--default",
+          "story": "button--label--variant-ghost--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--default",
+          "story": "button--label--variant-ghost--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--hover",
+          "story": "button--label--variant-ghost--size-lg--hover"
+        }
+      ]
+    },
+    {
+      "question": "appearance-2",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Do these stories meet this statement from the spec: “Every state is visibly different from default.”",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-sm--default",
+          "story": "button--label--variant-primary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-lg--default",
+          "story": "button--label--variant-primary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-sm--default",
+          "story": "button--label--variant-secondary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--default",
+          "story": "button--label--variant-secondary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-lg--default",
+          "story": "button--label--variant-secondary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-sm--default",
+          "story": "button--label--variant-ghost--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--default",
+          "story": "button--label--variant-ghost--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--default",
+          "story": "button--label--variant-ghost--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--hover",
+          "story": "button--label--variant-ghost--size-lg--hover"
+        }
+      ]
+    },
+    {
+      "question": "appearance-2",
+      "source": "derived",
+      "kind": "compare",
+      "text": "Do these stories meet this statement from the spec: “Every state is visibly different from default.”",
+      "theme": "dark",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-sm--default",
+          "story": "button--label--variant-primary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--default",
+          "story": "button--label--variant-primary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-lg--default",
+          "story": "button--label--variant-primary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-sm--default",
+          "story": "button--label--variant-secondary--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--default",
+          "story": "button--label--variant-secondary--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-lg--default",
+          "story": "button--label--variant-secondary--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-sm--default",
+          "story": "button--label--variant-ghost--size-sm--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--default",
+          "story": "button--label--variant-ghost--size-md--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--default",
+          "story": "button--label--variant-ghost--size-lg--default"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-lg--hover",
+          "story": "button--label--variant-ghost--size-lg--hover"
+        }
+      ]
+    },
+    {
+      "question": "loading-spinner",
+      "source": "spec",
+      "kind": "compare",
+      "text": "Does the spinner take the icon's place without moving the label?",
+      "theme": "light",
+      "images": [
+        {
+          "kind": "capture",
+          "label": "button--label--variant-primary--size-md--loading",
+          "story": "button--label--variant-primary--size-md--loading"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-secondary--size-md--loading",
+          "story": "button--label--variant-secondary--size-md--loading"
+        },
+        {
+          "kind": "capture",
+          "label": "button--label--variant-ghost--size-md--loading",
+          "story": "button--label--variant-ghost--size-md--loading"
+        }
+      ]
+    }
+  ]
+}

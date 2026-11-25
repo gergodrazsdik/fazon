@@ -68,6 +68,12 @@
       "items": { "$ref": "#/$defs/exemption" },
       "minItems": 1
     },
+    "judge": {
+      "description": "Questions for the vision judge, added to those the harness derives from the spec.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/judgeQuestion" },
+      "minItems": 1
+    },
     "extensions": {
       "description": "Framework-specific additions to the neutral API, keyed by adapter ID.",
       "type": "object",
@@ -561,6 +567,26 @@
       },
       "additionalProperties": false,
       "minProperties": 1
+    },
+    "judgeQuestion": {
+      "description": "A question the judge answers about the stories `select` picks: those of the axes grid when it's left out.",
+      "type": "object",
+      "required": ["id", "question"],
+      "properties": {
+        "id": { "$ref": "#/$defs/kebabName" },
+        "question": { "$ref": "#/$defs/text" },
+        "select": {
+          "type": "object",
+          "properties": {
+            "fixture": { "$ref": "#/$defs/kebabName" },
+            "part": { "$ref": "#/$defs/componentName" },
+            "when": { "$ref": "#/$defs/when" }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": false
     },
     "matrixPoint": {
       "description": "One story: a fixture (the first fixture when left out), axis values (the others at their defaults) and a state (`default` when left out), of the component or of `part`.",

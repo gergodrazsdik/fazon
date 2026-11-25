@@ -13,7 +13,7 @@ This document defines what a spec may contain and which rules make it valid. The
 |---|---|
 | How a state is produced (prop, pseudo-state, interaction), how `matrix` expands into stories, story names, the icon set fixtures draw from | [Story matrix rules](story-matrix.md) (T-0021) |
 | Check and rule IDs that `exemptions` name, and what each rule allows | [Check catalogue](check-catalogue.md) (T-0022) |
-| How the judge's rubric is built from the body | Judge (T-0026) |
+| How the judge's rubric is built from the spec | [Judge](judge.md) |
 | Where the approved API's hash is recorded, and its canonical form | Run record and provenance schemas (T-0028) |
 | Where specs live in a consumer repo, adapter-wide defaults | Config file reference (T-0029) |
 | Each adapter's mapping of the neutral API, and its schema for `extensions` | Adapter boundary (T-0031) |
@@ -58,6 +58,7 @@ Every member of the API is written in long form, as a mapping, even when it only
 | `matrix` | no | [Hooks for the story matrix](#matrix). |
 | `tokens` | no | [Token rules](#tokens). |
 | `exemptions` | no | [Checks waived](#exemptions) for this component. |
+| `judge` | no | [Questions for the judge](#judge-questions), added to those derived from the spec. |
 | `extensions` | no | [Framework-specific additions](#extensions). |
 
 No other field is allowed. In particular, the approval of the API isn't recorded in the spec but in the component's provenance file (see [Approval](#approval)).
@@ -206,6 +207,22 @@ Specs name role tokens only, never raw tokens. The token names in the examples a
 
 Every exemption is listed in the report and in the pull request summary. An exemption is the developer's decision, which the reviewer sees; the agent permission model (T-0024) keeps it out of the agent's reach.
 
+### Judge questions
+
+`judge` adds questions for the [vision judge](judge.md#the-rubric) to those the harness derives from the spec. Each has:
+
+- `id`: a kebab-case name, unique in the spec and different from the derived questions' names;
+- `question`: what the judge should decide, about something a viewer can see and a check can't measure;
+- `select`: which stories it's asked about, by `fixture`, `part` and a [condition](#conditions) in `when`; the axes grid's stories when left out.
+
+```yaml
+judge:
+  - id: loading-spinner
+    question: Does the spinner take the icon's place without moving the label?
+    select:
+      when: { state: loading }
+```
+
 ### Extensions
 
 `extensions` holds what a framework needs that the neutral API can't say, keyed by adapter ID: `vue`, `react`, `angular`, `svelte`, `web-components`. Before adding an extension, check whether the need is the same in every framework (then it belongs in the neutral API) or the same for every component of one framework (then it belongs in the adapter's defaults or the config file).
@@ -253,7 +270,7 @@ The body is prose for the agent and the judge, in second-level headings:
 |---|---|---|
 | `## Purpose` | yes | What the component is for and when to use it. |
 | `## Behaviour` | yes | How it responds to input, as a list. Behaviour that spans parts goes here too. |
-| `## Appearance` | no | What it should look like, in terms a viewer can judge; the judge's rubric is built from it (T-0026). |
+| `## Appearance` | no | What it should look like, in terms a viewer can judge, as a list; each item becomes a question in the [judge's rubric](judge.md#the-rubric). |
 | `## Content` | no | Guidance on labels and content. |
 | `## Accessibility` | no | What the `a11y` fields can't say. |
 | `## Never` | yes | Uses and looks that are wrong, as a list. |
@@ -287,6 +304,7 @@ Other second-level headings are allowed. Write anything measurable as a field ra
 | SPEC-015 | Every state other than `default` can be produced: it has a recipe, a boolean prop of its name, or is `hover`, `focus-visible` or `active`. |
 | SPEC-016 | Every `produce` key is a listed state of its component or part; a recipe's props exist there; every input target exists; `instance` is used only on a part's state, and is below the number of instances in every fixture the stories render. |
 | SPEC-017 | Every `include` entry names an existing fixture, axes in `props` with values of their type, and a listed state of the component or of `part`; its story isn't one a grid already makes, and no `exclude` condition drops it. |
+| SPEC-018 | Judge questions: every `id` is unique and isn't a derived question's name (`story`, `axis-…`, `state-…`, `appearance-…`, `reference`, `family`, `change-…`); every `select` picks at least one story, with an existing fixture, part and condition (SPEC-014). |
 
 The command works without an agent, and the spec skill never writes a spec the check would reject.
 
