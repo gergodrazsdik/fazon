@@ -4,13 +4,13 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0085, F-0007, Q-0018.
+Next free IDs: T-0085, F-0007, Q-0019.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M0: the adapter boundary (T-0031), then the reusable workflow interface (T-0032)
+1. M0: the reusable workflow interface (T-0032), then the conventions doc and token set (T-0033)
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -63,7 +63,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [x] T-0028 Run record and provenance schemas, including the calibration record and the fields measured runs need ([ADR 0012](../adr/0012-measurement.md)) (Q-0012) — 2026-11-25: version 0, with schemas and examples ([ADR 0013](../adr/0013-records.md)), [#20](https://github.com/gergodrazsdik/fazon/pull/20)
 - [x] T-0029 Config file reference: name, format and keys, including a consumer's own fixture icon set ([ADR 0006](../adr/0006-story-matrix.md)) the baselines directory ([ADR 0008](../adr/0008-baseline-lifecycle.md)) the components directory ([ADR 0009](../adr/0009-agent-permissions.md)), the caps, models, escalation threshold, effort and judge prices ([ADR 0010](../adr/0010-loop-and-caps.md)), and the judge's model, policy, CI cap and repeats ([ADR 0011](../adr/0011-judge.md)) — 2026-11-25: version 0, with the config and local override schemas ([ADR 0014](../adr/0014-config.md)), [#21](https://github.com/gergodrazsdik/fazon/pull/21)
 - [x] T-0030 CLI reference, covering every command, including `fazon baseline update` ([ADR 0008](../adr/0008-baseline-lifecycle.md)) and reading and pruning `.fazon/` ([ADR 0013](../adr/0013-records.md)); `fazon init` writes `fazon.yaml` and gitignores `fazon.local.yaml` and `.fazon/`, and an upgrade command updates `image` ([ADR 0014](../adr/0014-config.md)) — 2026-11-25: version 0, with the JSON output schema ([ADR 0015](../adr/0015-cli.md)), [#22](https://github.com/gergodrazsdik/fazon/pull/22)
-- [ ] T-0031 Adapter boundary, including how the example repo consumes the framework before M5, the source checks' and self-checks' commands, the file patterns allowed in a component's directory, and reading a component's API for the contract tests (Q-0001)
+- [x] T-0031 Adapter boundary, including how the example repo consumes the framework before M5, the source checks' and self-checks' commands, the file patterns allowed in a component's directory, and reading a component's API for the contract tests (Q-0001) — 2026-11-25: version 0 ([ADR 0016](../adr/0016-adapter-boundary.md)), [#23](https://github.com/gergodrazsdik/fazon/pull/23)
 - [ ] T-0032 Reusable workflow interface: inputs, secrets and permissions; it compares baselines and lists those a pull request changes, and never writes them ([ADR 0008](../adr/0008-baseline-lifecycle.md)); the judge step's secret, fork skipping and cap ([ADR 0011](../adr/0011-judge.md)); it uploads the report but no transcript ([ADR 0013](../adr/0013-records.md))
 - [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples; the conventions doc requires the `data-part` and `data-<state>` attributes ([ADR 0006](../adr/0006-story-matrix.md)); say which tokens are role tokens, how custom properties are named, and the story frame's base styles ([ADR 0007](../adr/0007-check-catalogue.md)) (Q-0007)
 - [ ] T-0034 License terms for generated and scaffolded files, and for the example repo, and Lucide's license notice for the fixture icons (Q-0002, Q-0003, Q-0004)
@@ -78,7 +78,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [ ] T-0043 CodeQL default setup: add `javascript-typescript` once code exists (`scripts/github-settings.sh`)
 - [ ] T-0044 Sandbox network allowlist for Playwright and Storybook (browser downloads, registries), and any MCP servers, in `.claude/settings.json`
 - [ ] T-0045 `just build`, `just test` and `just verify` recipes, with the code
-- [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md)) (break down at M1 start)
+- [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action; the framework's CI pushes pre-release verifier images to GHCR, a lint rule keeps framework code out of the core, and the example repo checks its three pins name one commit ([ADR 0016](../adr/0016-adapter-boundary.md)) ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md)) (break down at M1 start)
 - [ ] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md))
 
 ### M2 The loop
@@ -100,7 +100,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 ### M5 Packaging (end of version 1)
 
 - [ ] T-0065 The plugin, npm packages attached to a GitHub release, the signed image, the versioned workflow, `fazon init`; a fresh repo adopts the framework from the README alone
-- [ ] T-0066 Write permissions for image and release publishing (packages, attestations, releases), and the actions those workflows use in the allowed-actions list
+- [ ] T-0066 Write permissions for image and release publishing (packages, attestations, releases), and the actions those workflows use in the allowed-actions list; pre-release image pushes already have `packages: write` from M1, signing starts here ([ADR 0016](../adr/0016-adapter-boundary.md))
 
 ## Phase 4: Results
 
@@ -141,7 +141,7 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 
 From the brief's [Open](../design/brief.md#open) table:
 
-- [ ] Q-0001 How does the example repo consume the framework before M5? Proposal: pinned to one framework commit. Settled by M0 (T-0031)
+- [x] Q-0001 How does the example repo consume the framework before M5? Proposal: pinned to one framework commit. Settled by M0 (T-0031) — answered 2026-11-25: git dependencies at one commit SHA, the workflow by the same SHA, and the verifier image pushed to GHCR by the framework's CI for that commit, pinned by digest ([ADR 0016](../adr/0016-adapter-boundary.md))
 - [ ] Q-0002 Which license covers what Fazon writes into an adopter's repo? Proposal: MIT-0 for all of it. Settled by M0 (T-0034)
 - [ ] Q-0003 Which license does the example repo carry? Proposal: the same permissive license. Settled by M0 (T-0034)
 - [ ] Q-0004 Does the CLA apply to the example repo? Proposal: it takes no outside contributions before the publishing decision. Settled by M0 (T-0034)
@@ -161,3 +161,4 @@ From the bootstrap:
 - [x] Q-0015 The contributor agreement's governing law (`CLA.md`, Section 6.1) is blank (maintainer, at the review: T-0010) — answered 2026-11-25: Hungary, filled in ([ADR 0003](../adr/0003-bootstrap-answers.md))
 - [x] Q-0016 Confirm the agreement's other fill-ins at the review: the maintainer personally as "We"; CC BY 4.0, CC BY-SA 4.0 and CC0 1.0 as the media licenses; "[or Your Affiliates]" left out of the patent license (maintainer, T-0010) — answered 2026-11-25: confirmed by the maintainer; the legal review still checks them (T-0010, [ADR 0003](../adr/0003-bootstrap-answers.md))
 - [x] Q-0017 How is the contributor agreement's review completed: by a lawyer, working from the review input under T-0010, or does the maintainer accept a revised text without one? Either way the maintainer or the lawyer supplies the revised wording (maintainer, 2026-11-25) — answered 2026-11-25: without a lawyer; the maintainer accepts the findings as best effort ([ADR 0004](../adr/0004-contributor-agreement-amended.md))
+- [ ] Q-0018 Which npm names do the Vue adapter and any core package take, beyond the reserved `fazon`? A scope such as `@fazon/` needs its npm organisation; unscoped names such as `fazon-adapter-vue` don't. Settle before M1's first package, and reserve them as `fazon` was (T-0031, [ADR 0016](../adr/0016-adapter-boundary.md))

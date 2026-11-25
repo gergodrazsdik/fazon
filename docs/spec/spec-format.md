@@ -16,8 +16,8 @@ This document defines what a spec may contain and which rules make it valid. The
 | How the judge's rubric is built from the spec | [Judge](judge.md) |
 | Where the approved API's hash is recorded, and its canonical form | [Run records and provenance](records.md) |
 | Where specs live in a consumer repo | [Config file reference](config.md) |
-| Adapter-wide defaults for the API mapping | Adapter boundary (T-0031) |
-| Each adapter's mapping of the neutral API, and its schema for `extensions` | Adapter boundary (T-0031) |
+| Adapter-wide defaults for the API mapping | [Adapter boundary](adapter-boundary.md) |
+| Each adapter's mapping of the neutral API, and its schema for `extensions` | [Adapter boundary](adapter-boundary.md) |
 | The token names a spec may reference | Token set (T-0033) |
 
 ## Files
@@ -93,7 +93,7 @@ The API is written once, framework-neutral. Each adapter maps it to its framewor
 
 **`methods`**, keyed by name: `description`, optional `params` (keyed by name, each with a type) and an optional `returns` type. Only for what can't be done through props, such as moving focus.
 
-How the Vue adapter maps the API, and how later adapters are expected to (the [adapter boundary](README.md) document, T-0031, makes this binding):
+How the Vue adapter maps the API, and how later adapters are expected to (the [adapter boundary](adapter-boundary.md#api-mapping) makes this binding for Vue):
 
 | Neutral | Vue (version 1) | React | Angular | Svelte | Web Components |
 |---|---|---|---|---|---|

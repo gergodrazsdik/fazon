@@ -16,7 +16,7 @@ The rules here decide which stories exist and what each one shows. These parts a
 | That the agent never edits stories or the manifest | [Agent permission model](agent-permissions.md) |
 | How the judge's crops are batched | [Judge](judge.md#batching) |
 | The baselines directory, an icon set of the consumer's own | [Config file reference](config.md) |
-| How an adapter writes story files from the manifest | Adapter boundary (T-0031) |
+| How an adapter writes story files from the manifest | [Adapter boundary](adapter-boundary.md) |
 | The themes, from the token set; the `data-part` and state attribute rule | Token set and conventions doc (T-0033) |
 
 ## From spec to screenshots
