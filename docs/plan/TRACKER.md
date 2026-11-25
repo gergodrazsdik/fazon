@@ -4,16 +4,15 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0082, F-0004, Q-0017.
+Next free IDs: T-0084, F-0004, Q-0017.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. The maintainer merges the smoke-test pull request with "Rebase and merge" (T-0009)
-2. Contributor agreement: review it and set up the CLA assistant before any outside pull request is merged (T-0010, T-0011)
+1. The maintainer publishes the placeholder package that reserves the npm name `fazon` (T-0082)
+2. Contributor agreement: the legal review, then the CLA assistant, before any outside pull request is merged (T-0010, T-0011)
 3. M0: the spec format and its JSON Schema first, as most other documents build on it (T-0020), then the story matrix rules (T-0021) and the check catalogue (T-0022)
-4. Decide whether to reserve the npm name `fazon` now (Q-0014)
 
 ## Phase 0: Bootstrap
 
@@ -27,12 +26,13 @@ Next free IDs: T-0082, F-0004, Q-0017.
 - [x] T-0006 Repository settings and rulesets (`scripts/github-settings.sh`), applied and checked — 2026-11-25, applied with `--no-required-checks` after the first push; `just github-settings-check` reports every setting as matching
 - [x] T-0007 Smoke-test pull request: `lint`, `zizmor` and `pr-title` run and pass, then they become required checks on `main` — 2026-11-25, [#1](https://github.com/gergodrazsdik/fazon/pull/1)
 - [x] T-0008 Contributor agreement text: Harmony HA-CLA-I 1.0 with outbound Option Five in `CLA.md` ([ADR 0002](../adr/0002-contributor-license-agreement.md)) — 2026-11-25, [ebad2ad](https://github.com/gergodrazsdik/fazon/commit/ebad2ad)
-- [!] T-0009 The maintainer merges the smoke-test pull request with "Rebase and merge", to confirm the relaxed rules work (maintainer)
+- [x] T-0009 The maintainer merges the smoke-test pull request with "Rebase and merge", to confirm the relaxed rules work (maintainer) — 2026-11-25, [#1](https://github.com/gergodrazsdik/fazon/pull/1): the rebase merge went through with no required signatures; GitHub rewrote the commits, so they are unsigned on `main`
 - [ ] T-0015 CI tool pins: the linter versions in `scripts/install-ci-tools.sh` and `.github/workflows/lint.yml` are outside Dependabot's reach; bump them together with the local toolchain (`just doctor`), with a 7-day cooldown like Dependabot's
+- [!] T-0082 Reserve the npm name `fazon` with a placeholder package, version `0.0.0`, no code ([ADR 0003](../adr/0003-bootstrap-answers.md)); the maintainer publishes it with their own npm account (steps in the pull request)
 
 ### Contributor agreement (before the first outside contribution)
 
-- [!] T-0010 Have `CLA.md` reviewed by a lawyer of the maintainer's choice; settle its open blanks (Q-0015, Q-0016), then drop the draft notice (maintainer)
+- [!] T-0010 Have `CLA.md` reviewed by a lawyer of the maintainer's choice, under Hungarian law (its Section 6.1), then drop the draft notice (maintainer). Questions for the review, not answers: whether Section 2.4's waiver of moral rights and acceptance by a click in the CLA assistant are effective under Hungarian copyright and contract law, and whether the fill-ins in ADR 0003 hold
 - [!] T-0011 Install the CLA assistant GitHub App on the repository, link the agreement (a Gist made from `CLA.md`) and exempt the maintainer and `dependabot[bot]` (maintainer; steps in the bootstrap pull request)
 - [ ] T-0012 Keep `CLA.md` and the CLA assistant's Gist identical: compare them with every change to either
 - [ ] T-0013 Test pull request: the CLA assistant reports `license/cla`; check whether a `Co-Authored-By` trailer (agent commits) asks the co-author to sign, and exempt that address if so
@@ -69,6 +69,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [ ] T-0044 Sandbox network allowlist for Playwright and Storybook (browser downloads, registries), and any MCP servers, in `.claude/settings.json`
 - [ ] T-0045 `just build`, `just test` and `just verify` recipes, with the code
 - [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build (break down at M1 start)
+- [ ] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md))
 
 ### M2 The loop
 
@@ -141,8 +142,8 @@ From the brief's [Open](../design/brief.md#open) table:
 
 From the bootstrap:
 
-- [ ] Q-0012 Where do run records and reports go? `.gitignore` holds the placeholder `.fazon/` until the run record document settles it (T-0028)
-- [ ] Q-0013 Do source files carry a license header (for example an `SPDX-License-Identifier: GPL-3.0-or-later` line)? Decide before the first source file (M1)
-- [ ] Q-0014 Reserve the npm name `fazon` now (free on 2026-11-25) with a placeholder package, or wait for the publishing decision? Publishing anything is the maintainer's call
-- [!] Q-0015 The contributor agreement's governing law (`CLA.md`, Section 6.1) is blank (maintainer, at the review: T-0010)
-- [!] Q-0016 Confirm the agreement's other fill-ins at the review: the maintainer personally as "We"; CC BY 4.0, CC BY-SA 4.0 and CC0 1.0 as the media licenses; "[or Your Affiliates]" left out of the patent license (maintainer, T-0010)
+- [x] Q-0012 Where do run records and reports go? `.gitignore` holds the placeholder `.fazon/` until the run record document settles it (T-0028) — answered 2026-11-25: `.fazon/`, as in `.gitignore`; the run record document defines the layout inside (T-0028, [ADR 0003](../adr/0003-bootstrap-answers.md))
+- [x] Q-0013 Do source files carry a license header (for example an `SPDX-License-Identifier: GPL-3.0-or-later` line)? Decide before the first source file (M1) — answered 2026-11-25: yes, an `SPDX-License-Identifier: GPL-3.0-or-later` line, but not in files written into an adopter's repo; the scripts have it, the check comes with the code (T-0083, [ADR 0003](../adr/0003-bootstrap-answers.md))
+- [x] Q-0014 Reserve the npm name `fazon` now (free on 2026-11-25) with a placeholder package, or wait for the publishing decision? Publishing anything is the maintainer's call — answered 2026-11-25: yes, reserve it (T-0082, [ADR 0003](../adr/0003-bootstrap-answers.md))
+- [x] Q-0015 The contributor agreement's governing law (`CLA.md`, Section 6.1) is blank (maintainer, at the review: T-0010) — answered 2026-11-25: Hungary, filled in ([ADR 0003](../adr/0003-bootstrap-answers.md))
+- [x] Q-0016 Confirm the agreement's other fill-ins at the review: the maintainer personally as "We"; CC BY 4.0, CC BY-SA 4.0 and CC0 1.0 as the media licenses; "[or Your Affiliates]" left out of the patent license (maintainer, T-0010) — answered 2026-11-25: confirmed by the maintainer; the legal review still checks them (T-0010, [ADR 0003](../adr/0003-bootstrap-answers.md))

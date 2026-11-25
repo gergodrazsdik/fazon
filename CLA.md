@@ -1,12 +1,12 @@
 # Fazon Individual Contributor License Agreement
 
-> **Status: draft, not yet in force.** It is reviewed before the first outside contribution is accepted, and its open blanks are filled in then (see the tracker). Until then, no outside pull request is merged.
+> **Status: draft, not yet in force.** It is reviewed before the first outside contribution is accepted (see the tracker). Until then, no outside pull request is merged.
 >
 > **Why there is an agreement.** Fazon is licensed GPL-3.0-or-later. This agreement lets the maintainer also license contributions under other terms, commercial ones included, for example to offer Fazon under a commercial licence alongside the GPL. You keep the copyright in your contribution ([ADR 0002](docs/adr/0002-contributor-license-agreement.md)).
 >
 > **How to sign.** The CLA assistant comments on your first pull request with a link; you accept the agreement there with your GitHub account. This file is the canonical text. The copy the CLA assistant shows is made from it and must stay identical.
 >
-> **Source.** The text below is the [Harmony Individual Contributor License Agreement (HA-CLA-I)](https://www.harmonyagreements.org/agreements.html), Version 1.0, July 4, 2011, by the Harmony Agreements project, licensed under [CC BY 3.0 Unported](https://creativecommons.org/licenses/by/3.0/). It was taken from `ha-cla-i-v1.pdf` (SHA-256 `814aa5910efe90f9aba8737de0b31a0c21a2cbcc105a35eaea2205fc7b6ae452`) on 2026-11-25. Changes from the template: the bracketed blanks are filled in; of the five outbound license options in Section 2.3 only Option Five is kept, and its label removed; the optional words "[or Your Affiliates]" in Section 2.2 are left out, as this individual agreement doesn't define affiliates; the paper signature block is replaced by electronic acceptance (above); the blank governing law in Section 6.1 is still open; and the text is formatted as Markdown.
+> **Source.** The text below is the [Harmony Individual Contributor License Agreement (HA-CLA-I)](https://www.harmonyagreements.org/agreements.html), Version 1.0, July 4, 2011, by the Harmony Agreements project, licensed under [CC BY 3.0 Unported](https://creativecommons.org/licenses/by/3.0/). It was taken from `ha-cla-i-v1.pdf` (SHA-256 `814aa5910efe90f9aba8737de0b31a0c21a2cbcc105a35eaea2205fc7b6ae452`) on 2026-11-25. Changes from the template: the bracketed blanks are filled in; of the five outbound license options in Section 2.3 only Option Five is kept, and its label removed; the optional words "[or Your Affiliates]" in Section 2.2 are left out, as this individual agreement doesn't define affiliates; the paper signature block is replaced by electronic acceptance (above); and the text is formatted as Markdown.
 
 ---
 
@@ -80,7 +80,7 @@ TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL YOU BE LIABL
 
 ### 6. Miscellaneous
 
-6.1 This Agreement will be governed by and construed in accordance with the laws of **[JURISDICTION: not yet decided, see the tracker]** excluding its conflicts of law provisions. Under certain circumstances, the governing law in this section might be superseded by the United Nations Convention on Contracts for the International Sale of Goods ("UN Convention") and the parties intend to avoid the application of the UN Convention to this Agreement and, thus, exclude the application of the UN Convention in its entirety to this Agreement.
+6.1 This Agreement will be governed by and construed in accordance with the laws of Hungary excluding its conflicts of law provisions. Under certain circumstances, the governing law in this section might be superseded by the United Nations Convention on Contracts for the International Sale of Goods ("UN Convention") and the parties intend to avoid the application of the UN Convention to this Agreement and, thus, exclude the application of the UN Convention in its entirety to this Agreement.
 
 6.2 This Agreement sets out the entire agreement between You and Us for Your Contributions to Us and overrides all other agreements or understandings.
 
