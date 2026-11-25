@@ -1,0 +1,10 @@
+{
+  "name": "fazon-verifier-smoke",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "description": "Smoke test for the verifier image (verifier/README.md); not a package.",
+  "type": "module",
+  "dependencies": {
+    "playwright-core": "1.65.1"
+  }
+}

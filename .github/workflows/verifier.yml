@@ -1,0 +1,106 @@
+---
+# Builds the verifier image (verifier/README.md) and smoke-tests it. On a push to main it also
+# pushes the image to GHCR as fazon-verifier:sha-<commit>, which the example repository pins by
+# digest (docs/spec/adapter-boundary.md, "Consuming the framework before M5"; ADR 0016).
+name: verifier
+
+on:
+  pull_request:
+    paths:
+      - "verifier/**"
+      - ".github/workflows/verifier.yml"
+  # Every commit on main gets an image: the example repository pins one commit for the packages,
+  # the workflow and the image together.
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  LOCAL_TAG: localhost/fazon-verifier:ci
+  IMAGE: ghcr.io/gergodrazsdik/fazon-verifier
+
+jobs:
+  image:
+    name: verifier-image
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # No provenance or SBOM attestations before the signed releases in M5 (T-0066).
+      - name: Build the image
+        run: >-
+          docker build --platform linux/amd64 --provenance=false --sbom=false
+          --build-arg "REVISION=$GITHUB_SHA" --tag "$LOCAL_TAG" --file verifier/Containerfile verifier
+      - name: Smoke-test the image
+        run: verifier/smoke/run.sh "$LOCAL_TAG" "$RUNNER_TEMP/smoke"
+      - name: Record the renders
+        if: ${{ !cancelled() }}
+        run: |
+          # No results when the build or the container failed before rendering.
+          if [ ! -f "$RUNNER_TEMP/smoke/results.json" ]; then exit 0; fi
+          {
+            echo "### Verifier smoke test"
+            echo
+            echo "| Capture | Size | SHA-256 |"
+            echo "|---|---|---|"
+            jq -r '.captures | to_entries[] | "| \(.key) | \(.value.width)x\(.value.height) | `\(.value.sha256)` |"' "$RUNNER_TEMP/smoke/results.json"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish-image:
+    name: verifier-publish
+    if: github.event_name == 'push' && github.repository == 'gergodrazsdik/fazon'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write # push the image to GHCR; the only job with this permission
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build the image
+        run: >-
+          docker build --platform linux/amd64 --provenance=false --sbom=false
+          --build-arg "REVISION=$GITHUB_SHA" --tag "$LOCAL_TAG" --file verifier/Containerfile verifier
+      - name: Smoke-test the image
+        run: verifier/smoke/run.sh "$LOCAL_TAG" "$RUNNER_TEMP/smoke"
+      - name: Log in to GHCR
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: printf '%s' "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Push the image
+        run: |
+          ref="$IMAGE:sha-$GITHUB_SHA"
+          docker tag "$LOCAL_TAG" "$ref"
+          docker push "$ref"
+          digest=$(docker buildx imagetools inspect "$ref" --format '{{json .Manifest}}' | jq -r .digest)
+          case "$digest" in
+            sha256:*) ;;
+            *) echo "::error::no digest for $ref"; exit 1 ;;
+          esac
+          {
+            echo "### Verifier image"
+            echo
+            echo "Pushed \`$ref\`. Pin it by digest:"
+            echo
+            echo '```text'
+            echo "$IMAGE@$digest"
+            echo '```'
+            echo
+            echo "| Capture | Size | SHA-256 |"
+            echo "|---|---|---|"
+            jq -r '.captures | to_entries[] | "| \(.key) | \(.value.width)x\(.value.height) | `\(.value.sha256)` |"' "$RUNNER_TEMP/smoke/results.json"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Log out of GHCR
+        if: ${{ always() }}
+        run: docker logout ghcr.io

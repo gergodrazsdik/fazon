@@ -1,0 +1,64 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# The Fazon verifier image: headless Chromium with pinned fonts, in which every rendered check
+# runs (docs/spec/check-catalogue.md#visual, docs/spec/story-matrix.md#rendering). Built and run
+# for linux/amd64 only. verifier/README.md says how to build and smoke-test it.
+
+# Base: Microsoft's Playwright image, Ubuntu 24.04 (noble), pinned by the digest of its
+# multi-platform index; the build selects linux/amd64.
+#   mcr.microsoft.com/playwright:v1.65.1-noble
+#   linux/amd64 manifest: sha256:766137e2d9caad4744187e53cdc89320ba6f2eb57cff097374020944b44dd0a9
+# It carries Node.js 26, Playwright 1.65.1's browsers in /ms-playwright (Chromium build 1255,
+# chrome-headless-shell 159.0.8154.6) and the user pwuser (uid 1001). It has no Playwright npm
+# package: the framework's packages bring playwright-core, pinned to the same version, 1.65.1.
+# Move this pin and theirs together; a mismatch fails when Playwright looks for its browser.
+FROM mcr.microsoft.com/playwright:v1.65.1-noble@sha256:1507cbfc550a63a6b7396791ca4f00df17beb56342d2447b3f106c306f525579
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# The generic font families (system-ui, sans-serif, serif, monospace) resolve to DejaVu, installed
+# from a dated Ubuntu snapshot at exact versions, so a rebuild installs the same files. Only the
+# snapshot is used as a source here; change the date and the versions together.
+ARG UBUNTU_SNAPSHOT=20261124T000000Z
+RUN mkdir /tmp/fazon-apt \
+    && printf '%s\n' \
+        'Types: deb' \
+        "URIs: https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT}/" \
+        'Suites: noble noble-updates noble-security' \
+        'Components: main' \
+        'Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg' \
+        > /tmp/fazon-apt/snapshot.sources \
+    && apt-get -o Dir::Etc::SourceList=/dev/null -o Dir::Etc::SourceParts=/tmp/fazon-apt update \
+    && DEBIAN_FRONTEND=noninteractive apt-get \
+        -o Dir::Etc::SourceList=/dev/null -o Dir::Etc::SourceParts=/tmp/fazon-apt \
+        install -y --no-install-recommends \
+        fonts-dejavu-core=2.37-8 \
+        fonts-dejavu-mono=2.37-8 \
+    && rm -rf /var/lib/apt/lists/* /tmp/fazon-apt
+
+# The fontconfig rules that map each generic family to one DejaVu font.
+COPY fonts.conf /etc/fonts/conf.d/52-fazon-generic.conf
+RUN fc-cache --force
+
+# Renders don't depend on the host's time zone.
+ENV TZ=UTC
+
+# The Fazon packages go here, in a later M1 step (T-0046): the CLI and the verifier, built from
+# the same commit as this image, installed with their pinned dependencies (playwright-core 1.65.1)
+# and owned by root. Until then the image holds no Fazon code.
+
+# The version label overrides the base image's (Playwright's version); images are pre-releases
+# until M5.
+ARG REVISION=unknown
+LABEL org.opencontainers.image.title="fazon-verifier" \
+      org.opencontainers.image.version="pre-release" \
+      org.opencontainers.image.description="Fazon's verifier: headless Chromium with pinned fonts for rendered checks" \
+      org.opencontainers.image.source="https://github.com/gergodrazsdik/fazon" \
+      org.opencontainers.image.licenses="GPL-3.0-or-later" \
+      org.opencontainers.image.revision="${REVISION}" \
+      org.opencontainers.image.base.name="mcr.microsoft.com/playwright:v1.65.1-noble" \
+      org.opencontainers.image.base.digest="sha256:1507cbfc550a63a6b7396791ca4f00df17beb56342d2447b3f106c306f525579"
+
+# The base image's pwuser, by number. 1001 is also the uid of GitHub's hosted runners, so files
+# the container writes into a mounted checkout belong to the runner's user.
+USER 1001:1001
+WORKDIR /home/pwuser
