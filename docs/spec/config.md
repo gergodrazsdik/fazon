@@ -31,9 +31,11 @@ The file never holds credentials. The API key comes from the environment (`ANTHR
 | `paths.specs` | `specs` | The component specs ([spec format](spec-format.md#files)). |
 | `paths.components` | `src/components` | The components directory; each component has `<name>/` in it ([agent permissions](agent-permissions.md#paths)). |
 | `paths.entry` | `src/index.ts` | The package entry file the harness maintains. |
-| `paths.tokens` | `tokens/tokens.json` | The tokens file. |
+| `paths.tokens` | `tokens/tokens.resolver.json` | The token set's resolver document ([token set](tokens.md#files)). |
+| `paths.tokensCss` | `src/tokens.css` | The CSS that `fazon sync` builds from the token set ([the build](tokens.md#the-build)). |
 | `paths.conventions` | `docs/conventions.md` | The conventions doc. |
 | `paths.baselines` | `baselines` | The baselines directory ([baseline lifecycle](baseline-lifecycle.md#where-baselines-live)). |
+| `tokens.prefix` | none | The prefix of the token set's custom properties, in lowercase kebab-case: with `fz`, `color.action.primary` is `--fz-color-action-primary` ([custom properties](tokens.md#custom-properties)). |
 | `icons` | `lucide` | The fixture icon set ([story matrix rules](story-matrix.md#content)): `lucide`, or `{ path: <directory> }` with one SVG file per icon name. |
 | `loop.iterations` | `5` | Agent calls per run ([loop and caps](loop-and-caps.md#caps)). |
 | `loop.budgetUsd` | `10` | Cost per run, in USD. |

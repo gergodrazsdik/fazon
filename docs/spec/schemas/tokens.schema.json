@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:tokens:0",
+  "title": "Fazon token file (version 0)",
+  "description": "One file of a token set: the subset of the DTCG 2025.10 format that Fazon's tokens pipeline supports. Every file valid here is also valid DTCG. See docs/spec/tokens.md.",
+  "$ref": "#/$defs/group",
+  "$defs": {
+    "name": {
+      "description": "A group or token name: lowercase letters and digits in kebab-case.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "reference": {
+      "description": "A reference to another token, by its dotted path in curly braces.",
+      "type": "string",
+      "pattern": "^\\{[a-z0-9]+(-[a-z0-9]+)*(\\.[a-z0-9]+(-[a-z0-9]+)*)*\\}$"
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "extensions": { "type": "object" },
+    "group": {
+      "type": "object",
+      "properties": {
+        "$description": { "$ref": "#/$defs/description" },
+        "$extensions": { "$ref": "#/$defs/extensions" }
+      },
+      "patternProperties": {
+        "^[a-z0-9]+(-[a-z0-9]+)*$": {
+          "if": { "type": "object", "required": ["$value"] },
+          "then": { "$ref": "#/$defs/token" },
+          "else": { "$ref": "#/$defs/group" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "token": {
+      "type": "object",
+      "required": ["$type", "$value"],
+      "properties": {
+        "$type": { "enum": ["color", "dimension", "duration", "cubicBezier", "fontFamily", "fontWeight", "number", "shadow"] },
+        "$value": true,
+        "$description": { "$ref": "#/$defs/description" },
+        "$extensions": { "$ref": "#/$defs/extensions" }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        { "if": { "properties": { "$type": { "const": "color" } } }, "then": { "properties": { "$value": { "$ref": "#/$defs/colorOrReference" } } } },
+        { "if": { "properties": { "$type": { "const": "dimension" } } }, "then": { "properties": { "$value": { "$ref": "#/$defs/dimensionOrReference" } } } },
+        { "if": { "properties": { "$type": { "const": "duration" } } }, "then": { "properties": { "$value": { "anyOf": [{ "$ref": "#/$defs/duration" }, { "$ref": "#/$defs/reference" }] } } } },
+        { "if": { "properties": { "$type": { "const": "cubicBezier" } } }, "then": { "properties": { "$value": { "anyOf": [{ "$ref": "#/$defs/cubicBezier" }, { "$ref": "#/$defs/reference" }] } } } },
+        { "if": { "properties": { "$type": { "const": "fontFamily" } } }, "then": { "properties": { "$value": { "anyOf": [{ "$ref": "#/$defs/fontFamily" }, { "$ref": "#/$defs/reference" }] } } } },
+        { "if": { "properties": { "$type": { "const": "fontWeight" } } }, "then": { "properties": { "$value": { "anyOf": [{ "$ref": "#/$defs/fontWeight" }, { "$ref": "#/$defs/reference" }] } } } },
+        { "if": { "properties": { "$type": { "const": "number" } } }, "then": { "properties": { "$value": { "anyOf": [{ "type": "number" }, { "$ref": "#/$defs/reference" }] } } } },
+        { "if": { "properties": { "$type": { "const": "shadow" } } }, "then": { "properties": { "$value": { "anyOf": [{ "$ref": "#/$defs/shadow" }, { "$ref": "#/$defs/reference" }] } } } }
+      ]
+    },
+    "color": {
+      "description": "An sRGB colour: components from 0 to 1, an optional alpha, and the same colour as hex.",
+      "type": "object",
+      "required": ["colorSpace", "components", "hex"],
+      "additionalProperties": false,
+      "properties": {
+        "colorSpace": { "const": "srgb" },
+        "components": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "type": "number", "minimum": 0, "maximum": 1 }
+        },
+        "alpha": { "type": "number", "minimum": 0, "maximum": 1 },
+        "hex": { "type": "string", "pattern": "^#[0-9a-f]{6}$" }
+      }
+    },
+    "colorOrReference": { "anyOf": [{ "$ref": "#/$defs/color" }, { "$ref": "#/$defs/reference" }] },
+    "dimension": {
+      "type": "object",
+      "required": ["value", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "number" },
+        "unit": { "enum": ["px", "rem"] }
+      }
+    },
+    "dimensionOrReference": { "anyOf": [{ "$ref": "#/$defs/dimension" }, { "$ref": "#/$defs/reference" }] },
+    "duration": {
+      "type": "object",
+      "required": ["value", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "number", "minimum": 0 },
+        "unit": { "const": "ms" }
+      }
+    },
+    "cubicBezier": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "number", "minimum": 0, "maximum": 1 },
+        { "type": "number" },
+        { "type": "number", "minimum": 0, "maximum": 1 },
+        { "type": "number" }
+      ],
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "fontFamily": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+      ]
+    },
+    "fontWeight": { "type": "integer", "minimum": 1, "maximum": 1000 },
+    "shadowLayer": {
+      "type": "object",
+      "required": ["color", "offsetX", "offsetY", "blur", "spread"],
+      "additionalProperties": false,
+      "properties": {
+        "color": { "$ref": "#/$defs/colorOrReference" },
+        "offsetX": { "$ref": "#/$defs/dimensionOrReference" },
+        "offsetY": { "$ref": "#/$defs/dimensionOrReference" },
+        "blur": { "$ref": "#/$defs/dimensionOrReference" },
+        "spread": { "$ref": "#/$defs/dimensionOrReference" },
+        "inset": { "type": "boolean" }
+      }
+    },
+    "shadow": {
+      "anyOf": [
+        { "$ref": "#/$defs/shadowLayer" },
+        { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/shadowLayer" } }
+      ]
+    }
+  }
+}

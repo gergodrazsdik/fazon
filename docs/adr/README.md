@@ -23,6 +23,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0015](0015-cli.md) | CLI: explicit decision commands, feedback by command, JSON output everywhere | accepted |
 | [0016](0016-adapter-boundary.md) | Adapter boundary: pre-release images on GHCR, git dependencies at a SHA, vue-component-meta | accepted |
 | [0017](0017-workflow.md) | Reusable workflow: verify and judge jobs, the laptop's code path, a pull request comment | accepted |
+| [0018](0018-token-set.md) | Token set: a DTCG resolver, role tokens by structure, a configurable prefix, a bundled font | accepted |
 
 ## Numbering and status
 

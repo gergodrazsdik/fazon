@@ -100,7 +100,7 @@
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
     },
     "tokenName": {
-      "description": "Dotted token path, as in the tokens file.",
+      "description": "Dotted token path, as in the token set.",
       "type": "string",
       "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(\\.[a-z0-9]+(-[a-z0-9]+)*)+$"
     },

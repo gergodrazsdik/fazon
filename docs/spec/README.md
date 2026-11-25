@@ -17,7 +17,7 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 | 11 | [CLI reference](cli.md), covering every command, with the [JSON output schema](schemas/cli-output.schema.json) | merged | T-0030 |
 | 12 | [Adapter boundary](adapter-boundary.md), including how the example repo consumes the framework before M5 | merged | T-0031 |
 | 13 | [Reusable workflow interface](workflow.md): inputs, secrets and permissions | merged | T-0032 |
-| 14 | Conventions doc and token set, with its themes, for the example library (drafts that move to the example repo at M1) | not written yet | T-0033 |
+| 14 | [Token set](tokens.md), with its [token file](schemas/tokens.schema.json) and [resolver](schemas/token-resolver.schema.json) schemas, and the example library's [token set and conventions doc](example-library/README.md), with its themes (drafts that move to the example repo at M1) | merged | T-0033 |
 | 15 | License terms for generated and scaffolded files, and for the example repo | not written yet | T-0034 |
 
 When a document is merged, link it in the first column and set its status to `merged`.

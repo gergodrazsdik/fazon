@@ -45,7 +45,7 @@ Transcripts are local only. CI never uploads them, and published measurement rec
 | `started`, `ended` | UTC timestamps. |
 | `measurement` | The round and repeat of a measured run. |
 | `versions` | The framework, adapter and Claude Code versions, the verifier image by digest, and the judge version. |
-| `inputs` | Hashes of the spec, the approved API, the tokens, the conventions doc and the config at the start. |
+| `inputs` | Hashes of the spec, the approved API, the token set, the conventions doc and the config at the start. |
 | `config` | The caps, models, escalation threshold, judge policy and whether the judge was calibrated. |
 | `iterations` | Each iteration: its agent call (model, effort, tokens, cost, duration, how it ended, transcript, files changed), any permission violations, its checks with their findings, the judge's summary, and its outcome. |
 | `verification` | A verify run's checks and judge, which have no agent call. |
@@ -69,7 +69,8 @@ It's overwritten when the component is regenerated; git keeps its history. It na
 
 Hashes are SHA-256, written `sha256:<hex>`:
 
-- **A file** (the spec, the tokens, the conventions doc, the config): the hash of its bytes, with line endings normalised to LF.
+- **A file** (the spec, the conventions doc, the config): the hash of its bytes, with line endings normalised to LF.
+- **The token set:** the hash of a text with one line per file, `<path> <file hash>`, for the resolver document and then each token file in the resolver's order, with paths relative to the resolver document.
 - **The approved API:** the hash of a canonical JSON form ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)) of the spec's API fields: `props`, `events`, `slots`, `methods`, `forward`, `form`, `parts` without their `states`, `produce` and `a11y`, and `extensions`.
 
 ## Calibration records

@@ -28,7 +28,7 @@ justfile  local.just.example  lefthook.yml  .editorconfig  lint configs
 docs/design/brief.md     the design brief (complete; changes only when the maintainer asks)
 docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker
-docs/spec/               the M0 documents and their index; schemas/ and examples/ beside them
+docs/spec/               the M0 documents and their index; schemas/ and examples/ beside them, example-library/ drafts
 docs/dev-setup.md        prerequisites and local setup
 scripts/                 with-tool.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh, check-spec-examples.sh
 ```
