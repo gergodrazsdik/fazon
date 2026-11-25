@@ -10,7 +10,7 @@ Next free IDs: T-0084, F-0005, Q-0018.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. Contributor agreement: set up the CLA assistant and test it on a pull request, before any outside pull request is merged (T-0011, T-0013)
+1. Contributor agreement: the CLA assistant's test on a pull request, then `license/cla` as a required check (T-0013, T-0014)
 2. M0: the spec format and its JSON Schema first, as most other documents build on it (T-0020), then the story matrix rules (T-0021) and the check catalogue (T-0022)
 
 ## Phase 0: Bootstrap
@@ -40,9 +40,10 @@ Next free IDs: T-0084, F-0005, Q-0018.
     - [x] Unusual standard terms (Ptk. 6:78. §, not checked): show the commercial relicensing note to the contributor at signing, not only the agreement text — applied: the CLA assistant shows the whole file, with the note on commercial relicensing (T-0011)
     - [x] Section 3(c): it points to an "Entity version" that doesn't exist yet (the corporate agreement is deferred); work made as an employment duty belongs to the employer (Szjt. 30. § (1)); the CLA assistant can't take a parent's signature, so a minimum age of 18 may be simpler — applied: no Entity version or guardian's signature in 3(c), a new 3(e) on the minimum age of 18, employer ownership explained in CONTRIBUTING.md
     - [-] Governing law covers the contract, not copyright itself: a foreign contributor's home-country author protections can still apply — no wording can change that; recorded in [ADR 0004](../adr/0004-contributor-agreement-amended.md)
-- [!] T-0011 Install the CLA assistant GitHub App on the repository, link the agreement (a Gist made from the whole of `CLA.md`, its notes included) and exempt the maintainer and `dependabot[bot]` (maintainer; steps in the bootstrap pull request)
+- [x] T-0011 Install the CLA assistant GitHub App on the repository, link the agreement (a Gist made from the whole of `CLA.md`, its notes included) and exempt the maintainer and `dependabot[bot]` (maintainer; steps in the bootstrap pull request) — 2026-11-25: installed and linked to the public [Gist](https://gist.github.com/gergodrazsdik/b48a98cb3fcc8634131b115dc84095ad)
 - [ ] T-0012 Keep `CLA.md` and the CLA assistant's Gist identical: compare them with every change to either
-- [ ] T-0013 Test pull request: the CLA assistant reports `license/cla`; check whether a `Co-Authored-By` trailer (agent commits) asks the co-author to sign, and exempt that address if so
+  - Checked 2026-11-25: the Gist is byte-for-byte identical to `CLA.md` on `main`
+- [~] T-0013 Test pull request: the CLA assistant reports `license/cla`; check whether a `Co-Authored-By` trailer (agent commits) asks the co-author to sign, and exempt that address if so — the pull request that ticks T-0011 is the test
 - [ ] T-0014 Make `license/cla` a required check after T-0013, in its own ruleset with an admin bypass, so a CLA assistant outage (F-0002) doesn't block every merge
 
 ## Phase 1: Specification (M0)
