@@ -15,9 +15,10 @@ export const allowedKeywords: readonly string[] = [
   "transparent",
 ];
 
-const zero = /^[+-]?(0+\.?0*|\.0+)([a-z]+|%)?$/i;
-const number = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
-const dimension = /^[+-]?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?([a-z]+|%)$/i;
+// The fraction needs its dot, so no run of digits can be split two ways (no polynomial backtracking).
+const zero = /^[+-]?(0+(?:\.0*)?|\.0+)([a-z]+|%)?$/i;
+const number = /^[+-]?(\d+(?:\.\d*)?|\.\d+)(e[+-]?\d+)?$/i;
+const dimension = /^[+-]?(\d+(?:\.\d*)?|\.\d+)(e[+-]?\d+)?([a-z]+|%)$/i;
 const mathFunctions = new Set(["calc", "min", "max", "clamp"]);
 
 /** One component of a value. */

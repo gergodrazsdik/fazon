@@ -86,5 +86,14 @@ describe("stripImportant", () => {
   it("removes a trailing !important", () => {
     expect(stripImportant("4px !important")).toBe("4px");
     expect(stripImportant("4px")).toBe("4px");
+    expect(stripImportant("var(--a) ! IMPORTANT  ")).toBe("var(--a)");
+    expect(stripImportant("4px important")).toBe("4px important");
+  });
+
+  it("takes linear time on long runs of spaces", () => {
+    const start = performance.now();
+    stripImportant(`4px${" ".repeat(100_000)}x`);
+    stripImportant(`4px!${" ".repeat(100_000)}x`);
+    expect(performance.now() - start).toBeLessThan(100);
   });
 });

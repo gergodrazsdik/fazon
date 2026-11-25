@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildTokens, type TokenIndex } from "../tokens/build.js";
 import { resolveTokenSet } from "../tokens/resolve.js";
+import { stripImportant } from "./cascade.js";
 import type { InspectedElement, StyleProperty, StyleSource } from "./snapshot.js";
 
 export const checkExamples = fileURLToPath(new URL("../../../../docs/spec/examples/checks/", import.meta.url));
@@ -82,7 +83,7 @@ export function style(
     const implicit = value === "(implicit)";
     return {
       name,
-      value: implicit ? "" : value.replace(/\s*!important$/, ""),
+      value: implicit ? "" : stripImportant(value),
       important,
       implicit,
     };
@@ -94,7 +95,7 @@ export function style(
     properties,
     shorthands: Object.entries(extra.shorthands ?? {}).map(([name, value]) => ({
       name,
-      value: value.replace(/\s*!important$/, ""),
+      value: stripImportant(value),
       important: value.endsWith("!important"),
     })),
   };

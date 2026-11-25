@@ -31,6 +31,32 @@ describe("the allowed values", () => {
   });
 });
 
+describe("the number patterns", () => {
+  it.each(["0", "0px", "0.0em", ".0", "-0%", "00.00rem", "+0."])("read %s as zero", (value) => {
+    expect(isAllowedValue(value)).toBe(true);
+  });
+  it.each(["0.5", "0.05px", "1a", ".", "0..0", "-"])("don't read %s as zero", (value) => {
+    expect(isAllowedValue(value)).toBe(false);
+  });
+  it.each(["1.5", ".5", "1e3", "1.", "-2", "+3.25e-2"])("read %s as a number", (value) => {
+    expect(classifyComponent(value).kind).toBe("number");
+  });
+  it.each(["1a", ".", "1.2.3", "e3"])("don't read %s as a number", (value) => {
+    expect(classifyComponent(value).kind).toBe("literal");
+  });
+
+  it("take linear time on long runs of digits", () => {
+    for (const digit of ["0", "1"]) {
+      const value = `${digit.repeat(100_000)}x!`;
+      const start = performance.now();
+      isAllowedValue(value);
+      classifyComponent(value);
+      looksLikeTokenValue(value);
+      expect(performance.now() - start).toBeLessThan(100);
+    }
+  });
+});
+
 describe("classifyComponent", () => {
   it("reads var() with and without a fallback", () => {
     expect(classifyComponent("var(--color-text-primary)")).toEqual({

@@ -110,5 +110,8 @@ function declarationOf(
 
 /** Strips a trailing `!important` from a value as the protocol reports it. */
 export function stripImportant(value: string): string {
-  return value.replace(/\s*!\s*important\s*$/i, "");
+  // Trimmed first, so the pattern starts only at a `!` and never backtracks over a run of spaces.
+  const trimmed = value.trimEnd();
+  const match = /!\s*important$/i.exec(trimmed);
+  return match === null ? value : trimmed.slice(0, match.index).trimEnd();
 }
