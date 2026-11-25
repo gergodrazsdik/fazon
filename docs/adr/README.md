@@ -10,6 +10,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0002](0002-contributor-license-agreement.md) | Contributor License Agreement: Harmony, any outbound license | accepted, amended by 0004 |
 | [0003](0003-bootstrap-answers.md) | License headers, run-record path, npm name and the agreement's governing law | accepted |
 | [0004](0004-contributor-agreement-amended.md) | The contributor agreement, amended after a best-effort review | accepted |
+| [0005](0005-spec-format.md) | Spec format: a neutral API with framework extensions, one spec per component | accepted |
 
 ## Numbering and status
 

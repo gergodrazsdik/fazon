@@ -20,6 +20,8 @@ What you need to work on Fazon, and how to check it. Fazon is in its specificati
 | editorconfig-checker | 4.x | <https://github.com/editorconfig-checker/editorconfig-checker#installation> |
 | ShellCheck | 0.11 | <https://github.com/koalaman/shellcheck#installing> |
 | gitleaks | 8.30 | <https://github.com/gitleaks/gitleaks#installing> |
+| yq (mikefarah) | 4.54 | <https://github.com/mikefarah/yq#install> (not the Python `yq`) |
+| check-jsonschema | 0.39 | `pipx install check-jsonschema` or `uv tool install check-jsonschema` |
 
 CI runs the versions pinned in `.github/workflows/lint.yml` and `scripts/install-ci-tools.sh`. Recommended: the [GitHub CLI](https://cli.github.com/) (`gh`), [jq](https://jqlang.org/download/) and [Claude Code](https://code.claude.com/docs/en/setup).
 

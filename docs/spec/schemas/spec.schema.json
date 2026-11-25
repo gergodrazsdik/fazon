@@ -1,0 +1,562 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:spec:0",
+  "title": "Fazon component spec, front matter (format version 0)",
+  "description": "The machine-readable front matter of a component spec. The format is described in docs/spec/spec-format.md. Rules that need more than one file, such as token names or references between fields, are checked by `fazon spec check` and listed there as SPEC rules.",
+  "type": "object",
+  "required": ["fazon", "name", "tier", "summary"],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": {
+      "description": "Spec format version. Version 0 may change in any pull request until Fazon 1.0.",
+      "const": 0
+    },
+    "name": { "$ref": "#/$defs/componentName" },
+    "tier": {
+      "description": "Where the component sits in the library.",
+      "enum": ["primitive", "form-control", "composite"]
+    },
+    "summary": { "$ref": "#/$defs/text" },
+    "reference": {
+      "description": "Optional reference image, relative to the spec file.",
+      "type": "string",
+      "pattern": "^[^/].*\\.(png|jpe?g|webp)$"
+    },
+    "uses": {
+      "description": "Other components this one renders or composes, by spec name.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/componentName" },
+      "uniqueItems": true
+    },
+    "props": { "$ref": "#/$defs/props" },
+    "events": { "$ref": "#/$defs/events" },
+    "slots": { "$ref": "#/$defs/slots" },
+    "methods": { "$ref": "#/$defs/methods" },
+    "forward": {
+      "description": "Which element receives attributes, classes and the ref that the API doesn't declare: `root`, or a part name.",
+      "type": "string",
+      "pattern": "^(root|[A-Z][A-Za-z0-9]*)$"
+    },
+    "form": { "$ref": "#/$defs/form" },
+    "parts": {
+      "description": "Named parts of a multi-part component, keyed by part name.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/componentName" },
+      "additionalProperties": { "$ref": "#/$defs/part" },
+      "minProperties": 1
+    },
+    "states": { "$ref": "#/$defs/states" },
+    "a11y": { "$ref": "#/$defs/a11y" },
+    "fixtures": {
+      "description": "Named content sets that stories render, keyed by fixture name.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/kebabName" },
+      "additionalProperties": { "$ref": "#/$defs/fixture" },
+      "minProperties": 1
+    },
+    "matrix": { "$ref": "#/$defs/matrix" },
+    "tokens": {
+      "description": "Which role token a property takes, for the properties that give a variant or state its identity.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/tokenRule" },
+      "minItems": 1
+    },
+    "exemptions": {
+      "description": "Checks waived for this component. Each one is shown in the report and the pull request summary.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/exemption" },
+      "minItems": 1
+    },
+    "extensions": {
+      "description": "Framework-specific additions to the neutral API, keyed by adapter ID.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/kebabName" },
+      "additionalProperties": { "$ref": "#/$defs/extension" },
+      "minProperties": 1
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1 },
+    "componentName": {
+      "description": "PascalCase name of a component or part.",
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*$"
+    },
+    "memberName": {
+      "description": "camelCase name of a prop, event, slot, method or parameter.",
+      "type": "string",
+      "pattern": "^[a-z][A-Za-z0-9]*$"
+    },
+    "kebabName": {
+      "description": "kebab-case name of a fixture, state, check, rule or adapter.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "tokenName": {
+      "description": "Dotted token path, as in the tokens file.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*(\\.[a-z0-9]+(-[a-z0-9]+)*)+$"
+    },
+    "memberPath": {
+      "description": "A member of the neutral API: `<kind>.<name>`, or `parts.<Part>.<kind>.<name>`.",
+      "type": "string",
+      "pattern": "^(parts\\.[A-Z][A-Za-z0-9]*\\.)?(props|events|slots|methods)\\.[a-z][A-Za-z0-9]*$"
+    },
+    "enumValues": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/kebabName" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "itemType": {
+      "description": "The element type of an array.",
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["boolean", "string", "number", "enum"] },
+        "values": { "$ref": "#/$defs/enumValues" }
+      },
+      "additionalProperties": false,
+      "if": { "properties": { "type": { "const": "enum" } } },
+      "then": { "required": ["values"] },
+      "else": { "properties": { "values": false } }
+    },
+    "typeFields": {
+      "description": "A value type: `type`, with `values` for an enum and `items` for an array. Not closed: the schemas that use it close themselves with unevaluatedProperties.",
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "enum": ["boolean", "string", "number", "enum", "array"] },
+        "values": { "$ref": "#/$defs/enumValues" },
+        "items": { "$ref": "#/$defs/itemType" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "enum" } } },
+          "then": { "required": ["values"] },
+          "else": { "properties": { "values": false } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "array" } } },
+          "then": { "required": ["items"] },
+          "else": { "properties": { "items": false } }
+        }
+      ]
+    },
+    "valueType": {
+      "description": "A value type with an optional description: an event payload, a slot's data, a method's parameters and result.",
+      "type": "object",
+      "$ref": "#/$defs/typeFields",
+      "properties": {
+        "description": { "$ref": "#/$defs/text" }
+      },
+      "unevaluatedProperties": false
+    },
+    "prop": {
+      "type": "object",
+      "$ref": "#/$defs/typeFields",
+      "properties": {
+        "description": { "$ref": "#/$defs/text" },
+        "default": true,
+        "required": { "type": "boolean" },
+        "model": {
+          "description": "Two-way bound: the adapter maps it to the framework's binding and its change notification.",
+          "type": "boolean"
+        }
+      },
+      "unevaluatedProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "boolean" } } },
+          "then": { "properties": { "default": { "type": "boolean" } } }
+        },
+        {
+          "if": { "properties": { "type": { "enum": ["string", "enum"] } } },
+          "then": { "properties": { "default": { "type": "string" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "number" } } },
+          "then": { "properties": { "default": { "type": "number" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "array" } } },
+          "then": { "properties": { "default": { "type": "array" } } }
+        },
+        {
+          "description": "A required prop has no default.",
+          "if": {
+            "properties": { "required": { "const": true } },
+            "required": ["required"]
+          },
+          "then": { "not": { "required": ["default"] } }
+        }
+      ]
+    },
+    "event": {
+      "type": "object",
+      "properties": {
+        "description": { "$ref": "#/$defs/text" },
+        "payload": { "$ref": "#/$defs/valueType" }
+      },
+      "additionalProperties": false
+    },
+    "slot": {
+      "type": "object",
+      "properties": {
+        "description": { "$ref": "#/$defs/text" },
+        "required": { "type": "boolean" },
+        "data": {
+          "description": "Values the component passes to the slot's content.",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/memberName" },
+          "additionalProperties": { "$ref": "#/$defs/valueType" },
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "method": {
+      "type": "object",
+      "properties": {
+        "description": { "$ref": "#/$defs/text" },
+        "params": {
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/memberName" },
+          "additionalProperties": { "$ref": "#/$defs/valueType" },
+          "minProperties": 1
+        },
+        "returns": { "$ref": "#/$defs/valueType" }
+      },
+      "additionalProperties": false
+    },
+    "props": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/memberName" },
+      "additionalProperties": { "$ref": "#/$defs/prop" },
+      "minProperties": 1
+    },
+    "events": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/memberName" },
+      "additionalProperties": { "$ref": "#/$defs/event" },
+      "minProperties": 1
+    },
+    "slots": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/memberName" },
+      "additionalProperties": { "$ref": "#/$defs/slot" },
+      "minProperties": 1
+    },
+    "methods": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/memberName" },
+      "additionalProperties": { "$ref": "#/$defs/method" },
+      "minProperties": 1
+    },
+    "states": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/kebabName" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "form": {
+      "description": "Form participation: which props hold the submitted value and the field's name, disabled and required flags.",
+      "type": "object",
+      "required": ["value"],
+      "properties": {
+        "value": { "$ref": "#/$defs/memberName" },
+        "name": { "$ref": "#/$defs/memberName" },
+        "disabled": { "$ref": "#/$defs/memberName" },
+        "required": { "$ref": "#/$defs/memberName" }
+      },
+      "additionalProperties": false
+    },
+    "part": {
+      "type": "object",
+      "required": ["parent", "count"],
+      "properties": {
+        "description": { "$ref": "#/$defs/text" },
+        "parent": {
+          "description": "The component, or another part, this part sits in.",
+          "$ref": "#/$defs/componentName"
+        },
+        "count": {
+          "description": "How many instances one parent holds.",
+          "enum": ["one", "optional", "many"]
+        },
+        "portal": {
+          "description": "Rendered outside the component's root, for example in an overlay layer.",
+          "type": "boolean"
+        },
+        "props": { "$ref": "#/$defs/props" },
+        "events": { "$ref": "#/$defs/events" },
+        "slots": { "$ref": "#/$defs/slots" },
+        "methods": { "$ref": "#/$defs/methods" },
+        "states": { "$ref": "#/$defs/states" },
+        "a11y": { "$ref": "#/$defs/a11y" }
+      },
+      "additionalProperties": false
+    },
+    "nameSource": {
+      "description": "Where an accessible name or description comes from: the text content, a prop of the same component or part, another part, or nothing.",
+      "type": "string",
+      "pattern": "^(content|none|prop:[a-z][A-Za-z0-9]*|part:[A-Z][A-Za-z0-9]*)$"
+    },
+    "a11y": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "description": "The ARIA role of the element.",
+          "type": "string",
+          "pattern": "^[a-z]+$"
+        },
+        "name": { "$ref": "#/$defs/nameSource" },
+        "describedBy": { "$ref": "#/$defs/nameSource" },
+        "aria": {
+          "description": "ARIA attributes the element sets, and when.",
+          "type": "object",
+          "propertyNames": { "pattern": "^aria-[a-z]+$" },
+          "additionalProperties": { "$ref": "#/$defs/text" },
+          "minProperties": 1
+        },
+        "keyboard": {
+          "description": "Key, with optional modifiers, to its effect.",
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^((Shift|Control|Alt|Meta)\\+)*[A-Za-z0-9]+$"
+          },
+          "additionalProperties": { "$ref": "#/$defs/text" },
+          "minProperties": 1
+        },
+        "focus": {
+          "type": "object",
+          "properties": {
+            "roving": {
+              "description": "Focus moves between the instances of this part with the arrow keys; one of them is in the tab order.",
+              "$ref": "#/$defs/componentName"
+            },
+            "trap": {
+              "description": "Tab and Shift+Tab stay inside.",
+              "type": "boolean"
+            },
+            "restore": {
+              "description": "On close, focus returns to the element that had it before opening.",
+              "type": "boolean"
+            },
+            "initial": {
+              "description": "The part that receives focus on open.",
+              "$ref": "#/$defs/componentName"
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "propValues": {
+      "description": "Prop values, keyed by prop name.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/memberName" },
+      "additionalProperties": {
+        "type": ["boolean", "string", "number", "array"]
+      },
+      "minProperties": 1
+    },
+    "contentNode": {
+      "oneOf": [
+        { "$ref": "#/$defs/text" },
+        {
+          "type": "object",
+          "required": ["text"],
+          "properties": { "text": { "$ref": "#/$defs/text" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["icon"],
+          "properties": { "icon": { "$ref": "#/$defs/kebabName" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["component"],
+          "properties": {
+            "component": { "$ref": "#/$defs/componentName" },
+            "props": { "$ref": "#/$defs/propValues" },
+            "slots": { "$ref": "#/$defs/slotContent" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "content": {
+      "description": "Slot content: one node, or a list of nodes rendered in order.",
+      "oneOf": [
+        { "$ref": "#/$defs/contentNode" },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/contentNode" },
+          "minItems": 1
+        }
+      ]
+    },
+    "slotContent": {
+      "description": "Slot content, keyed by slot name.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/memberName" },
+      "additionalProperties": { "$ref": "#/$defs/content" },
+      "minProperties": 1
+    },
+    "instance": {
+      "description": "One instance of a part in a fixture.",
+      "type": "object",
+      "properties": {
+        "props": { "$ref": "#/$defs/propValues" },
+        "slots": { "$ref": "#/$defs/slotContent" }
+      },
+      "additionalProperties": false
+    },
+    "fixture": {
+      "type": "object",
+      "properties": {
+        "description": { "$ref": "#/$defs/text" },
+        "extends": {
+          "description": "Another fixture this one starts from.",
+          "$ref": "#/$defs/kebabName"
+        },
+        "props": { "$ref": "#/$defs/propValues" },
+        "slots": { "$ref": "#/$defs/slotContent" },
+        "parts": {
+          "description": "The instances of each part, in order. In a fixture that extends another, a part's list replaces the base's list.",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/componentName" },
+          "additionalProperties": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/instance" }
+          },
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "when": {
+      "description": "A condition on prop values and a state; every given field must hold.",
+      "type": "object",
+      "properties": {
+        "props": { "$ref": "#/$defs/propValues" },
+        "state": { "$ref": "#/$defs/kebabName" }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "matrix": {
+      "description": "Hooks for the story matrix; the story matrix rules define what they mean.",
+      "type": "object",
+      "properties": {
+        "axes": {
+          "description": "Props that span the matrix: a prop of the component, or `<Part>.<prop>`.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Za-z0-9]*\\.)?[a-z][A-Za-z0-9]*$"
+          },
+          "uniqueItems": true
+        },
+        "fixtures": {
+          "description": "The fixtures stories render.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/kebabName" },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "exclude": {
+          "description": "Combinations that are invalid and get no story.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/when" },
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    },
+    "tokenRule": {
+      "type": "object",
+      "required": ["use"],
+      "properties": {
+        "part": { "$ref": "#/$defs/componentName" },
+        "when": { "$ref": "#/$defs/when" },
+        "use": {
+          "description": "CSS property to the role token its computed value must match.",
+          "type": "object",
+          "propertyNames": { "pattern": "^[a-z]+(-[a-z]+)*$" },
+          "additionalProperties": { "$ref": "#/$defs/tokenName" },
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "exemption": {
+      "type": "object",
+      "required": ["check", "rule", "reason"],
+      "properties": {
+        "check": { "$ref": "#/$defs/kebabName" },
+        "rule": { "$ref": "#/$defs/kebabName" },
+        "part": { "$ref": "#/$defs/componentName" },
+        "fixture": { "$ref": "#/$defs/kebabName" },
+        "when": { "$ref": "#/$defs/when" },
+        "reason": { "$ref": "#/$defs/text" }
+      },
+      "additionalProperties": false
+    },
+    "extension": {
+      "description": "One adapter's additions. The core checks this structure and the paths; the adapter checks `options` and the values under `map`.",
+      "type": "object",
+      "properties": {
+        "reason": { "$ref": "#/$defs/text" },
+        "options": {
+          "description": "Component-level settings, defined by the adapter.",
+          "type": "object",
+          "minProperties": 1
+        },
+        "map": {
+          "description": "How an existing neutral member maps in this framework; the keys are defined by the adapter.",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/memberPath" },
+          "additionalProperties": { "type": "object", "minProperties": 1 },
+          "minProperties": 1
+        },
+        "add": {
+          "description": "Members that exist only in this framework, in the same long form as the neutral API.",
+          "type": "object",
+          "patternProperties": {
+            "^(parts\\.[A-Z][A-Za-z0-9]*\\.)?props\\.[a-z][A-Za-z0-9]*$": { "$ref": "#/$defs/prop" },
+            "^(parts\\.[A-Z][A-Za-z0-9]*\\.)?events\\.[a-z][A-Za-z0-9]*$": { "$ref": "#/$defs/event" },
+            "^(parts\\.[A-Z][A-Za-z0-9]*\\.)?slots\\.[a-z][A-Za-z0-9]*$": { "$ref": "#/$defs/slot" },
+            "^(parts\\.[A-Z][A-Za-z0-9]*\\.)?methods\\.[a-z][A-Za-z0-9]*$": { "$ref": "#/$defs/method" }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        },
+        "omit": {
+          "description": "Neutral members this framework doesn't offer.",
+          "type": "object",
+          "propertyNames": { "$ref": "#/$defs/memberPath" },
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "reason": { "$ref": "#/$defs/text" },
+              "instead": { "$ref": "#/$defs/memberPath" }
+            },
+            "additionalProperties": false
+          },
+          "minProperties": 1
+        }
+      },
+      "additionalProperties": false,
+      "minProperties": 1
+    }
+  }
+}

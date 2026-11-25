@@ -9,3 +9,4 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Added
 
 - The repository: license, contributor agreement, community files, lint tooling and agent instructions. No product code yet.
+- The spec format, version 0: the document, the JSON Schema of the front matter, and valid and invalid example specs, checked by `just lint`.

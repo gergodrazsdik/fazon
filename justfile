@@ -40,6 +40,8 @@ doctor:
     check editorconfig-checker "https://github.com/editorconfig-checker/editorconfig-checker#installation"
     check shellcheck           "https://github.com/koalaman/shellcheck#installing"
     check gitleaks             "https://github.com/gitleaks/gitleaks#installing"
+    check yq                   "https://github.com/mikefarah/yq#install (mikefarah yq v4, not the Python yq)"
+    check check-jsonschema     "pipx install check-jsonschema (or uv tool install check-jsonschema)"
     echo "Recommended:"
     optional gh                "https://cli.github.com/"
     optional jq                "https://jqlang.org/download/ (needed by 'just github-settings')"
@@ -74,7 +76,7 @@ claude *args:
 
 # Run every linter (the lint workflow's lint job)
 [group('lint')]
-lint: lint-md lint-yaml lint-actions zizmor pinact-check lint-sh typos editorconfig gitleaks
+lint: lint-md lint-yaml lint-actions zizmor pinact-check lint-sh typos editorconfig gitleaks spec-examples
 
 # Lint Markdown (markdownlint-cli2)
 [group('lint')]
@@ -120,6 +122,11 @@ editorconfig:
 [group('lint')]
 gitleaks:
     scripts/with-tool.sh gitleaks git --redact --no-banner
+
+# Check the spec schema and validate the spec examples against it (yq, check-jsonschema)
+[group('lint')]
+spec-examples:
+    scripts/check-spec-examples.sh
 
 # Pin workflow actions to full commit SHAs (pinact)
 [group('lint')]

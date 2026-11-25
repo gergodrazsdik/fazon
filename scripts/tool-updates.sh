@@ -72,6 +72,7 @@ env_pin() { # <variable>: its value in the lint workflow
 }
 pins+=("yamllint|pypi:yamllint|$(env_pin YAMLLINT_VERSION)")
 pins+=("zizmor|pypi:zizmor|$(env_pin ZIZMOR_VERSION)")
+pins+=("check-jsonschema|pypi:check-jsonschema|$(env_pin CHECK_JSONSCHEMA_VERSION)")
 pins+=("markdownlint-cli2|npm:markdownlint-cli2|$(env_pin MARKDOWNLINT_CLI2_VERSION)")
 
 # shellcheck disable=SC2016  # jq variables, not shell expansions

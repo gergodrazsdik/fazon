@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Checks the spec format's JSON Schema and its examples (docs/spec/spec-format.md):
+#   - the schema is valid against its metaschema;
+#   - every spec under valid/ and invalid/semantic/ passes the schema (a semantic example breaks
+#     a rule only `fazon spec check` sees, from M2);
+#   - every spec under invalid/schema/ fails it, at the path its `# expect-error-at:` line names.
+# Needs yq (mikefarah, v4) to read the front matter, and check-jsonschema.
+#
+# Usage: scripts/check-spec-examples.sh
+#
+# A missing tool skips the check with a message, as scripts/with-tool.sh does; CI sets
+# FAZON_REQUIRE_TOOLS=1, which turns a missing tool into a failure.
+set -euo pipefail
+shopt -s nullglob
+
+root=$(cd "$(dirname "$0")/.." && pwd)
+schema="$root/docs/spec/schemas/spec.schema.json"
+examples="$root/docs/spec/examples/specs"
+
+for tool in yq check-jsonschema; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    if [[ ${FAZON_REQUIRE_TOOLS:-0} == 1 ]]; then
+      echo "error: $tool is not installed (required). Run 'just doctor' for install hints." >&2
+      exit 127
+    fi
+    echo "SKIPPED: $tool is not installed, so the spec examples were not checked. Run 'just doctor' for install hints." >&2
+    exit 0
+  fi
+done
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT
+
+# The front matter of <spec.md> as JSON, written to <out.json>.
+front_matter() { # <spec.md> <out.json>
+  if [[ $(head -n 1 "$1") != "---" ]]; then
+    echo "error: $1 has no front matter" >&2
+    return 1
+  fi
+  yq --front-matter=extract -o=json '.' "$1" >"$2"
+}
+
+check() { # <json>...: check-jsonschema against the spec schema
+  check-jsonschema --schemafile "$schema" "$@"
+}
+
+failed=0
+check-jsonschema --check-metaschema "$schema" || failed=1
+
+# Must pass.
+for spec in "$examples"/valid/*.md "$examples"/invalid/semantic/*.md; do
+  json="$tmp/$(basename "$spec" .md).json"
+  rel=${spec#"$root"/}
+  out=""
+  if ! front_matter "$spec" "$json" || ! out=$(check "$json" 2>&1); then
+    echo "FAIL $rel: expected to pass the schema" >&2
+    [[ -n $out ]] && echo "$out" >&2
+    failed=1
+  else
+    echo "ok   $rel passes"
+  fi
+done
+
+# Must fail, at the expected path.
+for spec in "$examples"/invalid/schema/*.md; do
+  json="$tmp/$(basename "$spec" .md).json"
+  rel=${spec#"$root"/}
+  expect=$(sed -nE 's/^# expect-error-at: (.+)$/\1/p' "$spec" | head -n 1)
+  if [[ -z $expect ]]; then
+    echo "FAIL $rel: no '# expect-error-at:' line" >&2
+    failed=1
+    continue
+  fi
+  if ! front_matter "$spec" "$json"; then
+    failed=1
+    continue
+  fi
+  if out=$(check "$json" 2>&1); then
+    echo "FAIL $rel: expected to fail the schema at $expect, but it passes" >&2
+    failed=1
+  elif ! grep -qF -- "::$expect:" <<<"$out"; then
+    echo "FAIL $rel: expected an error at $expect, got:" >&2
+    echo "$out" >&2
+    failed=1
+  else
+    echo "ok   $rel fails at $expect"
+  fi
+done
+
+exit "$failed"

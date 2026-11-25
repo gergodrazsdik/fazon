@@ -28,6 +28,7 @@ jobs:
       YAMLLINT_VERSION: "1.38.0"
       ZIZMOR_VERSION: "1.32.0"
       MARKDOWNLINT_CLI2_VERSION: "0.24.2"
+      CHECK_JSONSCHEMA_VERSION: "0.39.0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -44,6 +45,7 @@ jobs:
         run: |
           pipx install "yamllint==${YAMLLINT_VERSION}"
           pipx install "zizmor==${ZIZMOR_VERSION}"
+          pipx install "check-jsonschema==${CHECK_JSONSCHEMA_VERSION}"
       # Exact version; no lockfile for one CLI before the repo has a package.json.
       - name: Install markdownlint-cli2 (npm, exact version)
         run: npm install -g "markdownlint-cli2@${MARKDOWNLINT_CLI2_VERSION}"  # zizmor: ignore[adhoc-packages]
