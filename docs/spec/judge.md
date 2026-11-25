@@ -14,7 +14,7 @@ How the vision judge decides what the checks can't measure: when it runs, what i
 | Which baselines need the judge before they're accepted, and which are new or changed in CI | [Baseline lifecycle](baseline-lifecycle.md) |
 | Calibration, its thresholds, and when the judge counts as calibrated | [Measurement protocol](measurement.md#judge-calibration) |
 | How verdicts are stored | [Run records and provenance](records.md) |
-| The judge's model, policy, cap, repeats and prices | Config file reference (T-0029) |
+| The judge's model, policy, cap, repeats and prices | [Config file reference](config.md) |
 | The CI step, its secret and fork handling | Reusable workflow interface (T-0032) |
 
 ## When the judge runs

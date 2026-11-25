@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:config:0",
+  "title": "Fazon config file, fazon.yaml (format version 0)",
+  "description": "The committed configuration of a repository that uses Fazon. Every key but `fazon`, `adapter` and `image` has a default. See docs/spec/config.md.",
+  "type": "object",
+  "required": ["fazon", "adapter", "image"],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": { "description": "Config format version.", "const": 0 },
+    "adapter": {
+      "description": "The framework adapter.",
+      "enum": ["vue"]
+    },
+    "image": {
+      "description": "The verifier image, by digest.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+([._-][a-z0-9]+)*(\\.[a-z0-9-]+)*(:[0-9]+)?(/[a-z0-9]+([._-][a-z0-9]+)*)+@sha256:[0-9a-f]{64}$"
+    },
+    "paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "specs": { "description": "Default `specs`.", "$ref": "#/$defs/path" },
+        "components": { "description": "Default `src/components`.", "$ref": "#/$defs/path" },
+        "entry": { "description": "The package entry file. Default `src/index.ts`.", "$ref": "#/$defs/path" },
+        "tokens": { "description": "Default `tokens/tokens.json`.", "$ref": "#/$defs/path" },
+        "conventions": { "description": "Default `docs/conventions.md`.", "$ref": "#/$defs/path" },
+        "baselines": { "description": "Default `baselines`.", "$ref": "#/$defs/path" }
+      }
+    },
+    "icons": {
+      "description": "The fixture icon set: `lucide` (the default), or a directory of SVG files named by icon.",
+      "oneOf": [
+        { "const": "lucide" },
+        {
+          "type": "object",
+          "required": ["path"],
+          "additionalProperties": false,
+          "properties": { "path": { "$ref": "#/$defs/path" } }
+        }
+      ]
+    },
+    "loop": { "$ref": "#/$defs/loop" },
+    "models": { "$ref": "#/$defs/models" },
+    "effort": { "$ref": "#/$defs/effort" },
+    "judge": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy": { "description": "In CI. Default `advisory`.", "enum": ["advisory", "blocking", "off"] },
+        "ciBudgetUsd": { "description": "Default 3.", "type": "number", "exclusiveMinimum": 0 },
+        "repeats": { "description": "Calls per batch, by majority. Default 1.", "type": "integer", "minimum": 1, "maximum": 9 }
+      }
+    },
+    "prices": {
+      "description": "Prices in USD per million tokens, by model, overriding the framework's table.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/model" },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["input", "output"],
+        "additionalProperties": false,
+        "properties": {
+          "input": { "type": "number", "minimum": 0 },
+          "output": { "type": "number", "minimum": 0 },
+          "cacheRead": { "type": "number", "minimum": 0 },
+          "cacheWrite": { "type": "number", "minimum": 0 }
+        }
+      },
+      "minProperties": 1
+    }
+  },
+  "$defs": {
+    "path": {
+      "description": "Relative to the repository root, without `..`.",
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$))[^\\\\]+$"
+    },
+    "model": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]*$" },
+    "loop": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "iterations": { "description": "Default 5.", "type": "integer", "minimum": 1, "maximum": 20 },
+        "budgetUsd": { "description": "Default 10.", "type": "number", "exclusiveMinimum": 0 },
+        "runMinutes": { "description": "Default 90.", "type": "number", "exclusiveMinimum": 0 },
+        "callMinutes": { "description": "Default 20.", "type": "number", "exclusiveMinimum": 0 },
+        "escalateAfter": { "description": "Failed iterations before the escalation model. Default 2.", "type": "integer", "minimum": 1 }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "generator": { "description": "Default `claude-sonnet-5-5`.", "$ref": "#/$defs/model" },
+        "escalation": { "description": "Default `claude-opus-5-5`.", "$ref": "#/$defs/model" },
+        "judge": { "description": "Default `claude-sonnet-5-5`.", "$ref": "#/$defs/model" }
+      }
+    },
+    "effort": {
+      "description": "Effort per role; each model's own default when left out.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "generator": { "$ref": "#/$defs/effortLevel" },
+        "escalation": { "$ref": "#/$defs/effortLevel" },
+        "judge": { "$ref": "#/$defs/effortLevel" }
+      }
+    },
+    "effortLevel": { "enum": ["low", "medium", "high", "xhigh", "max"] }
+  }
+}

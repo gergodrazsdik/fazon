@@ -1,0 +1,6 @@
+---
+fazon: 0
+loop:
+  budgetUsd: 3
+judge:
+  localPolicy: "off"

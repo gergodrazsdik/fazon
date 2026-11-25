@@ -19,6 +19,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0011](0011-judge.md) | Judge: a derived rubric, one call per question, $3 per CI run | accepted |
 | [0012](0012-measurement.md) | Measurement protocol: autonomous runs, mutation-seeded defects, 80/5/90 thresholds | accepted |
 | [0013](0013-records.md) | Records: one rewritten run record, latest-state provenance, measurements as release assets | accepted |
+| [0014](0014-config.md) | Config: fazon.yaml, a limited local override, the image pinned explicitly | accepted |
 
 ## Numbering and status
 

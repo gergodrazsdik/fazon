@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/gergodrazsdik/fazon/main/docs/spec/schemas/config.schema.json
+---
+fazon: 0
+adapter: vue
+image: ghcr.io/gergodrazsdik/fazon-verifier@sha256:4f1c2a9e7b0d3c58a6e21f9047bd8c3e5a1f6d2b9c7e0a4f8d3b6c1e9a2f5d70

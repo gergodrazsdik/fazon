@@ -15,7 +15,7 @@ The rules here decide which stories exist and what each one shows. These parts a
 | When a baseline is created, updated or renamed | [Baseline lifecycle](baseline-lifecycle.md) |
 | That the agent never edits stories or the manifest | [Agent permission model](agent-permissions.md) |
 | How the judge's crops are batched | [Judge](judge.md#batching) |
-| The baselines directory, an icon set of the consumer's own | Config file reference (T-0029) |
+| The baselines directory, an icon set of the consumer's own | [Config file reference](config.md) |
 | How an adapter writes story files from the manifest | Adapter boundary (T-0031) |
 | The themes, from the token set; the `data-part` and state attribute rule | Token set and conventions doc (T-0033) |
 
@@ -146,7 +146,7 @@ The verifier uses them to find targets, to pick `<Part>[default]`, to know each 
 ## Content
 
 - Stories render fixtures only: the agent doesn't choose what a story shows.
-- **Icons:** the fixture icon set is [Lucide](https://lucide.dev), from the `lucide-static` npm package (ISC license), at a version the framework pins from M1. Icon names in fixtures are Lucide's, such as `check`, `x` or `chevron-down`. A consumer can replace the set with a directory of their own SVG files through the config file (T-0029). An icon name that isn't in the set in use fails SPEC-009.
+- **Icons:** the fixture icon set is [Lucide](https://lucide.dev), from the `lucide-static` npm package (ISC license), at a version the framework pins from M1. Icon names in fixtures are Lucide's, such as `check`, `x` or `chevron-down`. A consumer can replace the set with a directory of their own SVG files through the [config file](config.md#keys) (`icons`). An icon name that isn't in the set in use fails SPEC-009.
 - Text is English. Right-to-left layouts are out of scope for version 1.
 - Fonts come from the verifier image.
 

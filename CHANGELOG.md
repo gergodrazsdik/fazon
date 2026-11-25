@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - The repository: license, contributor agreement, community files, lint tooling and agent instructions. No product code yet.
 - The spec format, version 0: the document, the JSON Schema of the front matter, and valid and invalid example specs, checked by `just lint`.
+- The config file reference, version 0: `fazon.yaml`, every key with its default, local overrides in `fazon.local.yaml`, and validation, with schemas and examples.
 - Run records and provenance, version 0: the `.fazon/` layout, the run record, the committed provenance file, calibration records, hashes and how measurement records are published, with schemas and examples.
 - The measurement protocol, version 0: measured runs, loop metrics and how they're reported, judge calibration with mutation-seeded defects, and the thresholds for trusting the judge.
 - The judge, version 0: when it runs, what it sees, the rubric derived from the spec, batching, its structured answer, authority and cost, with the plan and result schemas and a worked Button plan.

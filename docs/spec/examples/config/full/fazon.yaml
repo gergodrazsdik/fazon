@@ -1,0 +1,40 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/gergodrazsdik/fazon/main/docs/spec/schemas/config.schema.json
+# Every key with its default, except image, which has none.
+---
+fazon: 0
+adapter: vue
+image: ghcr.io/gergodrazsdik/fazon-verifier@sha256:4f1c2a9e7b0d3c58a6e21f9047bd8c3e5a1f6d2b9c7e0a4f8d3b6c1e9a2f5d70
+
+paths:
+  specs: specs
+  components: src/components
+  entry: src/index.ts
+  tokens: tokens/tokens.json
+  conventions: docs/conventions.md
+  baselines: baselines
+
+icons: lucide
+
+loop:
+  iterations: 5
+  budgetUsd: 10
+  runMinutes: 90
+  callMinutes: 20
+  escalateAfter: 2
+
+models:
+  generator: claude-sonnet-5-5
+  escalation: claude-opus-5-5
+  judge: claude-sonnet-5-5
+
+judge:
+  policy: advisory
+  ciBudgetUsd: 3
+  repeats: 1
+
+# effort and prices have no entries by default: each model runs at its own default effort,
+# and costs use the framework's price table. For example:
+# effort:
+#   judge: high
+# prices:
+#   claude-sonnet-5-5: {input: 2, output: 10, cacheRead: 0.1}

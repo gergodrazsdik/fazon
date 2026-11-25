@@ -15,7 +15,8 @@ This document defines what a spec may contain and which rules make it valid. The
 | Check and rule IDs that `exemptions` name, and what each rule allows | [Check catalogue](check-catalogue.md) (T-0022) |
 | How the judge's rubric is built from the spec | [Judge](judge.md) |
 | Where the approved API's hash is recorded, and its canonical form | [Run records and provenance](records.md) |
-| Where specs live in a consumer repo, adapter-wide defaults | Config file reference (T-0029) |
+| Where specs live in a consumer repo | [Config file reference](config.md) |
+| Adapter-wide defaults for the API mapping | Adapter boundary (T-0031) |
 | Each adapter's mapping of the neutral API, and its schema for `extensions` | Adapter boundary (T-0031) |
 | The token names a spec may reference | Token set (T-0033) |
 
