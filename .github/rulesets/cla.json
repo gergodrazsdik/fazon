@@ -12,7 +12,7 @@
       "parameters": {
         "strict_required_status_checks_policy": false,
         "do_not_enforce_on_create": false,
-        "required_status_checks": [{ "context": "license/cla" }]
+        "required_status_checks": [{ "context": "license/cla", "integration_id": 128106 }]
       }
     }
   ]

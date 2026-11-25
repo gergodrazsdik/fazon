@@ -11,7 +11,7 @@ Next free IDs: T-0084, F-0006, Q-0018.
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
 1. M0: the spec format and its JSON Schema first, as most other documents build on it (T-0020), then the story matrix rules (T-0021) and the check catalogue (T-0022)
-2. The CLA assistant posts its status with the maintainer's OAuth token rather than as its GitHub App (F-0005)
+2. The maintainer revokes the CLA assistant's old OAuth access, now that its GitHub App posts the check (F-0005)
 
 ## Phase 0: Bootstrap
 
@@ -44,7 +44,7 @@ Next free IDs: T-0084, F-0006, Q-0018.
 - [ ] T-0012 Keep `CLA.md` and the CLA assistant's Gist identical: compare them with every change to either
   - Checked 2026-11-25: the Gist is byte-for-byte identical to `CLA.md` on `main`
 - [x] T-0013 Test pull request: the CLA assistant reports `license/cla`; check whether a `Co-Authored-By` trailer (agent commits) asks the co-author to sign, and exempt that address if so — 2026-11-25, [#5](https://github.com/gergodrazsdik/fazon/pull/5): `license/cla` reported "All CLA requirements met."; the `Co-Authored-By` trailer asked nobody to sign, so no further exemption is needed
-- [x] T-0014 Make `license/cla` a required check after T-0013, in its own ruleset with an admin bypass, so a CLA assistant outage (F-0002) doesn't block every merge — 2026-11-25, [#5](https://github.com/gergodrazsdik/fazon/pull/5): the `cla` ruleset (`.github/rulesets/cla.json`), not pinned to the app (F-0005)
+- [x] T-0014 Make `license/cla` a required check after T-0013, in its own ruleset with an admin bypass, so a CLA assistant outage (F-0002) doesn't block every merge — 2026-11-25, [#5](https://github.com/gergodrazsdik/fazon/pull/5): the `cla` ruleset (`.github/rulesets/cla.json`), pinned to the CLA assistant's app (ID 128106) once it posted as the app (F-0005)
 
 ## Phase 1: Specification (M0)
 
@@ -130,7 +130,7 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 
 - [x] F-0003 The first `lint` run on `main` failed: editorconfig-checker v4's archive holds the binary as `editorconfig-checker`, not `ec-linux-amd64`; the installer's one-match check caught it — fixed 2026-11-25, in the smoke-test pull request
 - [ ] F-0004 Publishing to npm has changed, which matters for M5 (T-0065, T-0066): the first publish of a new package also makes npm create a public `0.0.0-stage` placeholder version (staged publishing, which new packages joined in October 2026), and npm is restricting tokens that bypass 2FA for direct publishing. Release publishing from CI should plan for trusted publishing and staged approval (2026-11-25)
-- [ ] F-0005 The CLA assistant posted `license/cla` on #5 with the maintainer's OAuth token (the status's creator is the maintainer's account), not as its GitHub App, so the `cla` ruleset can't pin the check to the app (ID 128106). Its README recommends the app and revoking the old OAuth access afterwards: check the CLA assistant's dashboard for the migration, then pin the check with `integration_id` (maintainer, 2026-11-25)
+- [~] F-0005 The CLA assistant first posted `license/cla` on #5 with the maintainer's OAuth token, not as its GitHub App, so the `cla` ruleset couldn't pin the check to the app (ID 128106) (2026-11-25) — the maintainer installed the app, which needs no migration step: from 01:06 UTC its statuses come from `cla-assistant[bot]`, and the ruleset now pins the check to the app ([#5](https://github.com/gergodrazsdik/fazon/pull/5)); still open: the maintainer revokes the CLA assistant's old OAuth access (GitHub Settings → Applications → Authorized OAuth Apps)
 
 ## Open questions
 
