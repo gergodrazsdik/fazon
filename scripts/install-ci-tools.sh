@@ -22,7 +22,7 @@ mkdir -p "$bin"
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-# name|url|sha256|file name of the binary inside the archive
+# name|url|sha256|file name of the binary inside the archive, or "-" when the download is the binary itself
 tools=(
   "just|https://github.com/casey/just/releases/download/1.59.0/just-1.59.0-x86_64-unknown-linux-musl.tar.gz|409044617b6f06517c1035e55ca38c8c856ff8b650e41bc2aa1ef82d5903a23e|just"
   "actionlint|https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz|8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8|actionlint"
@@ -32,6 +32,7 @@ tools=(
   "pinact|https://github.com/suzuki-shunsuke/pinact/releases/download/v5.0.2/pinact_linux_amd64.tar.gz|7f003d8f51e984c2264d2009d430e3e0e87ae404a0e2dc2a9a277b0f731bf5b7|pinact"
   "yq|https://github.com/mikefarah/yq/releases/download/v4.54.3/yq_linux_amd64.tar.gz|09a25baa0e136b8633949e03117fc82cb9e50d10910f988ef17a1305539ebce4|yq_linux_amd64"
   "shellcheck|https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz|8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198|shellcheck"
+  "hadolint|https://github.com/hadolint/hadolint/releases/download/v2.15.1/hadolint-linux-x86_64|c7187db94eeeeca956519a6af171adc31453941a1e777961f6e680f697c8c507|-"
 )
 
 for entry in "${tools[@]}"; do
@@ -39,6 +40,11 @@ for entry in "${tools[@]}"; do
   archive="$tmp/$name.archive"
   curl -fsSL --retry 3 -o "$archive" "$url"
   echo "$sha  $archive" | sha256sum --check --strict --quiet
+  if [[ $file == - ]]; then
+    install -m 0755 "$archive" "$bin/$name"
+    echo "installed $name from $url"
+    continue
+  fi
   mkdir -p "$tmp/$name"
   tar -xf "$archive" -C "$tmp/$name"
   mapfile -t found < <(find "$tmp/$name" -type f -name "$file")
