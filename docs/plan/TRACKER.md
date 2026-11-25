@@ -4,13 +4,13 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0085, F-0006, Q-0018.
+Next free IDs: T-0085, F-0007, Q-0018.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M0: the spec format and its JSON Schema first, as most other documents build on it (T-0020), then the story matrix rules (T-0021) and the check catalogue (T-0022)
+1. M0: the story matrix rules (T-0021), then the check catalogue (T-0022); both fill in hooks the spec format left to them
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -52,8 +52,8 @@ Next free IDs: T-0085, F-0006, Q-0018.
 
 Done when every document is merged through a pull request the maintainer reviewed, and the repo holds documents, schemas and example data but no executable product code. Index: [docs/spec/README.md](../spec/README.md).
 
-- [ ] T-0020 Spec format and its JSON Schema, including fixtures, multi-part components and exemptions (Q-0005, Q-0006)
-- [ ] T-0021 Story matrix rules
+- [x] T-0020 Spec format and its JSON Schema, including fixtures, multi-part components and exemptions (Q-0005, Q-0006) — 2026-11-25: format version 0, with valid and invalid examples checked by `just lint` ([ADR 0005](../adr/0005-spec-format.md)), [#8](https://github.com/gergodrazsdik/fazon/pull/8)
+- [ ] T-0021 Story matrix rules, including the icon set that spec fixtures draw from
 - [ ] T-0022 Check catalogue, with one rule sheet per check
 - [ ] T-0023 Baseline lifecycle
 - [ ] T-0024 Agent permission model
@@ -65,7 +65,7 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [ ] T-0030 CLI reference, covering every command
 - [ ] T-0031 Adapter boundary, including how the example repo consumes the framework before M5 (Q-0001)
 - [ ] T-0032 Reusable workflow interface: inputs, secrets and permissions
-- [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once (Q-0007)
+- [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples (Q-0007)
 - [ ] T-0034 License terms for generated and scaffolded files, and for the example repo (Q-0002, Q-0003, Q-0004)
 
 ## Phase 2: Foundation (M1 to M3)
@@ -133,6 +133,7 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 - [x] F-0003 The first `lint` run on `main` failed: editorconfig-checker v4's archive holds the binary as `editorconfig-checker`, not `ec-linux-amd64`; the installer's one-match check caught it — fixed 2026-11-25, in the smoke-test pull request
 - [ ] F-0004 Publishing to npm has changed, which matters for M5 (T-0065, T-0066): the first publish of a new package also makes npm create a public `0.0.0-stage` placeholder version (staged publishing, which new packages joined in October 2026), and npm is restricting tokens that bypass 2FA for direct publishing. Release publishing from CI should plan for trusted publishing and staged approval (2026-11-25)
 - [x] F-0005 The CLA assistant first posted `license/cla` on #5 with the maintainer's OAuth token, not as its GitHub App, so the `cla` ruleset couldn't pin the check to the app (ID 128106) (2026-11-25) — the maintainer installed the app, which needs no migration step: from 01:06 UTC its statuses come from `cla-assistant[bot]`, and the ruleset now pins the check to the app ([#5](https://github.com/gergodrazsdik/fazon/pull/5)); the next commit's status came only from the app. The OAuth access stays: signing in to the CLA assistant's dashboard, where the Gist and the exemptions are configured, needs it, and with the pin an OAuth-posted status no longer counts
+- [ ] F-0006 Spec format version 0 can't express a `many` part inside another `many` part, such as option groups in Select; revisit when Select is specified (2026-11-25, T-0020)
 
 ## Open questions
 
@@ -144,8 +145,8 @@ From the brief's [Open](../design/brief.md#open) table:
 - [ ] Q-0002 Which license covers what Fazon writes into an adopter's repo? Proposal: MIT-0 for all of it. Settled by M0 (T-0034)
 - [ ] Q-0003 Which license does the example repo carry? Proposal: the same permissive license. Settled by M0 (T-0034)
 - [ ] Q-0004 Does the CLA apply to the example repo? Proposal: it takes no outside contributions before the publishing decision. Settled by M0 (T-0034)
-- [ ] Q-0005 Is the API in a spec framework-neutral, or written per framework? Proposal: neutral, mapped by the adapter. Settled by M0 (T-0020) — direction from the maintainer, 2026-11-25: framework-neutral wherever it maps cleanly, with framework-specific extensions for what doesn't, their reason optional; the extension shape is proposed in the T-0020 outline, and the ADR comes with T-0020
-- [x] Q-0006 One spec or several for a multi-part component? Proposal: one spec with named parts. Settled by M0 (T-0020) — answered 2026-11-25, from a worked Tabs example of both options: one spec with named parts; the ADR comes with T-0020
+- [x] Q-0005 Is the API in a spec framework-neutral, or written per framework? Proposal: neutral, mapped by the adapter. Settled by M0 (T-0020) — direction from the maintainer, 2026-11-25: framework-neutral wherever it maps cleanly, with framework-specific extensions for what doesn't, their reason optional; the extension shape is in the spec format ([ADR 0005](../adr/0005-spec-format.md))
+- [x] Q-0006 One spec or several for a multi-part component? Proposal: one spec with named parts. Settled by M0 (T-0020) — answered 2026-11-25, from a worked Tabs example of both options: one spec with named parts ([ADR 0005](../adr/0005-spec-format.md))
 - [ ] Q-0007 Which part of the token format does the build support? Proposal: the subset the build tool handles today. Settled by M0 (T-0033)
 - [ ] Q-0008 Is the list of 15 components right? Proposal: the list under Milestones. Settled by M0
 - [ ] Q-0009 Are baselines kept in git or in Git LFS? Proposal: in git. Settled by M1

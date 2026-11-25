@@ -30,6 +30,7 @@ tools=(
   "editorconfig-checker|https://github.com/editorconfig-checker/editorconfig-checker/releases/download/v4.0.2/editorconfig-checker-linux-amd64.tar.gz|44efaef3ed14c6ab52eb87481d78e5e5c204796dccf26e2f4598a61ba17f8003|editorconfig-checker"
   "gitleaks|https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz|551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb|gitleaks"
   "pinact|https://github.com/suzuki-shunsuke/pinact/releases/download/v5.0.2/pinact_linux_amd64.tar.gz|7f003d8f51e984c2264d2009d430e3e0e87ae404a0e2dc2a9a277b0f731bf5b7|pinact"
+  "yq|https://github.com/mikefarah/yq/releases/download/v4.54.3/yq_linux_amd64.tar.gz|09a25baa0e136b8633949e03117fc82cb9e50d10910f988ef17a1305539ebce4|yq_linux_amd64"
   "shellcheck|https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz|8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198|shellcheck"
 )
 

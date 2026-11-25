@@ -28,9 +28,9 @@ justfile  local.just.example  lefthook.yml  .editorconfig  lint configs
 docs/design/brief.md     the design brief (complete; changes only when the maintainer asks)
 docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker
-docs/spec/               the M0 documents and their index
+docs/spec/               the M0 documents and their index; schemas/ and examples/ beside them
 docs/dev-setup.md        prerequisites and local setup
-scripts/                 with-tool.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh
+scripts/                 with-tool.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh, check-spec-examples.sh
 ```
 
 Directories arrive with the milestone that first needs them (`packages/`, `plugin/`, `verifier/` from M1; see the brief's "Framework repo layout"). Keep this tree current when you add top-level folders.
@@ -63,7 +63,7 @@ Use `just` (`just --list`):
 |---|---|
 | `just doctor` | Check the tools; prints install hints. |
 | `just hooks` | Install the lefthook git hooks. |
-| `just lint` | Every linter the `lint` workflow runs: Markdown, YAML, actionlint, zizmor, pinact, shellcheck, typos, EditorConfig, gitleaks. |
+| `just lint` | Every linter the `lint` workflow runs: Markdown, YAML, actionlint, zizmor, pinact, shellcheck, typos, EditorConfig, gitleaks, and the spec examples against their schema. |
 | `just pin` | Pin workflow actions to full commit SHAs. |
 | `just tool-updates` | Which linter versions pinned outside Dependabot's reach have newer releases, and when each is due (7-day cooldown). Read-only. |
 | `just claude` | Start Claude Code in this repo. |

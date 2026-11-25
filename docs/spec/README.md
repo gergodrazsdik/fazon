@@ -4,7 +4,7 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 
 | # | Document | Status | Tracker |
 |---|---|---|---|
-| 1 | Spec format and its JSON Schema, including fixtures, multi-part components and exemptions | not written yet | T-0020 |
+| 1 | [Spec format](spec-format.md) and its [JSON Schema](schemas/spec.schema.json), including fixtures, multi-part components and exemptions | merged | T-0020 |
 | 2 | Story matrix rules | not written yet | T-0021 |
 | 3 | Check catalogue, with one rule sheet per check | not written yet | T-0022 |
 | 4 | Baseline lifecycle | not written yet | T-0023 |
