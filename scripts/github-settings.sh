@@ -54,7 +54,7 @@ general='{
 }'
 
 # Code scanning languages for CodeQL's default setup.
-codeql_languages='["actions"]'
+codeql_languages='["actions","javascript-typescript"]'
 
 # Actions allowed besides GitHub's own (actions/*, github/*): every third-party action the
 # workflows use, by repository.

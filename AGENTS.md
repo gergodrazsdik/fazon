@@ -15,7 +15,7 @@ Where the truth lives:
 
 If the brief conflicts with an ADR, a spec, these instructions or a request, stop and raise it with the maintainer; don't pick a side yourself.
 
-**Current phase: M0, specification.** The work is the documents listed in [docs/spec/README.md](docs/spec/README.md): prose, JSON Schemas and example data. No executable product code (no `packages/`, `plugin/` or `verifier/`) until M1. Repo tooling in `scripts/` is fine.
+**Current phase: M1, the walking skeleton.** The M0 documents in [docs/spec/README.md](docs/spec/README.md) are the contract the code implements; a change to one is a pull request that updates the document with its schemas and examples. The steps are T-0046's subtasks in the [tracker](docs/plan/TRACKER.md).
 
 ## Layout
 
@@ -23,15 +23,17 @@ If the brief conflicts with an ADR, a spec, these instructions or a request, sto
 AGENTS.md CLAUDE.md README.md LICENSE CLA.md CHANGELOG.md
 CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md SUPPORT.md
 justfile  local.just.example  lefthook.yml  .editorconfig  lint configs
+package.json  pnpm-workspace.yaml  pnpm-lock.yaml  .node-version  tsconfig*.json  eslint.config.js  vitest.config.ts  .prettierrc.json
 LICENSES/                MIT-0.txt: the license of template text Fazon writes into other repositories
+packages/                cli/ (the `fazon` package), core/ (`@fazon/core`), adapter-vue/ (`@fazon/adapter-vue`)
 .claude/settings.json    committed Claude Code sandbox and deny rules
-.github/                 workflows/ (lint.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
+.github/                 workflows/ (lint.yml, ci.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
 docs/design/brief.md     the design brief (complete; changes only when the maintainer asks)
 docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker
 docs/spec/               the M0 documents and their index; schemas/ and examples/ beside them, example-library/ drafts
 docs/dev-setup.md        prerequisites and local setup
-scripts/                 with-tool.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh, check-spec-examples.sh
+scripts/                 with-tool.sh, with-deps.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh, check-spec-examples.sh, check-spdx.sh
 ```
 
 Directories arrive with the milestone that first needs them (`packages/`, `plugin/`, `verifier/` from M1; see the brief's "Framework repo layout"). Keep this tree current when you add top-level folders.
@@ -64,14 +66,18 @@ Use `just` (`just --list`):
 |---|---|
 | `just doctor` | Check the tools; prints install hints. |
 | `just hooks` | Install the lefthook git hooks. |
-| `just lint` | Every linter the `lint` workflow runs: Markdown, YAML, actionlint, zizmor, pinact, shellcheck, typos, EditorConfig, gitleaks, and the spec examples against their schema. |
+| `just lint` | Every linter the `lint` workflow runs: Markdown, YAML, actionlint, zizmor, pinact, shellcheck, typos, EditorConfig, gitleaks, the spec examples against their schema, and the license identifiers. |
+| `just install` | Install the workspace's dependencies from the lockfile (pnpm). |
+| `just build` / `just test` | Build the packages (`tsc --build`); run the framework's tests (Vitest). |
+| `just lint-ts` | ESLint and the Prettier check on the TypeScript code. |
+| `just check` | Everything CI checks: `lint`, `lint-ts`, `build` and `test`. |
 | `just pin` | Pin workflow actions to full commit SHAs. |
 | `just tool-updates` | Which linter versions pinned outside Dependabot's reach have newer releases, and when each is due (7-day cooldown). Read-only. |
 | `just claude` | Start Claude Code in this repo. |
 | `just github-settings <repo>` / `just github-settings-check <repo>` | Maintainer only. Apply or check the repository settings and rulesets. |
 | `just cla-gist-check` | Check that the CLA assistant's Gist is identical to `CLA.md`. After a pull request changes `CLA.md`, the maintainer updates the Gist once it is merged. |
 
-Run `just lint` before every commit. The hooks run the same checks on staged files plus gitleaks and the Conventional Commits header. `build`, `test` and `verify` arrive with the code.
+Run `just check` before every commit (`just lint` alone when no code changed). The hooks run the linters, ESLint and Prettier on staged files, plus gitleaks and the Conventional Commits header. `verify` arrives with the verifier.
 
 ## Design principles
 

@@ -1,6 +1,6 @@
 # Development setup
 
-What you need to work on Fazon, and how to check it. Fazon is in its specification phase (M0): today you need only the documentation tooling. The rest arrives with milestone M1.
+What you need to work on Fazon, and how to check it.
 
 ## Prerequisites
 
@@ -26,13 +26,15 @@ What you need to work on Fazon, and how to check it. Fazon is in its specificati
 
 CI runs the versions pinned in `.github/workflows/lint.yml` and `scripts/install-ci-tools.sh`. Recommended: the [GitHub CLI](https://cli.github.com/) (`gh`) and [Claude Code](https://code.claude.com/docs/en/setup).
 
-### From milestone M1
+### The code
 
 | Tool | Version | Install |
 |---|---|---|
-| Node.js | the current LTS (pinned in `.node-version` from M1) | <https://nodejs.org/en/download>, or a version manager such as fnm or nvm |
-| pnpm | pinned in `package.json`'s `packageManager` from M1 | `corepack enable pnpm`, or <https://pnpm.io/installation> |
+| Node.js | 26, the current LTS (`.node-version`) | <https://nodejs.org/en/download>, or a version manager such as fnm or nvm |
+| pnpm | the version in `package.json`'s `packageManager` | `corepack enable pnpm`, or `npm install -g pnpm@<that version>` |
 | Docker or Podman | a current release | <https://docs.docker.com/get-docker/>, <https://podman.io/docs/installation> |
+
+`pnpm install` takes only releases at least 7 days old (`minimumReleaseAge` in `pnpm-workspace.yaml`, the same cooldown as Dependabot's), and runs no dependency's install scripts unless `pnpm-workspace.yaml` lists it.
 
 The verifier image runs every rendered check in a container, so a laptop and CI agree on every screenshot. Docker and rootless Podman both work; with Podman, tools that expect Docker may need Podman's Docker-compatible socket.
 
@@ -43,7 +45,8 @@ git clone https://github.com/gergodrazsdik/fazon.git
 cd fazon
 just doctor   # what's installed, with install hints
 just hooks    # install the git hooks
-just lint     # the checks CI runs
+just install  # the workspace's dependencies, from the lockfile
+just check    # the checks CI runs: linters, ESLint, Prettier, build, tests
 ```
 
 ## WSL notes

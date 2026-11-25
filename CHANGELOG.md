@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The pnpm workspace with the first packages, `fazon` (the CLI), `@fazon/core` and `@fazon/adapter-vue`: TypeScript 6, Vitest, ESLint with the ADAPTER-001 rule, Prettier, a license identifier check, the `ci` workflow, and `just install`, `build`, `test`, `lint-ts` and `check`.
 - Menu and Popover join the example library, which now has 17 components; the npm packages are `fazon` (the CLI), `@fazon/core` and `@fazon/adapter-vue`.
 - The license terms, version 0: MIT-0 for everything Fazon writes into another repository and for the example repository, no license headers on written files, and where third-party notices go; `LICENSES/MIT-0.txt`, and the example library's license, notices and contributing drafts.
 - The token set, version 0: a DTCG 2025.10 resolver and token files in the subset the build supports, raw and role tokens, themes, custom property names with a configurable prefix, the CSS `fazon sync` builds and the story frame's base styles, with schemas; and the example library's drafts: a neutral token set in light and dark with its contrast table, and its conventions doc.

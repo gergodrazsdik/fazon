@@ -32,6 +32,15 @@ pre-commit:
     - name: spec-examples
       glob: "{docs/spec/schemas/*.json,docs/spec/examples/**/*.md,docs/spec/examples/**/*.json,scripts/check-spec-examples.sh}"
       run: scripts/check-spec-examples.sh
+    - name: spdx
+      glob: "*.{sh,bash,ts,mts,cts,tsx,js,mjs,cjs,jsx,vue,css,html}"
+      run: scripts/check-spdx.sh {staged_files}
+    - name: eslint
+      glob: "*.{ts,mts,cts,js,mjs,cjs}"
+      run: scripts/with-deps.sh pnpm exec eslint --no-warn-ignored {staged_files}
+    - name: prettier
+      glob: "{packages/**/*,*.json,*.js,*.ts,pnpm-workspace.yaml}"
+      run: scripts/with-deps.sh pnpm exec prettier --check --ignore-unknown {staged_files}
     - name: gitleaks
       run: scripts/with-tool.sh gitleaks git --pre-commit --staged --redact --no-banner
 

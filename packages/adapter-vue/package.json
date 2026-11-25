@@ -1,0 +1,31 @@
+{
+  "name": "@fazon/adapter-vue",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The Vue 3 adapter of Fazon.",
+  "license": "GPL-3.0-or-later",
+  "author": "Gergő Drazsdik",
+  "homepage": "https://github.com/gergodrazsdik/fazon#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gergodrazsdik/fazon.git",
+    "directory": "packages/adapter-vue"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@fazon/core": "workspace:*"
+  }
+}

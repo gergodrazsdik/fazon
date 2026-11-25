@@ -1,0 +1,4 @@
+# Prettier formats the packages and the root configuration files (package.json's format scripts list them).
+**/dist/
+**/coverage/
+pnpm-lock.yaml

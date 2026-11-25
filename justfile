@@ -46,9 +46,9 @@ doctor:
     echo "Recommended:"
     optional gh                "https://cli.github.com/"
     optional claude            "https://code.claude.com/docs/en/setup"
-    echo "From milestone M1 (the code):"
-    optional node              "Node.js LTS: https://nodejs.org/en/download"
-    optional pnpm              "https://pnpm.io/installation (corepack enable pnpm)"
+    echo "The code (packages/):"
+    check node                 "Node.js 26 (.node-version): https://nodejs.org/en/download, or fnm/nvm"
+    check pnpm                 "the version in package.json's packageManager: corepack enable pnpm, or npm install -g pnpm@<version>"
     optional podman            "Podman or Docker for the verifier image: https://podman.io/docs/installation"
     echo "Git hooks:"
     if [ -f "$(git rev-parse --git-path hooks)/commit-msg" ]; then
@@ -69,6 +69,25 @@ tool-updates:
 hooks:
     lefthook install
 
+# Install the workspace's dependencies from the lockfile (pnpm)
+[group('dev')]
+install:
+    pnpm install --frozen-lockfile
+
+# Build the packages (tsc)
+[group('dev')]
+build:
+    pnpm run build
+
+# Run the framework's tests (Vitest)
+[group('dev')]
+test:
+    pnpm test
+
+# Everything CI checks: the linters, the TypeScript lint and format check, the build and the tests
+[group('dev')]
+check: lint lint-ts build test
+
 # Start Claude Code in this repo (extra arguments are passed through)
 [group('dev')]
 claude *args:
@@ -76,7 +95,7 @@ claude *args:
 
 # Run every linter (the lint workflow's lint job)
 [group('lint')]
-lint: lint-md lint-yaml lint-actions zizmor pinact-check lint-sh typos editorconfig gitleaks spec-examples
+lint: lint-md lint-yaml lint-actions zizmor pinact-check lint-sh typos editorconfig gitleaks spec-examples spdx
 
 # Lint Markdown (markdownlint-cli2)
 [group('lint')]
@@ -127,6 +146,17 @@ gitleaks:
 [group('lint')]
 spec-examples:
     scripts/check-spec-examples.sh
+
+# Check that every source file starts with its license identifier (SPDX)
+[group('lint')]
+spdx:
+    scripts/check-spdx.sh
+
+# Lint and format-check the TypeScript code (ESLint, Prettier); needs `just install`
+[group('lint')]
+lint-ts:
+    pnpm run lint
+    pnpm run format:check
 
 # Pin workflow actions to full commit SHAs (pinact)
 [group('lint')]

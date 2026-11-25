@@ -29,7 +29,8 @@
         "required_status_checks": [
           { "context": "lint", "integration_id": 15368 },
           { "context": "zizmor", "integration_id": 15368 },
-          { "context": "pr-title", "integration_id": 15368 }
+          { "context": "pr-title", "integration_id": 15368 },
+          { "context": "build", "integration_id": 15368 }
         ]
       }
     }
