@@ -1,0 +1,23 @@
+# The workflow `fazon init` writes into a consumer repository, as .github/workflows/fazon.yml.
+# Before M5 the reusable workflow is referenced by the framework commit the repository pins;
+# from M5, by a release tag.
+---
+name: fazon
+
+on:
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: fazon-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  fazon:
+    uses: gergodrazsdik/fazon/.github/workflows/verify.yml@0123456789abcdef0123456789abcdef01234567
+    permissions:
+      contents: read
+      pull-requests: write # only the comment job uses it
+    secrets:
+      anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}

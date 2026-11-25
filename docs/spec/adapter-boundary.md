@@ -14,7 +14,7 @@ What the framework-neutral core does, what a framework adapter supplies, what th
 | The checks whose commands the adapter supplies | [Check catalogue](check-catalogue.md) |
 | The component directory, self-checks and generated files | [Agent permission model](agent-permissions.md) |
 | What `fazon init` writes | [CLI reference](cli.md#fazon-init) |
-| The reusable workflow the example repository calls | Reusable workflow interface (T-0032) |
+| The reusable workflow the example repository calls | [Reusable workflow interface](workflow.md) |
 | The conventions doc and token set of the example library | T-0033 |
 
 ## Core and adapter

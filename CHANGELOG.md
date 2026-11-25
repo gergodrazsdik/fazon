@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 - The repository: license, contributor agreement, community files, lint tooling and agent instructions. No product code yet.
 - The spec format, version 0: the document, the JSON Schema of the front matter, and valid and invalid example specs, checked by `just lint`.
+- The reusable workflow interface, version 0: how a consumer calls it, inputs, secrets and permissions, the `verify`, `judge` and `comment` jobs, artifacts and summary, with the caller workflow `fazon init` writes.
 - The adapter boundary, version 0: what the core and an adapter each do, the Vue adapter (files, API mapping, stories, contract tests, commands, scaffold), and how the example repository consumes the framework before M5.
 - The CLI reference, version 0: every command with its arguments, refusals and results, the developer's journey as commands, exit codes, and the JSON output envelope with its schema.
 - The config file reference, version 0: `fazon.yaml`, every key with its default, local overrides in `fazon.local.yaml`, and validation, with schemas and examples.
