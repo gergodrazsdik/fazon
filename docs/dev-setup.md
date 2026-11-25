@@ -72,4 +72,4 @@ Fazon never stores or ships credentials. From M2 on, generation and the vision j
 
 ## Working with Claude Code
 
-`just claude` starts Claude Code in the repo. The committed `.claude/settings.json` turns on the Bash sandbox with a network allowlist and denies reading secrets; [CLAUDE.md](../CLAUDE.md) says what has to run outside it.
+`just claude` starts Claude Code in the repo, and adds `../fazon-vue-example` with its instructions when the example repo is cloned next to this one. The committed `.claude/settings.json` turns on the Bash sandbox with a network allowlist and denies reading secrets; [CLAUDE.md](../CLAUDE.md) says what has to run outside it.
