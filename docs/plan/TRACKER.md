@@ -10,7 +10,7 @@ Next free IDs: T-0085, F-0007, Q-0018.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M0: the loop and caps (T-0025), then the judge (T-0026)
+1. M0: the judge (T-0026), then the measurement protocol (T-0027)
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -57,11 +57,11 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [x] T-0022 Check catalogue, with one rule sheet per check — 2026-11-25: version 0, with HTML fixtures for the rendered checks ([ADR 0007](../adr/0007-check-catalogue.md)), [#11](https://github.com/gergodrazsdik/fazon/pull/11)
 - [x] T-0023 Baseline lifecycle — 2026-11-25: version 0, with the baselines record's schema ([ADR 0008](../adr/0008-baseline-lifecycle.md)), [#13](https://github.com/gergodrazsdik/fazon/pull/13)
 - [x] T-0024 Agent permission model — 2026-11-25: version 0 ([ADR 0009](../adr/0009-agent-permissions.md)), [#14](https://github.com/gergodrazsdik/fazon/pull/14)
-- [ ] T-0025 Loop and caps: defaults, enforcement, and what an iteration is
+- [x] T-0025 Loop and caps: defaults, enforcement, and what an iteration is — 2026-11-25: version 0 ([ADR 0010](../adr/0010-loop-and-caps.md))
 - [ ] T-0026 Judge: rubric, image batching and the CI cost cap
-- [ ] T-0027 Measurement protocol, including judge calibration and its thresholds
+- [ ] T-0027 Measurement protocol, including judge calibration and its thresholds; count linked feedback runs together and report models per iteration ([ADR 0010](../adr/0010-loop-and-caps.md))
 - [ ] T-0028 Run record and provenance schemas (Q-0012)
-- [ ] T-0029 Config file reference: name, format and keys, including a consumer's own fixture icon set ([ADR 0006](../adr/0006-story-matrix.md)) the baselines directory ([ADR 0008](../adr/0008-baseline-lifecycle.md)) and the components directory ([ADR 0009](../adr/0009-agent-permissions.md))
+- [ ] T-0029 Config file reference: name, format and keys, including a consumer's own fixture icon set ([ADR 0006](../adr/0006-story-matrix.md)) the baselines directory ([ADR 0008](../adr/0008-baseline-lifecycle.md)) the components directory ([ADR 0009](../adr/0009-agent-permissions.md)), and the caps, models, escalation threshold, effort and judge prices ([ADR 0010](../adr/0010-loop-and-caps.md))
 - [ ] T-0030 CLI reference, covering every command, including `fazon baseline update` ([ADR 0008](../adr/0008-baseline-lifecycle.md))
 - [ ] T-0031 Adapter boundary, including how the example repo consumes the framework before M5, the source checks' and self-checks' commands, the file patterns allowed in a component's directory, and reading a component's API for the contract tests (Q-0001)
 - [ ] T-0032 Reusable workflow interface: inputs, secrets and permissions; it compares baselines and lists those a pull request changes, and never writes them ([ADR 0008](../adr/0008-baseline-lifecycle.md))

@@ -15,6 +15,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0007](0007-check-catalogue.md) | Check catalogue: exact token identity, no inline suppressions, contract tests | accepted |
 | [0008](0008-baseline-lifecycle.md) | Baseline lifecycle: an explicit update command, plain git, the image recorded | accepted |
 | [0009](0009-agent-permissions.md) | Agent permissions: one component directory, allowlisted self-checks, committed generated files | accepted |
+| [0010](0010-loop-and-caps.md) | Loop and caps: feedback as linked runs, $10 and 90 minutes per run | accepted |
 
 ## Numbering and status
 

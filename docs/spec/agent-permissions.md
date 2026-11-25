@@ -9,7 +9,7 @@ What the agent may read, write and run while it generates a component, what the 
 
 | What | Defined in |
 |---|---|
-| Iterations, caps and what ends a run | Loop and caps (T-0025) |
+| Iterations, caps and what ends a run | [Loop and caps](loop-and-caps.md) |
 | How hand edits and violations are recorded | Run record and provenance schemas (T-0028) |
 | The components directory and other paths | Config file reference (T-0029) |
 | The adapter's file patterns and self-check commands | Adapter boundary (T-0031) |
@@ -75,7 +75,7 @@ One `claude -p` call per iteration, with settings the harness generates for the 
 - no web fetch or web search, no MCP servers, no subagents;
 - the sandbox on, with no network and writes limited as above;
 - non-interactive: what the rules don't allow is denied, never prompted;
-- the model the loop chooses (T-0025).
+- the model the loop chooses ([escalation](loop-and-caps.md#escalation)).
 
 An illustrative excerpt, for Button:
 
