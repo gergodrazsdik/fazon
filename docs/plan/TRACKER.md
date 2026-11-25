@@ -10,7 +10,7 @@ Next free IDs: T-0088, F-0007, Q-0019.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M1: the example repo (T-0040) and the first package (T-0041); break down the walking skeleton (T-0046) at M1's start
+1. M1, T-0046's steps in order; steps 2 to 4 and 6 run in parallel once step 1 is merged
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -75,15 +75,27 @@ Complete 2026-11-25: fifteen documents at version 0, with their schemas, example
 ### M1 Walking skeleton
 
 - [ ] T-0040 Create `gergodrazsdik/fazon-vue-example` (public, at `~/projects/fazon-vue-example`) with the same conventions and settings script; MIT-0, no CLA assistant, and the license, notices and contributing drafts from `docs/spec/example-library/` ([ADR 0019](../adr/0019-license-terms.md))
-- [ ] T-0041 The first package: pnpm workspace, `.node-version` and `packageManager` pins
-- [ ] T-0042 Dependabot: add the `npm` ecosystem with the first package
-- [ ] T-0043 CodeQL default setup: add `javascript-typescript` once code exists (`scripts/github-settings.sh`)
+- [~] T-0041 The first package: pnpm workspace, `.node-version` and `packageManager` pins — M1 step 1, PR pending
+- [~] T-0042 Dependabot: add the `npm` ecosystem with the first package — M1 step 1, PR pending
+- [~] T-0043 CodeQL default setup: add `javascript-typescript` once code exists (`scripts/github-settings.sh`) — M1 step 1 adds it to the script, PR pending; it applies when the maintainer runs `just github-settings`, which also makes `build` a required check
 - [ ] T-0044 Sandbox network allowlist for Playwright and Storybook (browser downloads, registries), and any MCP servers, in `.claude/settings.json`
-- [ ] T-0045 `just build`, `just test` and `just verify` recipes, with the code
-- [ ] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action; the framework's CI pushes pre-release verifier images to GHCR, a lint rule keeps framework code out of the core, and the example repo checks its three pins name one commit ([ADR 0016](../adr/0016-adapter-boundary.md)); the reusable `verify.yml` with its `verify`, `judge` and `comment` jobs ([ADR 0017](../adr/0017-workflow.md)) ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md)) (break down at M1 start)
+- [~] T-0045 `just build`, `just test` and `just verify` recipes, with the code — `build` and `test` in M1 step 1, PR pending; `verify` with step 7
+- [~] T-0046 The walking skeleton: one hand-written Button, story generation from its spec, the verifier image, `verify` with the source and rendered checks, baselines, the CI workflow; a laptop and CI give the same verdict, and one seeded failure per check fails the build; measure the visual tolerance by repeated renders and confirm the `focus` action; the framework's CI pushes pre-release verifier images to GHCR, a lint rule keeps framework code out of the core, and the example repo checks its three pins name one commit ([ADR 0016](../adr/0016-adapter-boundary.md)); the reusable `verify.yml` with its `verify`, `judge` and `comment` jobs ([ADR 0017](../adr/0017-workflow.md)) ([ADR 0006](../adr/0006-story-matrix.md), [ADR 0007](../adr/0007-check-catalogue.md))
+  - [~] Step 1: the pnpm workspace with `fazon`, `@fazon/core` and `@fazon/adapter-vue`, TypeScript, Vitest, ESLint (with ADAPTER-001), Prettier, the `ci` workflow (T-0041, T-0042, T-0043, T-0045, T-0083) — PR pending
+  - [ ] Step 2: the CLI skeleton: the `--json` envelope, exit codes, loading and validating the config and specs against their schemas, `doctor`
+  - [ ] Step 3: the story matrix: a spec to its story manifest, tested against the M0 example manifests
+  - [ ] Step 4: the tokens pipeline and the token CSS in `fazon sync` (T-0085)
+  - [ ] Step 5: the Vue adapter's story files, contract tests and entry exports; `fazon sync`
+  - [~] Step 6: the verifier image on Playwright's image with pinned fonts, built in CI and pushed to GHCR from `main` (T-0044) — in progress
+  - [ ] Step 7: `fazon verify` with the source checks: build, lint with the token rules, test, package (T-0045's `verify`)
+  - [ ] Step 8: the rendered checks (a11y, tokens, layout, visual) on the M0 HTML fixtures; baselines and `fazon baseline update`
+  - [ ] Step 9: the reusable `verify.yml` with its `verify`, `judge` and `comment` jobs ([ADR 0017](../adr/0017-workflow.md))
+  - [ ] Step 10: create the example repo (T-0040)
+  - [ ] Step 11: the example repo's scaffold, tokens, Button spec and hand-written Button, its three pins and their check, its CI
+  - [ ] Step 12: the exit criteria: a laptop and CI agree, one seeded failure per check fails the build, the visual tolerance measured by repeated renders, the `focus` action confirmed
 - [ ] T-0085 The tokens pipeline: resolve the resolver document, run Style Dictionary once per theme with references kept (its warning about references the dark block filters out is expected), and build `paths.tokensCss` in `fazon sync`; pin Style Dictionary and `@fontsource-variable/inter`; move the drafts in `docs/spec/example-library/` to the example repo ([ADR 0018](../adr/0018-token-set.md))
 - [x] T-0087 Create the `fazon` npm organisation and reserve `@fazon/core` and `@fazon/adapter-vue` with placeholder packages, version `0.0.0`, no code, as for `fazon` (T-0082); the maintainer publishes them with their own npm account, before M1's first package ([ADR 0020](../adr/0020-component-list-and-npm-names.md)) — 2026-11-25: the organisation exists, and `@fazon/core@0.0.0` and `@fazon/adapter-vue@0.0.0` are public, published by the maintainer; npm added `0.0.0-stage` to each, as for `fazon` (F-0004)
-- [ ] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, and template files `MIT-0`, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md), [ADR 0019](../adr/0019-license-terms.md))
+- [~] T-0083 A lint check that every source file carries the `SPDX-License-Identifier: GPL-3.0-or-later` header, and template files `MIT-0`, with the first TypeScript code ([ADR 0003](../adr/0003-bootstrap-answers.md), [ADR 0019](../adr/0019-license-terms.md)) — `scripts/check-spdx.sh` in M1 step 1, PR pending
 
 ### M2 The loop
 

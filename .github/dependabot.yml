@@ -1,6 +1,6 @@
 ---
-# New releases wait 7 days before Dependabot proposes them. npm joins with the
-# first package (tracker). The linters pinned in scripts/install-ci-tools.sh
+# New releases wait 7 days before Dependabot proposes them, as pnpm's
+# minimumReleaseAge does. The linters pinned in scripts/install-ci-tools.sh
 # and lint.yml are outside Dependabot's reach: `just tool-updates` reports them.
 version: 2
 updates:
@@ -16,3 +16,17 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+    labels: ["dependencies"]
+    groups:
+      npm-development:
+        dependency-type: development
+      npm-production:
+        dependency-type: production

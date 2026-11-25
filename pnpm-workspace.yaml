@@ -1,0 +1,9 @@
+---
+packages:
+  - packages/*
+
+# A release must be 7 days old before pnpm installs it, as Dependabot's cooldown.
+minimumReleaseAge: 10080
+
+# No dependency runs install scripts unless it's listed here.
+onlyBuiltDependencies: []

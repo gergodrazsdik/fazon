@@ -1,0 +1,35 @@
+{
+  "name": "fazon",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Fazon: agent-built UI components from written specs, verified by rendering, checks and a vision judge.",
+  "license": "GPL-3.0-or-later",
+  "author": "Gergő Drazsdik",
+  "homepage": "https://github.com/gergodrazsdik/fazon#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gergodrazsdik/fazon.git",
+    "directory": "packages/cli"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=26"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "fazon": "./dist/bin.js"
+  },
+  "dependencies": {
+    "@fazon/adapter-vue": "workspace:*",
+    "@fazon/core": "workspace:*"
+  }
+}
