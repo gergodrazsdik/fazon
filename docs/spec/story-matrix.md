@@ -13,7 +13,7 @@ The rules here decide which stories exist and what each one shows. These parts a
 |---|---|
 | What each check does with a rendered story | Check catalogue (T-0022) |
 | When a baseline is created, updated or renamed | [Baseline lifecycle](baseline-lifecycle.md) |
-| That the agent never edits stories or the manifest | Agent permission model (T-0024) |
+| That the agent never edits stories or the manifest | [Agent permission model](agent-permissions.md) |
 | How the judge's crops are batched | Judge (T-0026) |
 | The baselines directory, an icon set of the consumer's own | Config file reference (T-0029) |
 | How an adapter writes story files from the manifest | Adapter boundary (T-0031) |
@@ -22,7 +22,7 @@ The rules here decide which stories exist and what each one shows. These parts a
 ## From spec to screenshots
 
 1. The harness reads the spec and writes its manifest, by the rules below.
-2. The adapter writes the component's story files from the manifest. Both are generated files: they are rewritten whenever the spec changes, and nobody edits them by hand.
+2. The adapter writes the component's story files from the manifest. Both are generated files, committed in the component's `generated/` directory: they are rewritten whenever the spec changes, and nobody edits them by hand ([agent permissions](agent-permissions.md#files-the-harness-maintains)).
 3. The static Storybook build contains the stories.
 4. The verifier reads the manifest and Storybook's story index, renders each story in each theme, performs the story's input steps, and captures it. The rendered checks, the baselines and the judge all use these captures.
 
