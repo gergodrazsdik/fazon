@@ -39,6 +39,7 @@ doctor:
     check typos                "cargo install typos-cli, or https://github.com/crate-ci/typos#install"
     check editorconfig-checker "https://github.com/editorconfig-checker/editorconfig-checker#installation"
     check shellcheck           "https://github.com/koalaman/shellcheck#installing"
+    check hadolint             "https://github.com/hadolint/hadolint#install"
     check gitleaks             "https://github.com/gitleaks/gitleaks#installing"
     check yq                   "https://github.com/mikefarah/yq#install (mikefarah yq v4, not the Python yq)"
     check check-jsonschema     "pipx install check-jsonschema (or uv tool install check-jsonschema)"
@@ -99,7 +100,7 @@ claude *args:
 
 # Run every linter (the lint workflow's lint job)
 [group('lint')]
-lint: lint-md lint-yaml lint-actions zizmor pinact-check lint-sh typos editorconfig gitleaks spec-examples spdx
+lint: lint-md lint-yaml lint-actions zizmor pinact-check lint-sh lint-container typos editorconfig gitleaks spec-examples spdx
 
 # Lint Markdown (markdownlint-cli2)
 [group('lint')]
@@ -130,6 +131,11 @@ pinact-check:
 [group('lint')]
 lint-sh:
     git ls-files -z '*.sh' | xargs -0 scripts/with-tool.sh shellcheck
+
+# Lint the container files (hadolint)
+[group('lint')]
+lint-container:
+    git ls-files -z '*Containerfile' '*Dockerfile' | xargs -0 -r scripts/with-tool.sh hadolint
 
 # Check spelling (typos)
 [group('lint')]

@@ -26,8 +26,9 @@ justfile  local.just.example  lefthook.yml  .editorconfig  lint configs
 package.json  pnpm-workspace.yaml  pnpm-lock.yaml  .node-version  tsconfig*.json  eslint.config.js  vitest.config.ts  .prettierrc.json
 LICENSES/                MIT-0.txt: the license of template text Fazon writes into other repositories
 packages/                cli/ (the `fazon` package), core/ (`@fazon/core`), adapter-vue/ (`@fazon/adapter-vue`)
+verifier/                the verifier image: Containerfile, fonts, smoke test (verifier/README.md)
 .claude/settings.json    committed Claude Code sandbox and deny rules
-.github/                 workflows/ (lint.yml, ci.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
+.github/                 workflows/ (lint.yml, ci.yml, verifier.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
 docs/design/brief.md     the design brief (complete; changes only when the maintainer asks)
 docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker
@@ -66,7 +67,7 @@ Use `just` (`just --list`):
 |---|---|
 | `just doctor` | Check the tools; prints install hints. |
 | `just hooks` | Install the lefthook git hooks. |
-| `just lint` | Every linter the `lint` workflow runs: Markdown, YAML, actionlint, zizmor, pinact, shellcheck, typos, EditorConfig, gitleaks, the spec examples against their schema, and the license identifiers. |
+| `just lint` | Every linter the `lint` workflow runs: Markdown, YAML, actionlint, zizmor, pinact, shellcheck, hadolint, typos, EditorConfig, gitleaks, the spec examples against their schema, and the license identifiers. |
 | `just install` | Install the workspace's dependencies from the lockfile (pnpm). |
 | `just build` / `just test` | Build the packages (`tsc --build`); run the framework's tests (Vitest). |
 | `just lint-ts` | ESLint and the Prettier check on the TypeScript code. |

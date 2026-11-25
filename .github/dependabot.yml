@@ -30,3 +30,14 @@ updates:
         dependency-type: development
       npm-production:
         dependency-type: production
+  # The verifier image's base (Playwright's image, pinned by digest). Its Playwright version must
+  # match the framework's playwright-core pin, so these updates go together with that one.
+  - package-ecosystem: docker
+    directory: /verifier
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+    labels: ["dependencies", "area: verifier"]
