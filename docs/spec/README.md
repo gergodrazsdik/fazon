@@ -21,3 +21,5 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 | 15 | License terms for generated and scaffolded files, and for the example repo | not written yet | T-0034 |
 
 When a document is merged, link it in the first column and set its status to `merged`.
+
+Merging a document in M0 doesn't freeze it. The documents are expected to change as M1 to M5 show what works, and until version 1 nothing is released, so a change has no outside users to break. A change is a pull request that updates the document together with its schemas and example data. A change to a document's contract still needs the maintainer's approval, as any other.

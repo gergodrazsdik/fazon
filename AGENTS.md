@@ -8,7 +8,7 @@ A framework that lets a coding agent build UI components from written specs and 
 
 Where the truth lives:
 
-- [docs/design/brief.md](docs/design/brief.md): scope, architecture, milestones and the starting decisions. Read the relevant sections before any non-trivial work. It is exported from the maintainer's design doc: never edit it, not even to make a check pass. It changes only through a pull request the maintainer makes or asks for.
+- [docs/design/brief.md](docs/design/brief.md): scope, architecture, milestones and the starting decisions. Read the relevant sections before any non-trivial work. It is complete, and the lint gates cover it like any other file. Don't edit it on your own, not even to make a check pass: it changes only through a pull request the maintainer makes or asks for.
 - [docs/adr/](docs/adr/README.md): decisions that refine or supersede the brief.
 - [docs/spec/](docs/spec/README.md): the M0 documents, as they are merged.
 - [docs/plan/TRACKER.md](docs/plan/TRACKER.md): what's open and next.
@@ -25,7 +25,7 @@ CONTRIBUTING.md CODE_OF_CONDUCT.md SECURITY.md SUPPORT.md
 justfile  local.just.example  lefthook.yml  .editorconfig  lint configs
 .claude/settings.json    committed Claude Code sandbox and deny rules
 .github/                 workflows/ (lint.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
-docs/design/brief.md     the design brief (exported; never edited by agents)
+docs/design/brief.md     the design brief (complete; changes only when the maintainer asks)
 docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker
 docs/spec/               the M0 documents and their index
