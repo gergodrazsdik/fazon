@@ -9,7 +9,7 @@
     "node": ">=26"
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "node packages/core/scripts/copy-schemas.ts && tsc --build",
     "clean": "tsc --build --clean",
     "test": "vitest run",
     "lint": "eslint .",

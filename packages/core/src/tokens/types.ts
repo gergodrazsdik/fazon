@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /** The token set's rules (docs/spec/tokens.md#rules). */
-export type TokenRule = "TOKEN-001" | "TOKEN-002" | "TOKEN-003" | "TOKEN-004" | "TOKEN-005" | "TOKEN-006";
+export type TokenRuleId = "TOKEN-001" | "TOKEN-002" | "TOKEN-003" | "TOKEN-004" | "TOKEN-005" | "TOKEN-006";
 
 /** A broken TOKEN rule. */
 export interface TokenFinding {
-  readonly rule: TokenRule;
+  readonly rule: TokenRuleId;
   /** The token's dotted path, or `""` when the finding is about a file as a whole. */
   readonly path: string;
   readonly message: string;
