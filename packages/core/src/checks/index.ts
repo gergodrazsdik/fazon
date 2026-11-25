@@ -1,0 +1,101 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// The rendered checks (docs/spec/check-catalogue.md): the page runner, and `a11y`, `tokens`,
+// `layout` and `visual` as functions of what it reads.
+export {
+  CheckError,
+  type Box,
+  type CheckContext,
+  type CheckFinding,
+  type CheckId,
+  type RenderedCheckId,
+} from "./types.js";
+export type {
+  AxeNode,
+  AxeOutcome,
+  AxeRuleResult,
+  Capture,
+  ElementStyles,
+  InspectedElement,
+  NameSourceKind,
+  PageInspection,
+  StyleOrigin,
+  StyleProperty,
+  StyleShorthand,
+  StyleSource,
+} from "./snapshot.js";
+export {
+  launchRenderer,
+  renderDefaults,
+  RenderedPage,
+  Renderer,
+  type InspectOptions,
+  type LaunchRendererOptions,
+  type PageSource,
+  type RenderOptions,
+} from "./render.js";
+export {
+  a11yBlocks,
+  ariaObservations,
+  axeRulesOff,
+  axeRunOptions,
+  axeTags,
+  checkAxe,
+  checkSpecA11y,
+  checkSpecAria,
+  type A11ySpec,
+  type AriaObservation,
+  type AxeCheckResult,
+  type SpecA11yInput,
+} from "./a11y.js";
+export {
+  checkTokens,
+  conditionHolds,
+  tokenRuleExpectations,
+  tokenRuleLonghands,
+  type ExpectedTokens,
+  type TokenRuleOptions,
+  type TokensCheckInput,
+  type TokensRule,
+} from "./tokens.js";
+export { winningDeclarations, type Declaration } from "./cascade.js";
+export { isAllowedValue, parseValue, type ValueComponent } from "./css-values.js";
+export { physicalProperty, tokenBoundProperties, tokenShorthands, type TokenGroup } from "./token-properties.js";
+export {
+  checkLayout,
+  interactiveRoles,
+  isInteractive,
+  minimumTargetSize,
+  targetSizeFailures,
+  type LayoutRule,
+} from "./layout.js";
+export {
+  baselinePath,
+  baselinesNoticeFile,
+  baselinesRecordFile,
+  checkBaselineImage,
+  checkOrphans,
+  checkVisualStory,
+  comparePng,
+  decodePng,
+  encodePng,
+  formatBaselinesRecord,
+  imageDigest,
+  listBaselineFiles,
+  parseBaselinesRecord,
+  readBaselinesRecord,
+  verifyBaselines,
+  visualTolerance,
+  writeBaselinesRecord,
+  type BaselineResult,
+  type BaselinesRecord,
+  type BaselinesRecordRead,
+  type Pixels,
+  type PngComparison,
+  type StoryCapture,
+  type VerifyBaselinesInput,
+  type VerifyBaselinesResult,
+  type VisualRule,
+  type VisualStatus,
+  type VisualStoryInput,
+  type VisualStoryResult,
+} from "./visual.js";

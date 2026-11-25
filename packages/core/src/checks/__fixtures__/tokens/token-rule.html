@@ -1,0 +1,16 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=token-rule -->
+<!-- fazon-token-rules: [{"use":{"background-color":"color.action.primary"}},{"when":{"state":"selected"},"use":{"background-color":"color.surface.base","color":"color.text.primary"}}] -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokens: a selected button that keeps the action colour its spec's token rule replaces</title>
+    <link rel="stylesheet" href="tokens.css" />
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <button class="button" type="button" data-selected data-part="Button">Save changes</button>
+    </div>
+  </body>
+</html>

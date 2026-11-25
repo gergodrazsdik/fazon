@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 const source = (pkg: string) => fileURLToPath(new URL(`packages/${pkg}/src/index.ts`, import.meta.url));
 
@@ -14,6 +14,8 @@ export default defineConfig({
   },
   test: {
     include: ["packages/*/src/**/*.test.ts"],
+    // The rendered checks' fixture tests need the verifier image: `just test-rendered`.
+    exclude: [...configDefaults.exclude, "**/*.rendered.test.ts"],
     // @fazon/core reads the JSON Schemas from its dist/schemas/; this copies them from docs/spec/schemas/.
     globalSetup: ["packages/core/scripts/copy-schemas.ts"],
   },

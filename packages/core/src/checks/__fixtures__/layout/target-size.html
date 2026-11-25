@@ -1,0 +1,40 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=layout expect=target-size -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>layout: two small icon buttons side by side</title>
+    <style>
+      body {
+        margin: 0;
+        background: #ffffff;
+        font-family: system-ui, sans-serif;
+      }
+      [data-fazon-frame] {
+        display: inline-block;
+        padding: 16px;
+      }
+      .toolbar {
+        display: flex;
+        gap: 4px;
+      }
+      .icon {
+        display: block;
+        width: 16px;
+        height: 16px;
+        padding: 0;
+        border: 0;
+        background: #1f4fd1;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <div class="toolbar" data-part="Toolbar">
+        <button class="icon" type="button" aria-label="Bold" data-part="Item"></button>
+        <button class="icon" type="button" aria-label="Italic" data-part="Item"></button>
+      </div>
+    </div>
+  </body>
+</html>

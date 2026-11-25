@@ -84,3 +84,5 @@ export {
   type SyncProblem,
   type SyncResult,
 } from "./sync/sync.js";
+
+export * from "./checks/index.js";

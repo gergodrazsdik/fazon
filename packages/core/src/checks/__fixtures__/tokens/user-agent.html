@@ -1,0 +1,21 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=user-agent -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokens: a button that keeps the browser's padding, border and font</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      .plain {
+        background-color: var(--color-action-primary);
+        color: var(--color-text-on-action);
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <button class="plain" type="button" data-part="Button">Save changes</button>
+    </div>
+  </body>
+</html>
