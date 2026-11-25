@@ -1,7 +1,7 @@
 ---
 # New releases wait 7 days before Dependabot proposes them. npm joins with the
 # first package (tracker). The linters pinned in scripts/install-ci-tools.sh
-# and lint.yml are outside Dependabot's reach (tracker: "CI tool pins").
+# and lint.yml are outside Dependabot's reach: `just tool-updates` reports them.
 version: 2
 updates:
   - package-ecosystem: github-actions

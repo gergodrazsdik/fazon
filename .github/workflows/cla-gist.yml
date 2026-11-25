@@ -1,0 +1,33 @@
+---
+# The contributor agreement the CLA assistant shows is a public Gist, a copy of CLA.md. This
+# workflow turns red when they differ. It isn't a required check: after a change to CLA.md, the
+# Gist is updated once the pull request is merged, so a short mismatch is expected.
+name: cla-gist
+
+on:
+  push:
+    branches: [main]
+    paths: [CLA.md]
+  schedule:
+    - cron: "17 6 * * 1" # Mondays, 06:17 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  cla-gist:
+    name: cla-gist
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Compare CLA.md with the Gist
+        run: scripts/check-cla-gist.sh

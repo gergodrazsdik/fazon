@@ -9,8 +9,8 @@
 #
 # Update a tool: change its version, URL and digest together. GitHub shows
 # each release asset's digest (`gh release view <tag> -R <repo> --json assets`).
-# Dependabot doesn't watch these pins; keep them in step with `just doctor`'s
-# versions (tracker: "CI tool pins").
+# Dependabot doesn't watch these pins: `just tool-updates` says which have newer
+# releases and when each update is due.
 set -euo pipefail
 
 if [[ $# -ne 1 ]]; then

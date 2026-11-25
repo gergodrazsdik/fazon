@@ -4,7 +4,7 @@
 
 Additions for Claude Code only; everything shared is in AGENTS.md (imported above, so it loads once whether or not Claude Code also loads `AGENTS.md` on its own).
 
-- **Sandbox:** `.claude/settings.json` turns on the Bash sandbox with a network allowlist (GitHub, GHCR, the npm registry) and denies reading or editing `.env*` files, keys, certificates and `secrets/`. Signing, SSH and the GitHub token aren't available inside it, so these run outside, as their own calls, as your user-level settings allow:
+- **Sandbox:** `.claude/settings.json` turns on the Bash sandbox with a network allowlist (GitHub, GHCR, the npm registry, PyPI) and denies reading or editing `.env*` files, keys, certificates and `secrets/`. Signing, SSH and the GitHub token aren't available inside it, so these run outside, as their own calls, as your user-level settings allow:
   - commits: `git commit -F <file>`, with the message in a file outside the repo;
   - pushing: `git push`;
   - GitHub: `gh` (pull requests with `gh pr create --body-file <file>`, `gh pr edit --body-file <file>`), and `just github-settings` / `just github-settings-check`.

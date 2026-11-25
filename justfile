@@ -57,6 +57,11 @@ doctor:
     fi
     exit "$missing"
 
+# Which pinned linter versions have newer releases, and when each update is due (7-day cooldown); read-only
+[group('meta')]
+tool-updates:
+    scripts/tool-updates.sh
+
 # Install the git hooks (lefthook)
 [group('dev')]
 hooks:
@@ -125,6 +130,11 @@ pin:
 [group('maintainer')]
 github-settings repo *flags:
     scripts/github-settings.sh {{ flags }} {{ repo }}
+
+# Check that the CLA assistant's Gist is identical to CLA.md (the cla-gist workflow runs it too)
+[group('maintainer')]
+cla-gist-check:
+    scripts/check-cla-gist.sh
 
 # Read the repository settings of <owner/repo> back and report differences
 [group('maintainer')]
