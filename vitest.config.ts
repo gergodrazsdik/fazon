@@ -2,12 +2,15 @@
 import { fileURLToPath } from "node:url";
 import { configDefaults, defineConfig } from "vitest/config";
 
-const source = (pkg: string) => fileURLToPath(new URL(`packages/${pkg}/src/index.ts`, import.meta.url));
+const source = (pkg: string, file = "index.ts") =>
+  fileURLToPath(new URL(`packages/${pkg}/src/${file}`, import.meta.url));
 
 export default defineConfig({
   resolve: {
     // Tests run against the sources of the workspace packages, without a build first.
+    // A subpath comes before its package, which would match it as a prefix.
     alias: {
+      "@fazon/core/stylelint": source("core", "lint/stylelint/plugin.ts"),
       "@fazon/core": source("core"),
       "@fazon/adapter-vue": source("adapter-vue"),
     },

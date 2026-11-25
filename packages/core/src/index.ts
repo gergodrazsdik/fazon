@@ -72,6 +72,8 @@ export {
 
 export * from "./tokens/index.js";
 
+export * from "./lint/index.js";
+
 export {
   generatedDirectory,
   manifestFileName,
