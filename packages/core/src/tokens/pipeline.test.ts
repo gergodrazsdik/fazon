@@ -180,13 +180,16 @@ describe("the tokens check's fixture set", () => {
     const resolver = {
       version: "2025.10",
       sets: { all: { sources: [{ $ref: "tokens.json" }] } },
-      modifiers: { theme: { contexts: { light: [{ $ref: "light.json" }] }, default: "light" } },
+      modifiers: {
+        theme: { contexts: { light: [{ $ref: "light.json" }], dark: [{ $ref: "dark.json" }] }, default: "light" },
+      },
       resolutionOrder: [{ $ref: "#/sets/all" }, { $ref: "#/modifiers/theme" }],
     };
     const files = new Map([
       ["fixture/tokens.resolver.json", JSON.stringify(resolver)],
       ["fixture/tokens.json", await readFile(tokensFile, "utf8")],
       ["fixture/light.json", "{}"],
+      ["fixture/dark.json", "{}"],
     ]);
     const { tokenSet, findings } = await resolveTokenSet("fixture/tokens.resolver.json", {
       readFile: (file) => Promise.resolve(files.get(file)),

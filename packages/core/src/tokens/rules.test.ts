@@ -92,7 +92,9 @@ async function resolve(
 ) {
   const files = minimalFiles();
   edit(files);
-  return resolveTokenSet("set/tokens.resolver.json", { ...options, readFile: reader(files) });
+  // The rules are tested one at a time, on sets the schemas may reject too; the schema validation
+  // TOKEN-001 runs by default is tested on its own.
+  return resolveTokenSet("set/tokens.resolver.json", { validate: () => [], ...options, readFile: reader(files) });
 }
 
 async function resolved(edit: (files: Record<string, unknown>) => void = () => undefined): Promise<TokenSet> {
@@ -172,6 +174,21 @@ describe("TOKEN-001", () => {
     });
     expect(findings.map((f) => f.message)).toEqual([
       "The file reference ../roles.json must be a relative path inside the resolver's directory.",
+    ]);
+  });
+
+  it("validates the resolver and each token file against their schemas by default", async () => {
+    const files = minimalFiles();
+    group(tree(files, "raw.json"), "color").white = { $type: "color", $value: "#ffffff" };
+    const { tokenSet, findings } = await resolveTokenSet("set/tokens.resolver.json", { readFile: reader(files) });
+    expect(tokenSet).toBeUndefined();
+    expect(findings).toEqual([
+      {
+        rule: "TOKEN-001",
+        path: "",
+        message: expect.stringMatching(/^\$\.color\.white\.\$value: /) as string,
+        file: "set/raw.json",
+      },
     ]);
   });
 
