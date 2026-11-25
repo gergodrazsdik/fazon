@@ -37,9 +37,14 @@ Signed commits and tags are welcome but not required: GitHub's own merges must k
 
 ## Contributor License Agreement
 
-Before an outside contribution can be merged, its author signs the [Contributor License Agreement](CLA.md) (the Harmony individual agreement). You keep the copyright in your contribution; the agreement lets the maintainer also license it under other terms, commercial ones included ([ADR 0002](docs/adr/0002-contributor-license-agreement.md)). The CLA assistant asks you to sign on your first pull request; you sign once with your GitHub account. If you contribute as part of your job, your employer may have rights in your work: have them approve the agreement first (Section 3(c)).
+Before an outside contribution can be merged, its author signs the [Contributor License Agreement](CLA.md), based on the Harmony individual agreement. You keep the copyright in your contribution; the agreement lets the maintainer also license it under other terms, commercial ones included ([ADR 0002](docs/adr/0002-contributor-license-agreement.md), [ADR 0004](docs/adr/0004-contributor-agreement-amended.md)). The CLA assistant asks you to sign on your first pull request; you sign once with your GitHub account.
 
-The agreement is still being reviewed: until it is in force, no outside pull request is merged.
+- Each pull request is its own grant: you license that contribution under the agreement as it stands on the day you submit it (Section 2.7).
+- Non-code parts of a contribution, such as images, icons or design assets, are also licensed to everyone under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) (Section 2.8).
+- Work you create as part of your job usually belongs to your employer: contribute it only with your employer's approval of the agreement (Section 3(c)).
+- You must be at least eighteen (Section 3(e)).
+
+Until the CLA assistant is set up on this repository, no outside pull request is merged.
 
 ### Third-party material
 
