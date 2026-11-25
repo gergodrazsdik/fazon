@@ -17,7 +17,7 @@ How screenshot baselines are created, compared, changed, renamed and removed, lo
 | Run records, where captures are kept | [Run records and provenance](records.md) |
 | The baselines directory key, the judge policy key | [Config file reference](config.md) |
 | `fazon baseline` and its options | [CLI reference](cli.md) |
-| The CI job that compares and summarises baselines | Reusable workflow interface (T-0032) |
+| The CI job that compares and summarises baselines | [Reusable workflow interface](workflow.md) |
 
 ## Where baselines live
 
@@ -107,7 +107,7 @@ A framework upgrade can bring a new verifier image, with another browser or font
 
 ## In CI
 
-The reusable workflow (T-0032) treats baselines as read-only:
+The [reusable workflow](workflow.md) treats baselines as read-only:
 
 1. It renders every story in the verifier image and compares each with its committed baseline. Any `changed`, `orphan` or `image` finding fails the check; a new story doesn't.
 2. It lists the baselines the pull request adds, changes, removes or renames against the base branch. The judge looks at the stories of added and changed baselines ([judge](judge.md#when-the-judge-runs)).

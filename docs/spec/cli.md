@@ -14,7 +14,7 @@ Every `fazon` command: what it does, its arguments and options, what it refuses,
 | What the agent may do during a run | [Agent permission model](agent-permissions.md) |
 | Baselines | [Baseline lifecycle](baseline-lifecycle.md) |
 | Run records, provenance, `.fazon/` | [Run records and provenance](records.md) |
-| What `fazon init` writes for the Vue adapter, and the CI workflow stub | [Adapter boundary](adapter-boundary.md#what-fazon-init-writes-for-vue), reusable workflow interface (T-0032) |
+| What `fazon init` writes for the Vue adapter, and the CI workflow stub | [Adapter boundary](adapter-boundary.md#what-fazon-init-writes-for-vue), [reusable workflow interface](workflow.md#calling-it) |
 
 ## The journey
 
@@ -57,7 +57,7 @@ fazon verify                        after a token change: what moved
 
 | Variable | Used by | Meaning |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | `propose`, `generate`, `feedback`, `verify` (for the judge), `measure`, `calibrate` | The API key; Claude Code may use the developer's own login instead for local generation ([brief](../design/brief.md#authentication)). Never printed or written anywhere. |
+| `ANTHROPIC_API_KEY` | `propose`, `generate`, `feedback`, `verify` and `judge` (for the judge), `measure`, `calibrate` | The API key; Claude Code may use the developer's own login instead for local generation ([brief](../design/brief.md#authentication)). Never printed or written anywhere. |
 | `FAZON_CONTAINER_RUNTIME` | every command that runs the verifier | `docker` or `podman`; detected when unset, Docker first. |
 | `CI` | every command | When set, a `fazon.local.yaml` makes commands refuse. |
 | `NO_COLOR` | every command | No colours in text output. |
@@ -75,7 +75,7 @@ Sets up a repository to use Fazon. It writes:
 - `fazon.yaml`, with `image` set to the digest this CLI version supports;
 - a starter tokens file and a conventions doc (from the adapter);
 - an empty `specs/` directory;
-- a short CI workflow that calls the reusable one (T-0032);
+- a short CI workflow that calls the [reusable one](workflow.md#calling-it);
 - `.gitignore` entries for `.fazon/` and `fazon.local.yaml`;
 - a `.gitattributes` entry marking baselines as binary.
 
@@ -152,10 +152,10 @@ Starts a [feedback run](loop-and-caps.md#feedback) linked to the component's lat
 ### `fazon report`
 
 ```text
-fazon report [<component> | <run-id>] [--no-open]
+fazon report [<component> | <run-id>] [--no-open] [--summary]
 ```
 
-Builds the HTML report of a run (the component's latest by default) and opens it in the browser. The report shows the gallery, check results, judge verdicts, cost, and the commands for the next step: `feedback`, `accept`, `baseline update`. `--no-open` only prints its path. Result: the report's path.
+Builds the HTML report of a run (the component's latest by default) and opens it in the browser. The report shows the gallery, check results, judge verdicts, cost, and the commands for the next step: `feedback`, `accept`, `baseline update`. `--no-open` only prints its path. `--summary` prints a short Markdown summary instead, as the [reusable workflow](workflow.md#what-it-reports) posts it. Result: the report's path, or the summary.
 
 ### `fazon accept`
 
@@ -168,10 +168,21 @@ Decision 2. Marks the component's latest run as accepted, and writes the `genera
 ### `fazon verify`
 
 ```text
-fazon verify [<component>...]
+fazon verify [<component>...] [--base <ref>] [--no-judge]
 ```
 
-A [verify run](loop-and-caps.md#runs): renders and checks the named components, or all of them, in the verifier image, and runs the judge as the policy says. No agent call. Exits 1 on blocking findings. CI runs it. Result: the run, and per component its checks, judge summary and findings.
+A [verify run](loop-and-caps.md#runs): renders and checks the named components, or all of them, in the verifier image, and runs the judge as the policy says. No agent call. Exits 1 on blocking findings. Result: the run, and per component its checks, judge summary and findings.
+
+- `--base <ref>` compares the baselines with those at `<ref>`, and marks the stories whose baselines were added, changed, removed or renamed, as [CI](baseline-lifecycle.md#in-ci) needs. With it, the judge looks only at the added and changed ones.
+- `--no-judge` skips the judge; CI runs it in its own job with `fazon judge`.
+
+### `fazon judge`
+
+```text
+fazon judge <run-id>
+```
+
+Runs the judge for an earlier verify run, on the stories it marked as added or changed, or on all of them when it had no `--base`. The judge's policy and CI cap apply. It refuses (2) when the run isn't a verify run, and exits 3 without an API key. Result: the judge's summary, added to the run's record.
 
 ### `fazon baseline update`
 

@@ -16,7 +16,7 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 | 10 | [Config file reference](config.md): name, format and keys, with the [config](schemas/config.schema.json) and [local override](schemas/config-local.schema.json) schemas | merged | T-0029 |
 | 11 | [CLI reference](cli.md), covering every command, with the [JSON output schema](schemas/cli-output.schema.json) | merged | T-0030 |
 | 12 | [Adapter boundary](adapter-boundary.md), including how the example repo consumes the framework before M5 | merged | T-0031 |
-| 13 | Reusable workflow interface: inputs, secrets and permissions | not written yet | T-0032 |
+| 13 | [Reusable workflow interface](workflow.md): inputs, secrets and permissions | merged | T-0032 |
 | 14 | Conventions doc and token set, with its themes, for the example library (drafts that move to the example repo at M1) | not written yet | T-0033 |
 | 15 | License terms for generated and scaffolded files, and for the example repo | not written yet | T-0034 |
 
