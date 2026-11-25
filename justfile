@@ -88,10 +88,14 @@ test:
 [group('dev')]
 check: lint lint-ts build test
 
-# Start Claude Code in this repo (extra arguments are passed through)
+# Start Claude Code in this repo, with the example repo in reach when it's cloned next to it (extra arguments are passed through)
 [group('dev')]
 claude *args:
-    claude {{ args }}
+    #!/bin/sh
+    if [ -d ../fazon-vue-example ]; then
+      CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD=1 exec claude --add-dir ../fazon-vue-example {{ args }}
+    fi
+    exec claude {{ args }}
 
 # Run every linter (the lint workflow's lint job)
 [group('lint')]

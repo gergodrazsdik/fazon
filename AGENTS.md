@@ -73,7 +73,7 @@ Use `just` (`just --list`):
 | `just check` | Everything CI checks: `lint`, `lint-ts`, `build` and `test`. |
 | `just pin` | Pin workflow actions to full commit SHAs. |
 | `just tool-updates` | Which linter versions pinned outside Dependabot's reach have newer releases, and when each is due (7-day cooldown). Read-only. |
-| `just claude` | Start Claude Code in this repo. |
+| `just claude` | Start Claude Code in this repo, with the example repo (`../fazon-vue-example`) and its instructions in reach when it's cloned next to this one. |
 | `just github-settings <repo>` / `just github-settings-check <repo>` | Maintainer only. Apply or check the repository settings and rulesets. |
 | `just cla-gist-check` | Check that the CLA assistant's Gist is identical to `CLA.md`. After a pull request changes `CLA.md`, the maintainer updates the Gist once it is merged. |
 
