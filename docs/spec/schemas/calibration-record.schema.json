@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:fazon:schema:calibration-record:0",
+  "title": "Fazon judge calibration record (format version 0)",
+  "description": "`calibration/judge-<judge version>/<model>.json` in the framework repository: the result of one calibration round for one judge model, by the measurement protocol (docs/spec/measurement.md). A release ships the records of its judge version.",
+  "type": "object",
+  "required": ["fazon", "judge", "model", "framework", "round", "date", "components", "operators", "measures", "thresholds", "calibrated", "records"],
+  "additionalProperties": false,
+  "properties": {
+    "fazon": { "const": 0 },
+    "judge": { "description": "The judge version.", "type": "integer", "minimum": 1 },
+    "model": { "type": "string", "minLength": 1 },
+    "framework": { "type": "string", "minLength": 1 },
+    "round": { "type": "integer", "minimum": 1 },
+    "date": { "type": "string", "format": "date" },
+    "components": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "operators": {
+      "description": "Results per mutation operator.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "class", "cases", "caught", "unsure", "checksCaught"],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$" },
+          "class": { "enum": ["measurable", "viewer-only"] },
+          "cases": { "type": "integer", "minimum": 0 },
+          "caught": { "description": "Cases the judge caught.", "type": "integer", "minimum": 0 },
+          "unsure": { "type": "integer", "minimum": 0 },
+          "checksCaught": {
+            "description": "Cases a deterministic check caught, with and without baselines.",
+            "type": "object",
+            "required": ["withBaselines", "withoutBaselines"],
+            "additionalProperties": false,
+            "properties": {
+              "withBaselines": { "type": "integer", "minimum": 0 },
+              "withoutBaselines": { "type": "integer", "minimum": 0 }
+            }
+          }
+        }
+      }
+    },
+    "measures": {
+      "type": "object",
+      "required": ["catchRate", "falsePositiveRate", "selfAgreement", "costUsd"],
+      "additionalProperties": false,
+      "properties": {
+        "catchRate": { "$ref": "#/$defs/proportion" },
+        "falsePositiveRate": { "$ref": "#/$defs/proportion" },
+        "selfAgreement": { "$ref": "#/$defs/proportion" },
+        "costUsd": {
+          "type": "object",
+          "required": ["total", "perComponent"],
+          "additionalProperties": false,
+          "properties": {
+            "total": { "type": "number", "minimum": 0 },
+            "perComponent": { "type": "number", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "thresholds": {
+      "description": "The thresholds the round was measured against.",
+      "type": "object",
+      "required": ["catchRate", "catchRatePerOperator", "falsePositiveRate", "selfAgreement", "minCases", "minCasesPerOperator", "minUnmodifiedStories"],
+      "additionalProperties": false,
+      "properties": {
+        "catchRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "catchRatePerOperator": { "type": "number", "minimum": 0, "maximum": 1 },
+        "falsePositiveRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "selfAgreement": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minCases": { "type": "integer", "minimum": 1 },
+        "minCasesPerOperator": { "type": "integer", "minimum": 1 },
+        "minUnmodifiedStories": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "calibrated": {
+      "description": "Whether the round meets every threshold and sample size.",
+      "type": "boolean"
+    },
+    "records": {
+      "description": "The release asset with the round's run and calibration records.",
+      "type": "string",
+      "pattern": "^https://github\\.com/[^/]+/[^/]+/releases/download/.+$"
+    }
+  },
+  "$defs": {
+    "proportion": {
+      "type": "object",
+      "required": ["value", "n", "interval"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "number", "minimum": 0, "maximum": 1 },
+        "n": { "type": "integer", "minimum": 0 },
+        "interval": {
+          "description": "The 95% Wilson interval.",
+          "type": "array",
+          "prefixItems": [
+            { "type": "number", "minimum": 0, "maximum": 1 },
+            { "type": "number", "minimum": 0, "maximum": 1 }
+          ],
+          "items": false,
+          "minItems": 2
+        }
+      }
+    }
+  }
+}

@@ -12,7 +12,7 @@ The M0 documents from the [brief](../design/brief.md#m0-documents). Each is writ
 | 6 | [Loop and caps](loop-and-caps.md): defaults, enforcement, and what an iteration is | merged | T-0025 |
 | 7 | [Judge](judge.md): rubric, image batching and the CI cost cap, with the [plan](schemas/judge-plan.schema.json) and [result](schemas/judge-result.schema.json) schemas | merged | T-0026 |
 | 8 | [Measurement protocol](measurement.md), including judge calibration and its thresholds | merged | T-0027 |
-| 9 | Run record and provenance schemas | not written yet | T-0028 |
+| 9 | [Run records and provenance](records.md), with the run record, provenance and calibration record schemas | merged | T-0028 |
 | 10 | Config file reference: name, format and keys | not written yet | T-0029 |
 | 11 | CLI reference, covering every command | not written yet | T-0030 |
 | 12 | Adapter boundary, including how the example repo consumes the framework before M5 | not written yet | T-0031 |

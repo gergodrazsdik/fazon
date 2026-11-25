@@ -14,7 +14,7 @@ How screenshot baselines are created, compared, changed, renamed and removed, lo
 | That the agent never edits baselines | [Agent permission model](agent-permissions.md) |
 | How the loop treats findings | [Loop and caps](loop-and-caps.md) |
 | Which stories the judge sees in CI, and its policy | [Judge](judge.md) |
-| Run records, where captures are kept | Run record and provenance schemas (T-0028) |
+| Run records, where captures are kept | [Run records and provenance](records.md) |
 | The baselines directory key, the judge policy key | Config file reference (T-0029) |
 | `fazon baseline` and its options | CLI reference (T-0030) |
 | The CI job that compares and summarises baselines | Reusable workflow interface (T-0032) |

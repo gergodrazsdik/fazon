@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Checks the JSON Schemas under docs/spec/schemas/ and their examples (docs/spec/spec-format.md,
-# docs/spec/story-matrix.md, docs/spec/baseline-lifecycle.md, docs/spec/judge.md):
+# docs/spec/story-matrix.md, docs/spec/baseline-lifecycle.md, docs/spec/judge.md, docs/spec/records.md):
 #   - every schema is valid against its metaschema;
 #   - every spec under valid/ and invalid/semantic/ passes the schema (a semantic example breaks
 #     a rule only `fazon spec check` sees, from M2);
 #   - every spec under invalid/schema/ fails it, at the path its `# expect-error-at:` line names;
 #   - every manifest under docs/spec/examples/manifests/ passes the story manifest schema;
-#   - the baselines record example, the judge plan and the judge result examples pass their schemas.
+#   - the examples of the baselines record, the judge plan and result, the run record, provenance
+#     and the calibration record pass their schemas.
 # Needs yq (mikefarah, v4) to read the front matter, and check-jsonschema.
 #
 # Usage: scripts/check-spec-examples.sh
@@ -23,6 +24,9 @@ manifest_schema="$root/docs/spec/schemas/story-manifest.schema.json"
 baselines_schema="$root/docs/spec/schemas/baselines.schema.json"
 plan_schema="$root/docs/spec/schemas/judge-plan.schema.json"
 result_schema="$root/docs/spec/schemas/judge-result.schema.json"
+run_schema="$root/docs/spec/schemas/run-record.schema.json"
+provenance_schema="$root/docs/spec/schemas/provenance.schema.json"
+calibration_schema="$root/docs/spec/schemas/calibration-record.schema.json"
 examples="$root/docs/spec/examples/specs"
 manifests="$root/docs/spec/examples/manifests"
 
@@ -54,7 +58,8 @@ check() { # <json>...: check-jsonschema against the spec schema
 }
 
 failed=0
-check-jsonschema --check-metaschema "$schema" "$manifest_schema" "$baselines_schema" "$plan_schema" "$result_schema" || failed=1
+check-jsonschema --check-metaschema "$schema" "$manifest_schema" "$baselines_schema" "$plan_schema" "$result_schema" \
+  "$run_schema" "$provenance_schema" "$calibration_schema" || failed=1
 
 # Must pass.
 for spec in "$examples"/valid/*.md "$examples"/invalid/semantic/*.md; do
@@ -125,5 +130,8 @@ expect_pass() { # <schema> <json>...
 expect_pass "$baselines_schema" "$root/docs/spec/examples/baselines/fazon.json"
 expect_pass "$plan_schema" "$root"/docs/spec/examples/judge/*-plan.json
 expect_pass "$result_schema" "$root"/docs/spec/examples/judge/*-result.json
+expect_pass "$run_schema" "$root/docs/spec/examples/records/run.json"
+expect_pass "$provenance_schema" "$root/docs/spec/examples/records/provenance.json"
+expect_pass "$calibration_schema" "$root"/docs/spec/examples/records/calibration-*.json
 
 exit "$failed"

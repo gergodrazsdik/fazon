@@ -10,7 +10,7 @@ Next free IDs: T-0085, F-0007, Q-0018.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M0: the run record and provenance schemas (T-0028), then the config file reference (T-0029)
+1. M0: the config file reference (T-0029), then the CLI reference (T-0030)
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -60,11 +60,11 @@ Done when every document is merged through a pull request the maintainer reviewe
 - [x] T-0025 Loop and caps: defaults, enforcement, and what an iteration is — 2026-11-25: version 0 ([ADR 0010](../adr/0010-loop-and-caps.md)), [#16](https://github.com/gergodrazsdik/fazon/pull/16)
 - [x] T-0026 Judge: rubric, image batching and the CI cost cap — 2026-11-25: version 0, with the judge plan and result schemas ([ADR 0011](../adr/0011-judge.md)), [#17](https://github.com/gergodrazsdik/fazon/pull/17)
 - [x] T-0027 Measurement protocol, including judge calibration and its thresholds; count linked feedback runs together and report models per iteration ([ADR 0010](../adr/0010-loop-and-caps.md)); when a judge model counts as calibrated for a framework version, its stability and cost ([ADR 0011](../adr/0011-judge.md)) — 2026-11-25: version 0 ([ADR 0012](../adr/0012-measurement.md)), [#18](https://github.com/gergodrazsdik/fazon/pull/18)
-- [ ] T-0028 Run record and provenance schemas, including the calibration record and the fields measured runs need ([ADR 0012](../adr/0012-measurement.md)) (Q-0012)
+- [x] T-0028 Run record and provenance schemas, including the calibration record and the fields measured runs need ([ADR 0012](../adr/0012-measurement.md)) (Q-0012) — 2026-11-25: version 0, with schemas and examples ([ADR 0013](../adr/0013-records.md))
 - [ ] T-0029 Config file reference: name, format and keys, including a consumer's own fixture icon set ([ADR 0006](../adr/0006-story-matrix.md)) the baselines directory ([ADR 0008](../adr/0008-baseline-lifecycle.md)) the components directory ([ADR 0009](../adr/0009-agent-permissions.md)), the caps, models, escalation threshold, effort and judge prices ([ADR 0010](../adr/0010-loop-and-caps.md)), and the judge's model, policy, CI cap and repeats ([ADR 0011](../adr/0011-judge.md))
-- [ ] T-0030 CLI reference, covering every command, including `fazon baseline update` ([ADR 0008](../adr/0008-baseline-lifecycle.md))
+- [ ] T-0030 CLI reference, covering every command, including `fazon baseline update` ([ADR 0008](../adr/0008-baseline-lifecycle.md)) and reading and pruning `.fazon/` ([ADR 0013](../adr/0013-records.md))
 - [ ] T-0031 Adapter boundary, including how the example repo consumes the framework before M5, the source checks' and self-checks' commands, the file patterns allowed in a component's directory, and reading a component's API for the contract tests (Q-0001)
-- [ ] T-0032 Reusable workflow interface: inputs, secrets and permissions; it compares baselines and lists those a pull request changes, and never writes them ([ADR 0008](../adr/0008-baseline-lifecycle.md)); the judge step's secret, fork skipping and cap ([ADR 0011](../adr/0011-judge.md))
+- [ ] T-0032 Reusable workflow interface: inputs, secrets and permissions; it compares baselines and lists those a pull request changes, and never writes them ([ADR 0008](../adr/0008-baseline-lifecycle.md)); the judge step's secret, fork skipping and cap ([ADR 0011](../adr/0011-judge.md)); it uploads the report but no transcript ([ADR 0013](../adr/0013-records.md))
 - [ ] T-0033 Conventions doc and token set, with its themes, for the example library: drafts that move to the example repo at M1; the maintainer approves the token values once; align the placeholder token names in the spec examples; the conventions doc requires the `data-part` and `data-<state>` attributes ([ADR 0006](../adr/0006-story-matrix.md)); say which tokens are role tokens, how custom properties are named, and the story frame's base styles ([ADR 0007](../adr/0007-check-catalogue.md)) (Q-0007)
 - [ ] T-0034 License terms for generated and scaffolded files, and for the example repo, and Lucide's license notice for the fixture icons (Q-0002, Q-0003, Q-0004)
 
