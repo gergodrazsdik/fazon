@@ -9,10 +9,22 @@ const docs = fileURLToPath(new URL("../../../../docs/spec/", import.meta.url));
 /** The expected output for the example specs, each file with `.golden` added (shared with the adapter's tests). */
 const golden = fileURLToPath(new URL("../../../adapter-vue/test-fixtures/golden/", import.meta.url));
 const examples = ["button", "dialog", "tabs"] as const;
+/** Each example's root file, which the entry file waits for before it exports the component. */
+const rootFiles = {
+  button: "src/components/button/Button.vue",
+  dialog: "src/components/dialog/Dialog.vue",
+  tabs: "src/components/tabs/Tabs.vue",
+} as const;
+const sfc = "<template><div /></template>\n";
 
-/** A repository with the minimal config, the three example specs and the example library's token set. */
+/**
+ * A repository with the minimal config, the three example specs, the example library's token set,
+ * and the root file of each example component (as if each had been generated), so the entry file
+ * exports all three, as the golden files have it.
+ */
 async function exampleRepository(config = minimalConfig): Promise<string> {
-  const root = await repository({ "fazon.yaml": config });
+  const files = Object.fromEntries(Object.values(rootFiles).map((file) => [file, sfc]));
+  const root = await repository({ "fazon.yaml": config, ...files });
   for (const name of examples) await copyExample(root, `valid/${name}.md`, `specs/${name}.md`);
   await cp(path.join(docs, "example-library/tokens"), path.join(root, "tokens"), { recursive: true });
   return root;
@@ -49,17 +61,24 @@ describe("fazon sync", () => {
     const { code, json } = await captureJson(["sync"], machine());
     expect(code).toBe(0);
     expect(json).toMatchObject({ command: "sync", status: "ok", exitCode: 0 });
-    const written = await filesUnder(path.join(root, "src"));
+    const written = (await filesUnder(path.join(root, "src"))).filter((file) => !file.endsWith(".vue"));
     for (const file of written) {
       await expect(await read(`src/${file}`)).toMatchFileSnapshot(path.join(golden, `src/${file}.golden`));
     }
     const expected = (await filesUnder(path.join(golden, "src"))).map((file) => file.replace(/\.golden$/, ""));
     expect(written).toEqual(expected);
-    const result = json.result as { check: boolean; files: Change[]; unchanged: number; components: string[] };
+    const result = json.result as {
+      check: boolean;
+      files: Change[];
+      unchanged: number;
+      components: string[];
+      pending: string[];
+    };
     expect(result.check).toBe(false);
     expect(result.files).toEqual(written.map((file) => ({ path: `src/${file}`, change: "added" })));
     expect(result.unchanged).toBe(0);
     expect(result.components).toEqual(["button", "dialog", "tabs"]);
+    expect(result.pending).toEqual([]);
   });
 
   it("writes the manifests the M0 examples hold", async () => {
@@ -124,7 +143,6 @@ describe("fazon sync", () => {
 
   it("removes the generated directory of a component whose spec is gone, and reports it under --check", async () => {
     await captureJson(["sync"], machine());
-    await writeFile(path.join(root, "src/components/tabs/Tabs.vue"), "<template><div /></template>\n");
     await rm(path.join(root, "specs/tabs.md"));
 
     const check = await captureJson(["sync", "--check"], machine());
@@ -151,9 +169,54 @@ describe("fazon sync", () => {
       expect.objectContaining({ level: "warning", text: expect.stringContaining("were removed") as string }),
     );
     await expect(stat(path.join(root, "src/components/tabs/generated"))).rejects.toThrow();
-    expect(await read("src/components/tabs/Tabs.vue")).toBe("<template><div /></template>\n");
+    expect(await read("src/components/tabs/Tabs.vue")).toBe(sfc);
     expect(await read("src/index.ts")).not.toContain("Tabs");
     expect((await captureJson(["sync", "--check"], machine())).code).toBe(0);
+  });
+
+  it("exports a component only once its root file exists, and lists it as pending until then", async () => {
+    await rm(path.join(root, rootFiles.tabs));
+    const first = await captureJson(["sync"], machine());
+    expect(first.code).toBe(0);
+    expect(first.json.result).toMatchObject({ components: ["button", "dialog", "tabs"], pending: ["tabs"] });
+    expect(first.json.messages).toContainEqual({
+      level: "info",
+      text: "Not generated yet, so not exported from the entry file until the root file exists: tabs (src/components/tabs/Tabs.vue).",
+    });
+    const entry = await read("src/index.ts");
+    expect(entry).not.toContain("Tabs");
+    expect(entry).toContain('export { default as DialogClose } from "./components/dialog/DialogClose.vue";');
+    // Its other generated files are written all the same.
+    expect(await filesUnder(path.join(root, "src/components/tabs"))).toEqual([
+      "generated/Tabs.stories.ts",
+      "generated/api.json",
+      "generated/stories.json",
+      "generated/tabs.contract.test.ts",
+    ]);
+    expect((await capture(["sync"], machine())).stdout).toContain("Not generated yet");
+
+    // A pending component's missing export is what --check expects.
+    const check = await captureJson(["sync", "--check"], machine());
+    expect(check.code).toBe(0);
+    expect(check.json.result).toMatchObject({ files: [], pending: ["tabs"] });
+
+    // Once the root file exists, --check misses the export, and the next sync adds it.
+    await writeFile(path.join(root, rootFiles.tabs), sfc);
+    const missing = await captureJson(["sync", "--check"], machine());
+    expect(missing.code).toBe(1);
+    expect(missing.json.result).toMatchObject({ files: [{ path: "src/index.ts", change: "modified" }], pending: [] });
+    const second = await captureJson(["sync"], machine());
+    expect(second.json.result).toMatchObject({ files: [{ path: "src/index.ts", change: "modified" }], pending: [] });
+    expect(await read("src/index.ts")).toBe(await readFile(path.join(golden, "src/index.ts.golden"), "utf8"));
+  });
+
+  it("exports nothing before any component is generated", async () => {
+    for (const file of Object.values(rootFiles)) await rm(path.join(root, file));
+    const { json } = await captureJson(["sync"], machine());
+    expect(json.result).toMatchObject({ pending: ["button", "dialog", "tabs"] });
+    expect(await read("src/index.ts")).toBe(
+      "// fazon:exports:begin `fazon sync` writes the exports up to fazon:exports:end from the specs; edit outside them.\n// fazon:exports:end\n",
+    );
   });
 
   it("keeps what a person wrote in the entry file", async () => {
@@ -180,7 +243,7 @@ describe("fazon sync", () => {
         text: expect.stringMatching(/^src\/index\.ts: src\/index\.ts must have exactly one/) as string,
       }),
     );
-    expect(await filesUnder(path.join(root, "src"))).toEqual(["index.ts"]);
+    expect((await filesUnder(path.join(root, "src"))).filter((file) => !file.endsWith(".vue"))).toEqual(["index.ts"]);
   });
 
   it("builds the token CSS and the story frame with the token prefix", async () => {
@@ -201,7 +264,10 @@ describe("fazon sync", () => {
     root = await exampleRepository(
       `${minimalConfig}paths:\n  components: lib/ui\n  entry: lib/main.ts\n  tokensCss: lib/theme/tokens.css\n`,
     );
-    await captureJson(["sync"], machine());
+    await mkdir(path.join(root, "lib/ui/button"), { recursive: true });
+    await writeFile(path.join(root, "lib/ui/button/Button.vue"), sfc);
+    const { json } = await captureJson(["sync"], machine());
+    expect(json.result).toMatchObject({ pending: ["dialog", "tabs"] });
     expect(await filesUnder(path.join(root, "lib"))).toEqual(
       expect.arrayContaining(["main.ts", "theme/tokens.css", "ui/button/generated/Button.stories.ts"]),
     );
@@ -225,7 +291,7 @@ describe("fazon sync", () => {
         hint: "fazon spec check",
       }),
     );
-    await expect(stat(path.join(root, "src"))).rejects.toThrow();
+    expect(await filesUnder(path.join(root, "src"))).toEqual(Object.values(rootFiles).map((file) => file.slice(4)));
   });
 
   it("refuses a token set that breaks a TOKEN rule", async () => {

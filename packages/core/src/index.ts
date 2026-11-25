@@ -79,6 +79,7 @@ export {
   syncRepository,
   type FileChange,
   type FileChangeKind,
+  type PendingComponent,
   type SyncOptions,
   type SyncProblem,
   type SyncResult,

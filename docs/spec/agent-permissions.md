@@ -105,7 +105,7 @@ The exact keys and flags follow the Claude Code version the harness requires; M2
 ## Files the harness maintains
 
 - **Generated files:** at the start of each run, the harness regenerates the component's `generated/` directory from the spec: the story files and contract tests (written by the adapter) and the story manifest. They are committed with the component.
-- **The package entry file:** when a component is first generated, the harness adds exports for it and its parts.
+- **The package entry file:** `fazon sync` exports a component and its parts once the component's root file exists, such as `Button.vue`. Until then the component gets no export, so the library builds before the component is generated.
 - **The token CSS:** `fazon sync` builds it from the token set ([the build](tokens.md#the-build)); the agent reads the role tokens, never this file's raw values.
 - **[Provenance and run records](records.md).**
 

@@ -2,7 +2,7 @@
 // `fazon sync` (docs/spec/cli.md#fazon-sync): the files the harness maintains, from the specs and the
 // token set (docs/spec/agent-permissions.md#files-the-harness-maintains).
 import { randomBytes } from "node:crypto";
-import { mkdir, readdir, readFile, rename, rm, rmdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, rm, rmdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { AdapterError, type Adapter, type EntryComponent } from "../adapter.js";
 import type { Config } from "../config/types.js";
@@ -12,6 +12,7 @@ import { checkManifest } from "../matrix/rules.js";
 import type { StoryManifest } from "../matrix/types.js";
 import { readSpecFiles, type SpecFile } from "../spec/load.js";
 import { checkSpec, type ValidSpecFile } from "../spec/rules.js";
+import type { Spec } from "../spec/types.js";
 import { baseStyles } from "../tokens/base-styles.js";
 import { buildTokens, TokenSetError } from "../tokens/build.js";
 import { resolveTokenSet } from "../tokens/resolve.js";
@@ -68,13 +69,26 @@ export type SyncResult =
       readonly components: readonly string[];
       /** Component directories whose spec is gone; their `generated/` directory is (or would be) removed. */
       readonly orphanedComponents: readonly string[];
+      /**
+       * Components not generated yet: their root file, such as `Button.vue`, doesn't exist, so the
+       * entry file doesn't export them or their parts. Each with the root file it waits for.
+       */
+      readonly pending: readonly PendingComponent[];
     }
   | { readonly ok: false; readonly problems: readonly SyncProblem[] };
+
+/** A component with a spec whose root file doesn't exist yet. */
+export interface PendingComponent {
+  readonly component: string;
+  /** The root file, relative to the repository root, with `/` separators. */
+  readonly file: string;
+}
 
 /** What `sync` generates: every file's content, by path, and the components it covers. */
 interface Plan {
   readonly files: ReadonlyMap<string, string>;
   readonly components: readonly string[];
+  readonly pending: readonly PendingComponent[];
 }
 
 /**
@@ -84,6 +98,10 @@ interface Plan {
  * any more are removed: a component directory without a spec loses its `generated/` directory, and
  * a component's `generated/` directory loses files the adapter no longer writes, except its
  * provenance file.
+ *
+ * The entry file exports a component and its parts only once the component's root file exists
+ * (the adapter's `componentFiles`), so the library builds between `approve` and `generate`; until
+ * then the component is pending.
  *
  * Refuses, without writing anything, when a spec breaks a rule `spec check` checks, the token set
  * breaks a TOKEN rule, or the adapter can't write a component's files.
@@ -135,6 +153,7 @@ export async function syncRepository(
     unchanged,
     components: planned.components,
     orphanedComponents: orphans.components,
+    pending: planned.pending,
   };
 }
 
@@ -160,6 +179,7 @@ async function plan(root: string, config: Config, adapter: Adapter): Promise<Pla
   const components = config.paths.components;
   const styles = baseStyles(config.tokens.prefix ?? "");
   const entryComponents: EntryComponent[] = [];
+  const pending: PendingComponent[] = [];
   for (const file of [...valid].sort((a, b) => (a.component < b.component ? -1 : 1))) {
     const directory = path.posix.join(normalise(components), file.component);
     const generated = path.posix.join(directory, generatedDirectory);
@@ -216,7 +236,12 @@ async function plan(root: string, config: Config, adapter: Adapter): Promise<Pla
       problems.push(adapterProblem(error, file.file));
       continue;
     }
-    entryComponents.push({ spec: file.spec, directory });
+    const own = rootFile(adapter, file.spec, directory);
+    if (await exists(path.join(root, own))) {
+      entryComponents.push({ spec: file.spec, directory });
+    } else {
+      pending.push({ component: file.component, file: own });
+    }
   }
 
   const entry = normalise(config.paths.entry);
@@ -229,7 +254,25 @@ async function plan(root: string, config: Config, adapter: Adapter): Promise<Pla
   }
 
   if (problems.length > 0) return { problems };
-  return { files, components: valid.map((file) => file.component).sort() };
+  return { files, components: valid.map((file) => file.component).sort(), pending };
+}
+
+/** The component's own file, as the adapter names it, relative to the repository root. */
+function rootFile(adapter: Adapter, spec: Spec, directory: string): string {
+  const own = adapter.componentFiles(spec).files.find((file) => file.part === undefined);
+  if (own === undefined) throw new Error(`The ${adapter.id} adapter names no file for ${spec.name} itself.`);
+  return path.posix.join(directory, own.file);
+}
+
+async function exists(file: string): Promise<boolean> {
+  try {
+    await stat(file);
+    return true;
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (code === "ENOENT" || code === "ENOTDIR") return false;
+    throw error;
+  }
 }
 
 async function readSpecs(root: string, directory: string, problems: SyncProblem[]): Promise<SpecFile[]> {

@@ -49,6 +49,13 @@ export async function sync(invocation: Invocation, context: Context): Promise<Ou
     });
   }
   const files = (n: number) => `${String(n)} ${n === 1 ? "file" : "files"}`;
+  if (result.pending.length > 0) {
+    const list = result.pending.map(({ component, file }) => `${component} (${file})`).join(", ");
+    messages.push({
+      level: "info",
+      text: `Not generated yet, so not exported from the entry file until the root file exists: ${list}.`,
+    });
+  }
   if (check) {
     messages.push(
       changes.length === 0
@@ -79,6 +86,7 @@ export async function sync(invocation: Invocation, context: Context): Promise<Ou
       files: changes.map(({ path, change }) => ({ path, change })),
       unchanged,
       components: result.components,
+      pending: result.pending.map(({ component }) => component),
     },
     text,
   };
