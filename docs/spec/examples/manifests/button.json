@@ -783,6 +783,38 @@
       "judge": [
         "light"
       ]
+    },
+    {
+      "name": "button--label--variant-ghost--size-lg--hover",
+      "storybookId": "button--label-variant-ghost-size-lg-hover",
+      "grid": "include",
+      "fixture": "label",
+      "axes": {
+        "variant": "ghost",
+        "size": "lg"
+      },
+      "state": {
+        "name": "hover"
+      },
+      "set": [
+        {
+          "target": "root",
+          "props": {
+            "variant": "ghost",
+            "size": "lg"
+          }
+        }
+      ],
+      "input": [
+        {
+          "action": "hover",
+          "target": "root"
+        }
+      ],
+      "judge": [
+        "light",
+        "dark"
+      ]
     }
   ]
 }

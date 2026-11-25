@@ -137,7 +137,7 @@
         },
         "grid": {
           "description": "The grid the story comes from.",
-          "enum": ["axes", "states", "fixtures"]
+          "enum": ["axes", "states", "fixtures", "include"]
         },
         "fixture": { "$ref": "#/$defs/kebabName" },
         "axes": {

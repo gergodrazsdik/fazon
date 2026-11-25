@@ -65,6 +65,9 @@ fixtures:
 matrix:
   axes: [variant, size]
   fixtures: [label, with-icon, long-label]
+  include:
+    - props: { variant: ghost, size: lg }
+      state: hover
 tokens:
   - when: { props: { variant: primary } }
     use:

@@ -44,7 +44,7 @@ The states are the component's `states`, then each part's `states` in the order 
 
 ### Fixtures
 
-The fixtures are those in `matrix.fixtures`; without it, the spec's first fixture. The **first fixture** is the first of them. A spec with no fixtures renders an empty fixture, which SPEC-009 allows only when no prop or slot is required.
+The fixtures are those in `matrix.fixtures`; without it, the spec's first fixture. The **first fixture** is the first of them. A [forced story](#forced-stories) may also render another fixture of the spec. A spec with no fixtures renders an empty fixture, which SPEC-009 allows only when no prop or slot is required.
 
 ### Expansion: three grids
 
@@ -58,7 +58,28 @@ The stories are the union of three grids:
 
 Without axes, each grid has one axis combination: none. The grids don't overlap: only the axes grid has `default` with the first fixture.
 
-The manifest lists the stories in that order: the axes grid in product order (the first axis changes slowest), then the states grid (states in order, each with the first axis's values in order), then the fixtures grid (fixtures in order).
+### Forced stories
+
+The grids leave combinations out by design. A spec forces a story they don't make with an entry in `matrix.include`:
+
+- `fixture`: any fixture of the spec; the first fixture when left out;
+- `props`: values of axes; the other axes keep their defaults;
+- `state`, with `part` for a part's state: `default` when left out. The state is produced as in any other story, even when its recipe says `story: false`.
+
+```yaml
+matrix:
+  axes: [variant, size]
+  fixtures: [label, with-icon, long-label]
+  include:
+    - props: { variant: ghost, size: lg }
+      state: hover
+```
+
+This adds `button--label--variant-ghost--size-lg--hover`. A forced story belongs to the **include** grid, and the judge sees it in every theme. An entry that names a story a grid already makes, or one that an `exclude` condition drops, fails SPEC-017.
+
+### Order
+
+The manifest lists the stories in this order: the axes grid in product order (the first axis changes slowest), then the states grid (states in order, each with the first axis's values in order), then the fixtures grid (fixtures in order), then the include grid (in the order of `matrix.include`).
 
 ### Exclusions
 
@@ -71,9 +92,9 @@ A story is dropped when it matches a condition in `matrix.exclude`. It matches w
 
 The example specs give:
 
-| Spec | Axes grid | States grid | Fixtures grid | Stories | Captures in two themes | Judge crops |
+| Spec | Axes grid | States grid | Fixtures grid | Stories (with include) | Captures in two themes | Judge crops |
 |---|---|---|---|---|---|---|
-| [Button](examples/specs/valid/button.md) | 9 | 15 | 2 | 26 | 52 | 35 |
+| [Button](examples/specs/valid/button.md), with one forced story | 9 | 15 | 2 | 27 | 54 | 37 |
 | [Tabs](examples/specs/valid/tabs.md) | 2 | 4 | 2 | 8 | 16 | 10 |
 | [Dialog](examples/specs/valid/dialog.md) | 3 | 7 | 1 | 11 | 22 | 14 |
 
@@ -150,7 +171,7 @@ Every rendered check uses the same conditions:
 Every story renders in every theme of the token set; the first theme is the default.
 
 - The deterministic checks run, and baselines are kept, for every story in every theme.
-- The judge sees every story in the default theme, and the axes grid in the other themes. The manifest's `judge` field lists the themes for each story.
+- The judge sees every story in the default theme, and the axes and include grids in the other themes. The manifest's `judge` field lists the themes for each story.
 
 ## Names
 
@@ -182,7 +203,7 @@ One JSON file per component, written by the harness ([schema](schemas/story-mani
 | `component`, `spec` | The component name, and the spec's path. |
 | `themes` | The token set's themes; the first is the default. |
 | `viewport` | `width`, `height` and `scale`. |
-| `fixtures` | The fixtures the stories render, with `extends` merged. |
+| `fixtures` | The fixtures the stories render, including those only forced stories use, with `extends` merged. |
 | `stories` | The stories, in order. |
 
 Each story has:
@@ -190,7 +211,7 @@ Each story has:
 | Field | Content |
 |---|---|
 | `name`, `storybookId` | Its [names](#names). |
-| `grid` | `axes`, `states` or `fixtures`. |
+| `grid` | `axes`, `states`, `fixtures` or `include`. |
 | `fixture`, `axes`, `state` | Its point in the matrix; `state` has a `name` and, for a part's state, the `part`. |
 | `set` | Prop values set over the fixture, in order: axis values, then the state's props. Each entry has a `target`: `root`, `<Part>[<n>]`, `<Part>[*]` (every instance) or `<Part>[default]`. |
 | `input` | The input steps, with targets in the same form. |

@@ -22,7 +22,7 @@ The harness generates a component's stories from its spec ([spec format](../spec
 
 The maintainer chose:
 
-1. **Layered grids.** Every axis combination in the default state; every state against the first axis's values; every other fixture at the defaults. Every value, state and fixture is seen at least once, and the count grows additively: Button has 26 stories per theme instead of 162.
+1. **Layered grids, plus forced stories.** Every axis combination in the default state; every state against the first axis's values; every other fixture at the defaults. Every value, state and fixture is seen at least once, and the count grows additively: Button has 26 stories per theme instead of 162. A spec forces a combination the grids leave out with `matrix.include`; the judge sees forced stories in every theme, as it does the axes grid.
 2. **Real input.** The verifier hovers, focuses with the keyboard and holds the pointer down, as a user would, which also covers state driven by JavaScript. Storybook's own UI shows such stories in their default look; the report shows every state.
 3. **Every check and baseline in every theme; the judge sees the axes grid outside the default theme.** Rendering and deterministic checks are cheap; judge calls cost.
 4. **`data-part` attributes,** on the component's root and each part's root, together with `data-<state>` attributes for every state that isn't a pseudo-state. They locate targets independently of content, and tell the verifier each element's state.
@@ -30,7 +30,7 @@ The maintainer chose:
 6. **Lucide** (`lucide-static`, ISC license), which a consumer can replace through the config file.
 7. **A frame width on a fixture** (`frame.width`), so a long-label fixture tests wrapping and clipping in a narrow container.
 
-The rules also add to the spec format: `produce` recipes for states the rules can't infer (including `story: false` for states the fixtures already show), `frame` on a fixture, and `matrix.exclude` conditions that can name part props and a part's state.
+The rules also add to the spec format: `matrix.include`, `produce` recipes for states the rules can't infer (including `story: false` for states the fixtures already show), `frame` on a fixture, and `matrix.exclude` conditions that can name part props and a part's state.
 
 ### Consequences
 
@@ -38,7 +38,7 @@ The rules also add to the spec format: `produce` recipes for states the rules ca
 - The license terms (T-0034) cover Lucide's license notice, and the framework pins a `lucide-static` version from M1.
 - The config file (T-0029) has a key for a consumer's own icon set.
 - The verifier's tests in M1 confirm that the `focus` action makes `:focus-visible` match in the pinned browser.
-- A state combined with a non-default value of a second axis, or two states at once, is only covered where a fixture shows it.
+- A state combined with a non-default value of a second axis is covered only where a fixture or a forced story shows it. Two states at once (other than one a fixture shows) can't be expressed in version 0.
 
 ## More information
 

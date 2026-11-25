@@ -177,6 +177,7 @@ Fixtures carry the content that tests a layout: long labels, missing optional sl
 
 - `axes`: props whose values span the matrix, as `<prop>` or `<Part>.<prop>`; each is an enum or a boolean;
 - `fixtures`: the fixtures stories render;
+- `include`: stories the grids don't make, each a `fixture`, axis values in `props`, and a `state` with its `part`; see [forced stories](story-matrix.md#forced-stories);
 - `exclude`: combinations that get no story. Each is a [condition](#conditions) whose `props` may also name part props as `<Part>.<prop>`, and which may name the `part` its `state` belongs to.
 
 ### Conditions
@@ -285,6 +286,7 @@ Other second-level headings are allowed. Write anything measurable as a field ra
 | SPEC-014 | A condition names props of its part (or the component), with values of their type, and a state listed in that part's (or the component's) `states`. |
 | SPEC-015 | Every state other than `default` can be produced: it has a recipe, a boolean prop of its name, or is `hover`, `focus-visible` or `active`. |
 | SPEC-016 | Every `produce` key is a listed state of its component or part; a recipe's props exist there; every input target exists; `instance` is used only on a part's state, and is below the number of instances in every fixture the stories render. |
+| SPEC-017 | Every `include` entry names an existing fixture, axes in `props` with values of their type, and a listed state of the component or of `part`; its story isn't one a grid already makes, and no `exclude` condition drops it. |
 
 The command works without an agent, and the spec skill never writes a spec the check would reject.
 

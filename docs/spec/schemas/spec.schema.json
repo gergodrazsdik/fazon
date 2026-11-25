@@ -551,10 +551,34 @@
           "type": "array",
           "items": { "$ref": "#/$defs/matrixCondition" },
           "minItems": 1
+        },
+        "include": {
+          "description": "Stories the grids don't make, forced by the spec.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/matrixPoint" },
+          "minItems": 1
         }
       },
       "additionalProperties": false,
       "minProperties": 1
+    },
+    "matrixPoint": {
+      "description": "One story: a fixture (the first fixture when left out), axis values (the others at their defaults) and a state (`default` when left out), of the component or of `part`.",
+      "type": "object",
+      "properties": {
+        "fixture": { "$ref": "#/$defs/kebabName" },
+        "props": {
+          "type": "object",
+          "propertyNames": { "pattern": "^([A-Z][A-Za-z0-9]*\\.)?[a-z][A-Za-z0-9]*$" },
+          "additionalProperties": { "type": ["boolean", "string", "number"] },
+          "minProperties": 1
+        },
+        "state": { "$ref": "#/$defs/kebabName" },
+        "part": { "$ref": "#/$defs/componentName" }
+      },
+      "additionalProperties": false,
+      "minProperties": 1,
+      "dependentRequired": { "part": ["state"] }
     },
     "matrixCondition": {
       "description": "A combination that gets no story: prop values (`<prop>` or `<Part>.<prop>`) and a state, of the component or of `part`.",
