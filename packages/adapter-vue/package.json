@@ -41,16 +41,27 @@
     "./storybook/preview": {
       "types": "./dist/storybook-preview.d.ts",
       "default": "./dist/storybook-preview.js"
+    },
+    "./lint": {
+      "types": "./dist/lint/index.d.ts",
+      "default": "./dist/lint/index.js"
     }
   },
   "dependencies": {
+    "@eslint/js": "10.0.1",
     "@fazon/core": "workspace:*",
+    "postcss-html": "2.0.1",
     "prettier": "3.10.1",
-    "vue-component-meta": "3.3.14"
+    "typescript-eslint": "8.73.0",
+    "vue-component-meta": "3.3.14",
+    "vue-eslint-parser": "10.4.2"
   },
   "peerDependencies": {
     "@storybook/vue3-vite": "10.6.7",
     "@vitest/browser-playwright": "5.1.1",
+    "eslint": "^10.0.0",
+    "eslint-plugin-vue": "^10.12.0",
+    "stylelint": "^18.0.0",
     "typescript": "6.0.3",
     "vite": "8.3.8",
     "vitest": "5.1.1"
@@ -59,8 +70,11 @@
     "@storybook/vue3-vite": "10.6.7",
     "@vitejs/plugin-vue": "6.0.11",
     "@vitest/browser-playwright": "5.1.1",
+    "eslint": "10.15.0",
+    "eslint-plugin-vue": "10.12.1",
     "playwright": "1.65.1",
     "storybook": "10.6.7",
+    "stylelint": "18.0.0",
     "typescript": "6.0.3",
     "vite": "8.3.8",
     "vitest": "5.1.1",

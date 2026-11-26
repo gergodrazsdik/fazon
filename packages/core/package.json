@@ -24,6 +24,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./stylelint": {
+      "types": "./dist/lint/stylelint/plugin.d.ts",
+      "default": "./dist/lint/stylelint/plugin.js"
     }
   },
   "dependencies": {
@@ -33,10 +37,21 @@
     "pixelmatch": "8.0.0",
     "playwright-core": "1.65.1",
     "pngjs": "7.0.0",
+    "postcss-value-parser": "4.2.0",
     "style-dictionary": "5.8.0",
     "yaml": "2.9.1"
   },
+  "peerDependencies": {
+    "stylelint": "^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "stylelint": {
+      "optional": true
+    }
+  },
   "devDependencies": {
-    "@types/pngjs": "6.0.5"
+    "@types/pngjs": "6.0.5",
+    "postcss": "8.5.33",
+    "stylelint": "18.0.0"
   }
 }

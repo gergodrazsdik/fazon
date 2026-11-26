@@ -39,3 +39,4 @@ export {
 export { apiFileName, entryFileText, formatTypeScript, generateFiles } from "./generate.js";
 export { storyFileName } from "./stories.js";
 export { configFiles, storybookDirectory, type ConfigFile, type ConfigFilesInput } from "./config-files.js";
+export { lintConfigFiles } from "./lint/config-files.js";
