@@ -54,8 +54,33 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }} # pinact resolves the pinned SHAs (read-only)
         run: just lint
 
+  changes:
+    name: changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      code: ${{ steps.decide.outputs.code }}
+      workflows: ${{ steps.decide.outputs.workflows }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # the diff needs the pull request's base
+          persist-credentials: false
+      # Which jobs this change needs (scripts/ci-changes.sh); a push to main needs all of them.
+      - name: Decide
+        id: decide
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: scripts/ci-changes.sh "$BASE" "$HEAD" >> "$GITHUB_OUTPUT"
+
+  # A required check: skipped, it counts as passed. It audits only .github/, so it runs when that changed.
   zizmor:
     name: zizmor
+    needs: changes
+    if: needs.changes.outputs.workflows == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
