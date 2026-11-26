@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0103, F-0026, Q-0025.
+Next free IDs: T-0103, F-0027, Q-0025.
 
 ## Now
 
@@ -199,6 +199,7 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 - [x] F-0023 `fazon baseline update` doesn't read generate or feedback runs: `latestRun` in `packages/core/src/verify/baseline-update.ts` looks only for a `verify.json` at the run directory's root, while those runs write `checks/<n>/verify.json` and `captures/<n>/`, so after `generate` and `accept` it takes an older verify run or refuses, and baseline-lifecycle.md's new-component flow breaks ([#71](https://github.com/gergodrazsdik/fazon/pull/71)) (2026-11-26) — 2026-11-26: fixed in [#73](https://github.com/gergodrazsdik/fazon/pull/73)
 - [x] F-0024 `componentInputsHash` (`packages/core/src/verify/details.ts`) includes `generated/provenance.json`, so `accept`, or approving the same API again, changes the hash although the file changes no capture; once F-0023 is fixed, `baseline update` from an accepted run would refuse. Leave `provenance.json` out of the hash, then drop `accept`'s re-accept skip ([#71](https://github.com/gergodrazsdik/fazon/pull/71)) (2026-11-26) — 2026-11-26: fixed in [#73](https://github.com/gergodrazsdik/fazon/pull/73)
 - [ ] F-0025 A feedback run's text is only in its first prompt: no record field or run-directory file keeps it, so the report and the measurements can't show what the developer asked for ([#74](https://github.com/gergodrazsdik/fazon/pull/74)) (2026-11-26)
+- [x] F-0026 `fazon verify`, and the generate run's checks, ended in error while a component had a spec but no root file yet, as every component has between its spec and its first generate run: the rendered checks looked its stories up in the Storybook build (MATRIX-003) before skipping it, and ESLint was given its directory, whose only files are ignored, and exited 2 ([fazon-vue-example#7](https://github.com/gergodrazsdik/fazon-vue-example/pull/7)) (2026-11-26) — 2026-11-26: fixed in [#77](https://github.com/gergodrazsdik/fazon/pull/77); the end-to-end project has a spec-only Badge
 - [x] F-0013 The example token set's dark theme gives `color.text.action` on `color.surface.active` 3.28:1, below WCAG's 4.5:1: a ghost Button's active state fails `a11y`. The contrast table didn't pair those roles ([#57](https://github.com/gergodrazsdik/fazon/pull/57)'s end-to-end test waives it with an exemption; the example repo's Button will fail) (2026-11-26) — 2026-11-26: the dark theme's `color.text.action` is blue 200, 6.03:1 on the active surface ([fazon-vue-example#3](https://github.com/gergodrazsdik/fazon-vue-example/pull/3)); the contrast table pairs action text with every surface, and the end-to-end Button passes unwaived ([#57](https://github.com/gergodrazsdik/fazon/pull/57))
 
 ## Open questions

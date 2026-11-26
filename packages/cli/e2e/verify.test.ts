@@ -91,8 +91,10 @@ describe("fazon verify and fazon baseline update in the verifier image", () => {
     const json = await fazon("verify", "--no-judge");
     expect(json.status, JSON.stringify(json.messages)).toBe("ok");
     expect(statuses(json)).toEqual(allPass);
-    const [button] = json.result.components as { stories: Record<string, number> }[];
-    expect(button?.stories).toEqual({ unchanged: 0, changed: 0, new: 54 });
+    const components = json.result.components as { component: string; stories: Record<string, number> }[];
+    expect(components.find((c) => c.component === "button")?.stories).toEqual({ unchanged: 0, changed: 0, new: 54 });
+    // Badge has a spec and no code yet: no stories rendered, and no check ended in error over it.
+    expect(components.find((c) => c.component === "badge")?.stories).toEqual({ unchanged: 0, changed: 0, new: 0 });
     const { run, findings } = await record(json);
     expect(validateWithSchema("run-record", run)).toEqual([]);
     expect(run.status).toBe("passed");
@@ -121,8 +123,8 @@ describe("fazon verify and fazon baseline update in the verifier image", () => {
     const json = await fazon("verify", "--no-judge");
     expect(json.status, JSON.stringify(json.messages)).toBe("ok");
     expect(statuses(json)).toEqual(allPass);
-    const [button] = json.result.components as { stories: Record<string, number> }[];
-    expect(button?.stories).toEqual({ unchanged: 54, changed: 0, new: 0 });
+    const components = json.result.components as { component: string; stories: Record<string, number> }[];
+    expect(components.find((c) => c.component === "button")?.stories).toEqual({ unchanged: 54, changed: 0, new: 0 });
   });
 
   it("fail each check with the rule a seeded defect breaks", async () => {
