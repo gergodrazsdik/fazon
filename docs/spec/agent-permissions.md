@@ -138,7 +138,7 @@ The one call of a [propose run](loop-and-caps.md#runs) may change no file and ru
 | Tools | `--tools Read,Glob,Grep`: no Edit, Write or Bash |
 | Permissions | `permissions.allow` only `Read`, `Glob` and `Grep`; `permissions.deny` adds `Edit` and `Bash` to the rules above |
 | Sandbox | as above, with an empty `filesystem.allowWrite` |
-| Answer | `--json-schema` with the schema of a proposed API: the spec schema's API fields, with no `states`, `produce` or `a11y` on a part. Claude Code returns the answer as the result's structured output; without one, the harness reads the JSON object in the final message |
+| Answer | `--json-schema` with the schema of a proposed API: the spec schema's API fields, with no `states`, `produce` or `a11y` on a part. Claude Code compiles it as draft-07 in strict mode, so it gets a draft-07 copy: without `$schema` and `unevaluatedProperties`, with `$defs` as `definitions` and `dependentRequired` as `dependencies`; the harness validates the answer against the full schema. Claude Code returns the answer as the result's structured output; without one, the harness reads the JSON object in the final message |
 | Allowed paths | none: any file that changes during the call is a violation (PERM-002) |
 
 Its prompt carries the spec, the adapter's API mapping, the role tokens, the conventions doc and the caps left, and says how to answer.
