@@ -157,7 +157,7 @@ async function writeRecord(id: string, from: RunRecord, changes: Partial<RunReco
 }
 
 describe("fazon feedback", () => {
-  it("answers the latest run, with the feedback and its findings in the first prompt only, fresh caps and the generator model", async () => {
+  it("answers the latest run, with the feedback in every prompt and its findings in the first, fresh caps and the generator model", async () => {
     await config("  iterations: 3\n");
     const failing = checks([rawValue]);
     const parent = await generate(machine([failing, failing, failing]));
@@ -185,7 +185,7 @@ describe("fazon feedback", () => {
     });
     expect((json.messages as unknown[])[0]).toEqual({
       level: "info",
-      text: `This feedback run answers ${parent}: its first prompt carries your feedback and the 1 blocking finding of that run's last checks.`,
+      text: `This feedback run answers ${parent}: every prompt carries your feedback, and the first also carries the 1 blocking finding of that run's last checks.`,
     });
     expect(await exists(`.fazon/runs/${run}/report/index.html`)).toBe(true);
 
@@ -204,9 +204,9 @@ describe("fazon feedback", () => {
     expect(first).toContain("The previous run's last checks found these");
     expect(first).toContain("`tokens/raw-value` at `src/components/button/Button.vue:4`: color is #2050d0");
     expect(first).toContain("Iteration 1. Left, this call included: 3 calls, $10.00 of the run's budget");
-    // The feedback, and the parent's findings, go into the first prompt only.
-    expect(second).not.toContain(feedbackHeading);
-    expect(second).not.toContain("Make the label bolder.");
+    // The feedback goes into every prompt; the parent's findings into the first only.
+    expect(second).toContain(feedbackHeading);
+    expect(second).toContain("```text\nMake the label bolder.\n```");
     expect(second).not.toContain("tokens/raw-value");
     expect(second).toContain("The checks after iteration 1 found these");
     expect(second).toContain("`layout/target-size`");
@@ -225,7 +225,7 @@ describe("fazon feedback", () => {
     expect(json.result).toMatchObject({ kind: "feedback", status: "passed", parent, iterations: 1 });
     expect((json.messages as unknown[])[0]).toEqual({
       level: "info",
-      text: `This feedback run answers ${parent}: its first prompt carries your feedback and no findings, as that run left none that block.`,
+      text: `This feedback run answers ${parent}: every prompt carries your feedback, and that run left no findings that block.`,
     });
     const [prompt = ""] = fake.prompts;
     expect(prompt).toContain("```text\nUse the brand colour for the focus ring.\n\nAnd round the corners.\n```");
