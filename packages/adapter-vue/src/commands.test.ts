@@ -52,3 +52,17 @@ describe("the Vue adapter's source-check commands", () => {
     expect(vueAdapter.testRule("src/components/button/Button.test.ts", "contract-api lookalike")).toBe("behaviour");
   });
 });
+
+describe("the Vue adapter's self-check commands", () => {
+  it("are vue-tsc, ESLint, Stylelint and Vitest, scoped to the component", () => {
+    expect(vueAdapter.selfChecks("src/components/button")).toEqual({
+      commands: [
+        "pnpm exec vue-tsc --noEmit",
+        "pnpm exec eslint src/components/button",
+        'pnpm exec stylelint "src/components/button/**/*.{vue,css}"',
+        "pnpm exec vitest run src/components/button",
+      ],
+      cacheDirectories: ["node_modules/.vite", "node_modules/.vite-temp", "node_modules/.cache"],
+    });
+  });
+});

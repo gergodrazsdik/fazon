@@ -100,7 +100,23 @@ An illustrative excerpt, for Button:
 }
 ```
 
-The exact keys and flags follow the Claude Code version the harness requires; M2 confirms them, and the run record stores the version used.
+The exact keys and flags follow the Claude Code version the harness requires, and the run record stores the version used. For the minimum, 2.1.332 (ADR 0023), they are:
+
+| What | How |
+|---|---|
+| Settings | `--settings .fazon/runs/<run>/calls/<n>.settings.json`, with `--restricted` so that only managed settings and this file apply, not the user's or the repository's |
+| Edits | `permissions.allow`: `Edit(./<components>/<name>/<pattern>)` for each of the adapter's patterns; `permissions.deny`: `Edit(./<components>/<name>/generated/**)`. Edit rules cover the Write tool too |
+| Reads | `Read`, `Glob` and `Grep` allowed; `Read(./.github/**)`, `Read(./.claude/**)`, `Read(./.fazon/**)` and, at any depth, `Read(.env*)`, `Read(*.pem)`, `Read(*.key)` and the other key and certificate names denied |
+| Commands | `Bash(<command>)` for each self-check command, matching exactly that command |
+| Tools | `--tools Read,Glob,Grep,Edit,Write,Bash`; `--disallowed-tools WebFetch,WebSearch,Agent,Task,NotebookEdit,mcp__*` |
+| MCP | `--strict-mcp-config --mcp-config '{"mcpServers":{}}'`, and `disableClaudeAiConnectors`; hooks off (`disableAllHooks`) |
+| Non-interactive | `--permission-mode dontAsk` (also `permissions.defaultMode`), `--permission-prompts none`, and `permissions.disableBypassPermissionsMode: "disable"` |
+| Sandbox | `sandbox.enabled`, `failIfUnavailable` (no call without it), `autoAllowBashIfSandboxed: false`, `allowUnsandboxedCommands: false`, `network.allowedDomains: []`; `filesystem.denyWrite` the repository and `generated/`, `allowWrite` the component's directory and the adapter's cache directories, `denyRead` the three directories above and each secret file found in the repository by path, as the sandbox on Linux ignores glob patterns |
+| Model and limits | `--model`, `--effort` when the config sets one, and `--max-budget-usd` with what remains of the run's budget |
+| Output | `--print --output-format stream-json --verbose`, written to `calls/<n>.jsonl` as the transcript; `--no-session-persistence` |
+| Prompt | on standard input, which is then closed |
+
+The harness checks Claude Code's first event: a call that lists a denied tool or an MCP server, or doesn't run in `dontAsk` mode, is stopped and ends in error (PERM-001). Read-only shell commands that Claude Code runs without asking still run, inside the sandbox.
 
 ## Files the harness maintains
 
@@ -114,7 +130,7 @@ CI regenerates the generated files from the committed specs and fails when they 
 
 ## Hand edits
 
-During a run, the harness takes a snapshot before and after each agent call:
+During a run, the harness takes a snapshot before and after each agent call. A snapshot covers every file git tracks or would track: tracked files, and untracked files that aren't ignored, outside `.fazon/`; for each, its content's hash, its executable bit and, for a link, its target. Ignored files, such as `node_modules/` and build output, aren't covered.
 
 - A change made **during** a call, outside the allowed paths, is a violation: the run ends as "needs a person", and the report lists the files. The harness doesn't revert them, so a person can see what happened.
 - A change made **between** calls is a person's hand edit, wherever it is. The run record stores each one, with its files; it counts as a human intervention in the measurements.

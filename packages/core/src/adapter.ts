@@ -134,6 +134,24 @@ export interface SourceCommands {
   readonly typesResolutions: readonly TypesResolution[];
 }
 
+/**
+ * The **self-check commands** (docs/spec/adapter-boundary.md#commands): the type-check, lint and
+ * tests the agent may run on the host, in its sandbox, scoped to one component. Their results are
+ * advisory; the checks in the verifier image are the ones that count.
+ */
+export interface SelfChecks {
+  /**
+   * Each command exactly as the agent types it in its shell, from the repository root, such as
+   * `pnpm exec vitest run src/components/button`. The agent's permissions allow exactly these.
+   */
+  readonly commands: readonly string[];
+  /**
+   * Directories, relative to the repository root and ignored by git, that the commands write their
+   * caches to, such as `node_modules/.vite`: writable in the agent's sandbox besides the component's directory.
+   */
+  readonly cacheDirectories: readonly string[];
+}
+
 /** A module resolution Are the Types Wrong checks in. */
 export type TypesResolution = "node10" | "node16-cjs" | "node16-esm" | "bundler";
 
@@ -184,6 +202,11 @@ export interface Adapter {
   themesFile(input: ThemesInput): Promise<SetupFile>;
   /** **Source-check commands:** what `fazon verify` runs in the verifier image for the source checks. */
   sourceCommands(input: SourceCommandsInput): SourceCommands;
+  /**
+   * **Self-check commands:** what the agent may run on the host for the component in `directory`
+   * (relative to the repository root, with `/` separators).
+   */
+  selfChecks(directory: string): SelfChecks;
   /**
    * The `test` rule of one test, by its file (relative to the repository root) and its full name:
    * the contract tests the adapter generates are `contract-api` or `contract-render`, every other
