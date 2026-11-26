@@ -11,8 +11,7 @@ Next free IDs: T-0101, F-0019, Q-0023.
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
 1. M2: break T-0050 down into steps with the maintainer before starting it
-2. T-0100: the example repo's required checks (maintainer)
-3. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
+2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
 
@@ -112,7 +111,7 @@ Complete 2026-11-26: the CLI (`doctor`, `spec check`, `sync`, `verify`, `baselin
 - [ ] T-0097 JSON Schemas for each command's `--json` result (`verify`, `baseline update`, `sync`, `doctor`, `spec check`), as cli.md promises ([#57](https://github.com/gergodrazsdik/fazon/pull/57))
 - [ ] T-0098 The rendered and source checks' remaining gaps: pseudo-elements in `tokens`; MATRIX-005; Vite and Storybook warnings as findings; the `package` check's `styles` rule loading the styles in a browser, and accepting any reachable stylesheet, so the exported `tokens.css` alone passes it ([fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4)) ([#56](https://github.com/gergodrazsdik/fazon/pull/56), [#57](https://github.com/gergodrazsdik/fazon/pull/57))
 - [x] T-0099 Prepare the example repo for `fazon verify` (step 12): the build emits type declarations, the exports map includes the stylesheet, and `fazon`, `playwright` 1.65.1 and `lucide-static` are dev dependencies ([#57](https://github.com/gergodrazsdik/fazon/pull/57)) — 2026-11-26, [fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4): the build emits the declarations from a Vite plugin (F-0017)
-- [ ] T-0100 The example repo's ruleset requires only `lint`, `zizmor` and `pr-title`: add `framework-pin`, `library` and `fazon / verify` as required checks, so a failing verify blocks the merge (maintainer: `just github-settings`; [fazon-vue-example#5](https://github.com/gergodrazsdik/fazon-vue-example/pull/5))
+- [x] T-0100 The example repo's ruleset requires only `lint`, `zizmor` and `pr-title`: add `framework-pin`, `library` and `fazon / verify` as required checks, so a failing verify blocks the merge (maintainer: `just github-settings`; [fazon-vue-example#5](https://github.com/gergodrazsdik/fazon-vue-example/pull/5)) — 2026-11-26, [fazon-vue-example#6](https://github.com/gergodrazsdik/fazon-vue-example/pull/6): applied by the maintainer; `just github-settings-check` reports no differences
 
 ### M3 Vision judge
 
