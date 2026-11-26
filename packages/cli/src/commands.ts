@@ -3,6 +3,7 @@ import type { ParseArgsOptionsConfig } from "node:util";
 import type { Context, Invocation } from "./commands/context.js";
 import { doctor } from "./commands/doctor.js";
 import { baselineUpdate } from "./commands/baseline-update.js";
+import { report } from "./commands/report.js";
 import { specCheck } from "./commands/spec-check.js";
 import { sync } from "./commands/sync.js";
 import { verify } from "./commands/verify.js";
@@ -93,8 +94,10 @@ export const commands: readonly Command[] = [
     name: "report",
     group: "The loop",
     usage: "fazon report [<component> | <run-id>] [--no-open] [--summary]",
-    summary: "Build and open a run's report.",
-    arrives: "M2",
+    summary: "Build and open a run's report (M2); --summary prints a verify run's Markdown summary.",
+    options: { summary: { type: "boolean" }, "no-open": { type: "boolean" } },
+    maxPositionals: 1,
+    run: report,
   },
   {
     name: "accept",
