@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Runs `fazon verify` and `fazon baseline update` end to end (packages/cli/e2e/): a component
 # library with the example Button, verified in the verifier image, baselined, verified again, and
-# then seeded with one defect per check.
+# then seeded with one defect per check; and `fazon generate --clean` on a second copy, whose fake
+# Claude Code writes the known-good Button back, so the in-image checks of one iteration pass.
 #
 # The CLI runs on the host and starts the image itself, so this needs the built packages
 # (`just build`) and a container runtime. The image is referenced by digest, as fazon.yaml needs:

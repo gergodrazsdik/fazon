@@ -90,7 +90,7 @@ test:
 test-rendered image="":
     scripts/test-rendered.sh {{ image }}
 
-# Run `fazon verify` and `fazon baseline update` end to end in the verifier image (default: localhost/fazon-verifier:dev, built when missing; CONTAINER_CLI=podman for Podman)
+# Run `fazon verify`, `fazon baseline update` and `fazon generate` (with a fake Claude Code) end to end in the verifier image (default: localhost/fazon-verifier:dev, built when missing; CONTAINER_CLI=podman for Podman)
 [group('dev')]
 test-verify image="": build
     scripts/test-verify.sh {{ image }}
