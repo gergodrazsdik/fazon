@@ -42,7 +42,7 @@ jobs:
       pull-requests: write # only the comment job uses it
     with:
       working-directory: packages/cli/e2e/selftest
-      install-command: ./setup.sh${{ inputs.seed && ' --seed' || '' }}
+      install-command: ./setup.sh${{ (inputs.seed || github.event_name == 'pull_request') && ' --seed' || '' }}
       artifact-retention-days: 3
       timeout-minutes: 45
 
@@ -58,7 +58,7 @@ jobs:
         env:
           STATUS: ${{ needs.fazon.outputs.status }}
           RESULT: ${{ needs.fazon.result }}
-          EXPECTED: ${{ inputs.seed && 'failed' || 'ok' }}
+          EXPECTED: ${{ (inputs.seed || github.event_name == 'pull_request') && 'failed' || 'ok' }}
         run: |
           echo "verify.yml ended $RESULT with the status '$STATUS'; expected '$EXPECTED'."
           [ "$STATUS" = "$EXPECTED" ]
