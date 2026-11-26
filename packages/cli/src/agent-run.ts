@@ -13,6 +13,7 @@ import {
   claudeCodeProblem,
   claudeCodeStatus,
   ClaudeCodeVersionError,
+  generatedDirectory,
   hashApi,
   hashText,
   hashTokenSet,
@@ -255,10 +256,21 @@ export interface AgentRunRequest {
   readonly dependencies?: Pick<LoopDependencies, "checks" | "refreshGenerated" | "judge">;
   /** Whether the run's inputs include the approved API's hash: true for generate and feedback. */
   readonly approvedApi?: boolean;
+  /**
+   * The files the harness writes between calls, which aren't hand edits (F-0021); by default the
+   * component's `generated/` directory and the package entry file, as the refresh writes them.
+   */
+  readonly harnessFile?: (file: string) => boolean;
   /** A propose run's spec, from the repository root. */
   readonly proposal?: string;
   readonly feedback?: FeedbackInput;
   readonly measurement?: { readonly round: number; readonly repeat: number };
+}
+
+/** Whether the refresh writes a file: one in the component's `generated/` directory, or the package entry file. */
+export function refreshedFile(directory: string, entry: string): (file: string) => boolean {
+  const generated = `${directory}/${generatedDirectory}/`;
+  return (file) => file.startsWith(generated) || file === entry;
 }
 
 /** A run that ran to its end. */
@@ -315,6 +327,7 @@ export async function runAgentCommand(
       prompt: request.prompt,
       ...(request.jsonSchema === undefined ? {} : { jsonSchema: request.jsonSchema }),
       ...(request.answer === undefined ? {} : { answer: request.answer }),
+      harnessFile: request.harnessFile ?? refreshedFile(directory, toPosix(config.paths.entry)),
       prices: config.prices,
       command: setup.claudeCode.command,
       env: context.environment.env,

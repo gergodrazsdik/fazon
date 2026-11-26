@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // The agent call connected to the loop, against the fake Claude Code: no real `claude -p` runs.
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { fakeClaude, gitRepository } from "../agent/test-support.js";
@@ -117,6 +117,16 @@ describe("the agent call as the loop's call", () => {
     await writeFile(path.join(repo, "src/components/badge/Badge.vue"), "<template><b /></template>\n");
     expect((await call(input({ iteration: 2 }))).handEdits).toEqual(["src/components/badge/Badge.vue"]);
     expect((await call(input({ iteration: 3 }))).handEdits).toEqual([]);
+  });
+
+  it("doesn't count the files the harness writes between calls as hand edits (F-0021)", async () => {
+    const generated = "src/components/badge/generated/stories.json";
+    const { call } = connection({}, { harnessFile: (file) => file.startsWith("src/components/badge/generated/") });
+    await call(input());
+    await writeFile(path.join(repo, "src/components/badge/Badge.vue"), "<template><b /></template>\n");
+    await mkdir(path.dirname(path.join(repo, generated)), { recursive: true });
+    await writeFile(path.join(repo, generated), "{}\n");
+    expect((await call(input({ iteration: 2 }))).handEdits).toEqual(["src/components/badge/Badge.vue"]);
   });
 
   it("reads a FAZON-NEEDS line of the final message", async () => {

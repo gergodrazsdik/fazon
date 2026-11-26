@@ -32,6 +32,12 @@ export interface AgentLoopCallOptions {
    * which ends the call in `error` with that message, or `undefined` when it can.
    */
   readonly answer?: (result: AgentCallResult) => string | undefined | Promise<string | undefined>;
+  /**
+   * The files the harness itself writes between calls, from the repository root: the refresh's
+   * `generated/` directory and the package entry file. Their changes between two calls aren't hand
+   * edits (F-0021). None by default.
+   */
+  readonly harnessFile?: (file: string) => boolean;
   /** Prices by model (the config's `prices`), to estimate a call's cost when Claude Code reports none. */
   readonly prices?: Readonly<Record<string, ModelPrice>>;
   /** The Claude Code executable; `claude` on the PATH by default. */
@@ -61,7 +67,7 @@ export interface AgentLoopCall {
  * - the loop's model and effort; the budget left as the call's own limit (`--max-budget-usd`); the
  *   call-time cap in milliseconds;
  * - a snapshot before each call, compared with the one after the previous call: the files a person
- *   changed in between are the call's `handEdits`;
+ *   changed in between are the call's `handEdits`, without the files the harness wrote (`harnessFile`);
  * - the result: how the call ended, its tokens and cost (estimated from `prices` when Claude Code
  *   reported none), the files it changed inside the allowed paths, the violations outside them,
  *   and a `FAZON-NEEDS` line of its final message;
@@ -77,7 +83,9 @@ export function agentLoopCall(options: AgentLoopCallOptions): AgentLoopCall {
 
   const call: LoopCall = async (input) => {
     const before = await takeSnapshot(options.repo);
-    const handEdits = lastAfter === undefined ? [] : changedFiles(lastAfter, before);
+    const harnessFile = options.harnessFile ?? (() => false);
+    const handEdits =
+      lastAfter === undefined ? [] : changedFiles(lastAfter, before).filter((file) => !harnessFile(file));
     const price = options.prices?.[input.model];
     const result = await run({
       repo: options.repo,
