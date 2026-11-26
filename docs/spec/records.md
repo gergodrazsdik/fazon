@@ -89,6 +89,11 @@ Hashes are SHA-256, written `sha256:<hex>`:
   - a file named more than once is listed once, where it first appears;
   - paths are relative to the resolver document, whose own path is its file name;
   - a file hash is the hash of the file's UTF-8 text with line endings normalised to LF.
+- **A component's inputs** (`inputs` in each `verify.json`, which `fazon accept` and `fazon baseline update` compare with now): the hash of a text with one line per file, `<path> <file hash>`, every line ending in LF:
+  - the spec, then every file in the component's directory sorted by path, except `generated/provenance.json`, which no capture depends on;
+  - paths are relative to the repository root;
+  - a file hash is as for the token set's files;
+  - a last line `tokens <token set hash>`, or `tokens none` when the token set can't be read.
 - **The approved API:** the hash of a canonical JSON form ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)) of the spec's API fields: `props`, `events`, `slots`, `methods`, `forward`, `form`, `parts` without their `states`, `produce` and `a11y`, and `extensions`.
 
 ## Calibration records

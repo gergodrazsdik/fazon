@@ -55,5 +55,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- `fazon baseline update` takes the captures of a component's latest generate or feedback run when it passed, from its passing iteration, not only those of verify runs. A component's inputs hash leaves out its provenance file, so approving or accepting doesn't stop `baseline update`, and `fazon accept` compares a run accepted already with its checks again.
 - `fazon verify` failed with `EROFS` on a laptop once Vite, Vitest or Storybook had left caches in `node_modules`; the working copy now links only the packages and pnpm's own entries. `fazonVueEslint()` ignores the run records in `.fazon/`.
 - `fazon verify --base` read the base's baselines from the checkout's root, so a project in a subdirectory saw every baseline as added.
