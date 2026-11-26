@@ -32,7 +32,7 @@ it("renders a story in the verifier's conditions", async () => {
   if (story === undefined) throw new Error("no story");
   await story.run();
   expect(document.documentElement.getAttribute("data-theme")).toBe("light");
-  expect(getComputedStyle(document.documentElement).getPropertyValue("--color-surface-base")).not.toBe("");
+  expect(getComputedStyle(document.documentElement).getPropertyValue("--fz-color-surface-base")).not.toBe("");
   expect(document.querySelector("[data-fazon-frame]")).not.toBeNull();
   expect([window.innerWidth, window.innerHeight, window.devicePixelRatio]).toEqual([1024, 768, 2]);
   expect(matchMedia("(prefers-reduced-motion: reduce)").matches).toBe(true);

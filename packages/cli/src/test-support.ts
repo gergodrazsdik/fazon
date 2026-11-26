@@ -10,6 +10,8 @@ import { run } from "./run.js";
 
 export const image = "ghcr.io/gergodrazsdik/fazon-verifier@sha256:" + "4f1c2a9e".repeat(8);
 export const minimalConfig = `fazon: 0\nadapter: vue\nimage: ${image}\n`;
+/** The minimal config with the example library's token prefix, which its one-word components need to sync (ADR 0022). */
+export const libraryConfig = `${minimalConfig}tokens:\n  prefix: fz\n`;
 export const specExamples = fileURLToPath(new URL("../../../docs/spec/examples/specs/", import.meta.url));
 
 export interface FakeMachine {

@@ -12,12 +12,12 @@ import Button from "../../button/Button.vue";
 
 /** The token set's base styles, which the story frame sets so components inherit role tokens. */
 const baseStyles = {
-  backgroundColor: "var(--color-surface-base)",
-  color: "var(--color-text-primary)",
-  fontFamily: "var(--font-family-body)",
-  fontSize: "var(--font-size-body)",
-  fontWeight: "var(--font-weight-body)",
-  lineHeight: "var(--line-height-body)",
+  backgroundColor: "var(--fz-color-surface-base)",
+  color: "var(--fz-color-text-primary)",
+  fontFamily: "var(--fz-font-family-body)",
+  fontSize: "var(--fz-font-size-body)",
+  fontWeight: "var(--fz-font-weight-body)",
+  lineHeight: "var(--fz-line-height-body)",
 };
 
 /**

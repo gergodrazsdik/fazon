@@ -46,6 +46,7 @@ async function storyFile(spec: Spec, overrides: Partial<Parameters<typeof vueAda
     directory: `src/components/${spec.name.toLowerCase()}`,
     icons: "lucide" as const,
     baseStyles: baseStyles("fz"),
+    prefix: "fz",
     ...overrides,
   };
   const [stories] = await vueAdapter.generate(input);

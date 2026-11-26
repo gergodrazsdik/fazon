@@ -197,7 +197,8 @@ async function plan(root: string, config: Config, adapter: Adapter): Promise<Pla
   files.set(themesPath, themesFile.content);
 
   const components = config.paths.components;
-  const styles = baseStyles(config.tokens.prefix ?? "");
+  const prefix = config.tokens.prefix ?? "";
+  const styles = baseStyles(prefix);
   const entryComponents: EntryComponent[] = [];
   const pending: PendingComponent[] = [];
   for (const file of [...valid].sort((a, b) => (a.component < b.component ? -1 : 1))) {
@@ -238,6 +239,7 @@ async function plan(root: string, config: Config, adapter: Adapter): Promise<Pla
         directory,
         icons: config.icons,
         baseStyles: styles,
+        prefix,
       });
       const own = rootFile(adapter, file.spec, directory);
       const generatedYet = await exists(path.join(root, own));

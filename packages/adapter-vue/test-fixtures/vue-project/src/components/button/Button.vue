@@ -2,6 +2,8 @@
 <script setup lang="ts">
 import { ref } from "vue";
 
+defineOptions({ name: "FzButton" });
+
 const props = withDefaults(
   defineProps<{
     variant?: "primary" | "secondary" | "ghost";

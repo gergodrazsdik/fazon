@@ -57,7 +57,7 @@ class Imports {
 /** The text of `generated/<Component>.stories.ts`, before formatting. */
 export function storyFileText(
   input: GenerateInput,
-  component: VueComponent = mapComponent(input.spec, input.specFile),
+  component: VueComponent = mapComponent(input.spec, input.specFile, input.prefix),
 ): string {
   const { spec, manifest, specFile } = input;
   const imports = new Imports(input);
@@ -75,7 +75,10 @@ export function storyFileText(
         `Write specs/${kebabCase(name)}.md, or remove ${name} from uses (SPEC-008).`,
       );
     }
-    used.set(name, mapComponent(other, path.posix.join(path.posix.dirname(specFile), `${kebabCase(name)}.md`)));
+    used.set(
+      name,
+      mapComponent(other, path.posix.join(path.posix.dirname(specFile), `${kebabCase(name)}.md`), input.prefix),
+    );
   }
 
   const texts: string[] = [];

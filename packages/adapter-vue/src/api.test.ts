@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { AdapterError, type Spec } from "@fazon/core";
 import { describe, expect, it } from "vitest";
-import { apiFile, mapComponent, typeExpression } from "./api.js";
+import { apiFile, declaredName, mapComponent, pascalCasePrefix, typeExpression } from "./api.js";
 import { exampleSpec } from "./test-support.js";
 
 const base: Spec = {
@@ -24,7 +24,7 @@ const base: Spec = {
 
 describe("the Vue API mapping", () => {
   it("maps the model named value to modelValue, and each model to its update event", () => {
-    const { components } = apiFile(mapComponent(base, "specs/select.md"), "specs/select.md");
+    const { components } = apiFile(mapComponent(base, "specs/select.md", "fz"), "specs/select.md");
     const select = components.Select;
     expect(Object.keys(select?.props ?? {})).toEqual(["modelValue", "open", "name", "sizes"]);
     expect(select?.events).toEqual({
@@ -43,7 +43,7 @@ describe("the Vue API mapping", () => {
   });
 
   it("maps slot data to scoped slot props, methods to exposed members, and parts to their own files", () => {
-    const file = apiFile(mapComponent(base, "specs/select.md"), "specs/select.md");
+    const file = apiFile(mapComponent(base, "specs/select.md", "fz"), "specs/select.md");
     expect(file.components.Select?.slots).toEqual({
       default: { required: true, props: {} },
       item: { required: false, props: { label: { type: "string" }, index: { type: "number" } } },
@@ -58,10 +58,10 @@ describe("the Vue API mapping", () => {
   });
 
   it("gives a part's parent a default slot for its parts", () => {
-    const tabs = apiFile(mapComponent(exampleSpec("tabs"), "specs/tabs.md"), "specs/tabs.md");
+    const tabs = apiFile(mapComponent(exampleSpec("tabs"), "specs/tabs.md", "fz"), "specs/tabs.md");
     expect(tabs.components.Tabs?.slots).toEqual({ default: { required: true, props: {} } });
     expect(tabs.components.TabsList?.slots).toEqual({ default: { required: false, props: {} } });
-    const dialog = apiFile(mapComponent(exampleSpec("dialog"), "specs/dialog.md"), "specs/dialog.md");
+    const dialog = apiFile(mapComponent(exampleSpec("dialog"), "specs/dialog.md", "fz"), "specs/dialog.md");
     expect(dialog.forward).toBe("DialogContent");
   });
 
@@ -77,7 +77,7 @@ describe("the Vue API mapping", () => {
         react: { map: { "props.open": { controlled: true } } },
       },
     };
-    const { components } = apiFile(mapComponent(spec, "specs/select.md"), "specs/select.md");
+    const { components } = apiFile(mapComponent(spec, "specs/select.md", "fz"), "specs/select.md");
     expect(Object.keys(components.Select?.props ?? {})).toEqual(["selected", "open", "name", "sizes"]);
     expect(Object.keys(components.Select?.events ?? {})).toEqual(["change", "update:selected", "update:open"]);
     expect(Object.keys(components.Select?.slots ?? {})).toEqual(["default", "item", "empty"]);
@@ -98,6 +98,36 @@ describe("the Vue API mapping", () => {
     const spec = { ...base, extensions: { vue } } as Spec;
     expect(() => mapComponent(spec, "specs/select.md")).toThrow(AdapterError);
     expect(() => mapComponent(spec, "specs/select.md")).toThrow(message);
+  });
+
+  it("names each component and part with the token prefix in PascalCase", () => {
+    const { components } = apiFile(mapComponent(base, "specs/select.md", "fz"), "specs/select.md");
+    expect(Object.entries(components).map(([key, api]) => [key, api.name])).toEqual([
+      ["Select", "FzSelect"],
+      ["SelectOption", "FzSelectOption"],
+    ]);
+    expect(pascalCasePrefix("fz")).toBe("Fz");
+    expect(pascalCasePrefix("my-ui")).toBe("MyUi");
+    expect(declaredName("my-ui", "TabsTrigger")).toBe("MyUiTabsTrigger");
+    expect(declaredName("", "TabsTrigger")).toBe("TabsTrigger");
+  });
+
+  it("names a multi-word component without a prefix by its Vue name", () => {
+    const spec: Spec = {
+      ...base,
+      name: "ComboBox",
+      parts: { Option: { parent: "ComboBox", count: "many", props: { value: { type: "string", required: true } } } },
+    };
+    const { components } = apiFile(mapComponent(spec, "specs/combo-box.md"), "specs/combo-box.md");
+    expect(Object.values(components).map((api) => api.name)).toEqual(["ComboBox", "ComboBoxOption"]);
+  });
+
+  it("refuses a one-word component without a prefix", () => {
+    const component = mapComponent(base, "specs/select.md");
+    expect(() => apiFile(component, "specs/select.md")).toThrow(AdapterError);
+    expect(() => apiFile(component, "specs/select.md")).toThrow(
+      "Select is one word, and fazon.yaml sets no tokens.prefix to put before it",
+    );
   });
 
   it("writes TypeScript types", () => {

@@ -14,6 +14,7 @@ import {
   type Spec,
   type TypeFields,
   type ValueType,
+  kebabCase,
 } from "@fazon/core";
 
 /** The adapter's ID: `extensions.vue` and `adapter: vue`. */
@@ -50,6 +51,11 @@ export interface VueExposed {
 export interface VueComponentApi {
   /** The file, in the component's directory. */
   readonly file: string;
+  /**
+   * The name the file declares with `defineOptions({ name })`: the token prefix in PascalCase, then
+   * its Vue name, such as `FzButton` or `FzTabsTrigger` (`declaredName`).
+   */
+  readonly name: string;
   readonly props: Readonly<Record<string, VueProp>>;
   readonly events: Readonly<Record<string, VueEvent>>;
   readonly slots: Readonly<Record<string, VueSlot>>;
@@ -138,18 +144,42 @@ export function vueComponentName(component: ComponentName, part?: ComponentName)
   return part === undefined ? component : `${component}${part}`;
 }
 
+/** The token prefix (`tokens.prefix`, lowercase kebab-case) in PascalCase: `fz` is `Fz`, `my-ui` is `MyUi`. */
+export function pascalCasePrefix(prefix: string): string {
+  return prefix
+    .split("-")
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join("");
+}
+
+/**
+ * The name a component or part declares with `defineOptions({ name })` (ADR 0022): the token
+ * prefix in PascalCase, then its Vue name. With the prefix `fz`, `Button` declares `FzButton` and
+ * `TabsTrigger` declares `FzTabsTrigger`; with no prefix, the Vue name itself.
+ */
+export function declaredName(prefix: string, vueName: string): string {
+  return `${pascalCasePrefix(prefix)}${vueName}`;
+}
+
+/** Whether a name has more than one word, as eslint-plugin-vue's `vue/multi-word-component-names` counts them. */
+export function isMultiWord(name: string): boolean {
+  return kebabCase(name).includes("-");
+}
+
 /**
  * Maps a spec's API to Vue, applying `extensions.vue`: `omit` drops members, `add` adds them, and
  * `map` renames them. A model prop becomes `modelValue` when it's named `value`, with its
- * `update:<prop>` event; slot `data` becomes the scoped slot's props; methods are exposed.
+ * `update:<prop>` event; slot `data` becomes the scoped slot's props; methods are exposed. Each
+ * single-file component declares its name with the token prefix (`declaredName`).
+ * @param prefix `tokens.prefix` from fazon.yaml; empty for none
  * @throws AdapterError when the block can't be applied
  */
-export function mapComponent(spec: Spec, specFile: string): VueComponent {
+export function mapComponent(spec: Spec, specFile: string, prefix = ""): VueComponent {
   const extension = spec.extensions?.[adapterId];
   const edits = readExtension(extension, spec, specFile);
-  const scopes: VueScope[] = [scope(spec, undefined, spec, edits, specFile)];
+  const scopes: VueScope[] = [scope(spec, undefined, spec, edits, specFile, prefix)];
   for (const [part, definition] of Object.entries(spec.parts ?? {})) {
-    scopes.push(scope(spec, part, definition, edits, specFile));
+    scopes.push(scope(spec, part, definition, edits, specFile, prefix));
   }
   for (const path of edits.keys()) {
     const [first, second] = path.split(".");
@@ -167,9 +197,24 @@ export function mapComponent(spec: Spec, specFile: string): VueComponent {
   };
 }
 
-/** The api.json document of a component. */
+/**
+ * The api.json document of a component.
+ * @throws AdapterError when a declared name would be one word, as a one-word component's is with no
+ *   token prefix: `vue/multi-word-component-names` fails it, and an HTML element could clash with it
+ */
 export function apiFile(component: VueComponent, specFile: string): VueApiFile {
   const { spec } = component;
+  for (const { api } of component.scopes) {
+    if (!isMultiWord(api.name)) {
+      throw new AdapterError(
+        `${api.name} is one word, and fazon.yaml sets no tokens.prefix to put before it in the name the component declares: eslint-plugin-vue's vue/multi-word-component-names fails a one-word name, and an HTML element could clash with it.`,
+        {
+          file: specFile,
+          hint: `Set tokens.prefix in fazon.yaml, such as fz: the component then declares defineOptions({ name: "Fz${api.name}" }) (ADR 0022).`,
+        },
+      );
+    }
+  }
   const root = component.scopes[0];
   const forwardScope =
     spec.forward === undefined || spec.forward === "root" ? root : component.byName.get(spec.forward);
@@ -279,6 +324,7 @@ function scope(
   api: Api,
   edits: Map<string, Edit>,
   specFile: string,
+  tokenPrefix: string,
 ): VueScope {
   const prefix = part === undefined ? "" : `parts.${part}.`;
   const members = <K extends Kind>(kind: K): Entry<KindMember[K]>[] => {
@@ -365,6 +411,7 @@ function scope(
     slotNames,
     api: {
       file,
+      name: declaredName(tokenPrefix, exportName),
       props: Object.fromEntries(
         props.map(({ name, prop }) => [
           name,

@@ -33,6 +33,8 @@ export type ReadExposed =
 /** One single-file component's actual API, in api.json's form (`VueComponentApi`). */
 export interface ReadComponentApi {
   readonly file: string;
+  /** The name it declares with `defineOptions({ name })`; absent when it declares none. */
+  readonly name?: string;
   readonly props: Readonly<Record<string, ReadProp>>;
   readonly events: Readonly<Record<string, { readonly payload?: ReadType }>>;
   readonly slots: Readonly<
@@ -108,7 +110,8 @@ export function createVueApiReader(options: VueApiReaderOptions): VueApiReader {
     for (const member of meta.exposed) {
       exposed[member.name] = readExposed(member.getTypeObject(), types);
     }
-    return { file: path.basename(absolute), props, events, slots, exposed };
+    const name = definedName(program.getSourceFile(absolute)) ?? meta.name;
+    return { file: path.basename(absolute), ...(name === undefined ? {} : { name }), props, events, slots, exposed };
   };
 
   return {
@@ -128,6 +131,31 @@ export function createVueApiReader(options: VueApiReaderOptions): VueApiReader {
       return result;
     },
   };
+}
+
+/**
+ * The name `defineOptions({ name })` declares in `<script setup>`, which vue-component-meta doesn't
+ * read: from the component's code in the checker's program, where the macro is a top-level call.
+ * A name that isn't a string literal is its source text. Undefined when there's no such call.
+ */
+function definedName(source: ts.SourceFile | undefined): string | undefined {
+  for (const statement of source?.statements ?? []) {
+    if (!ts.isExpressionStatement(statement)) continue;
+    const call = statement.expression;
+    if (!ts.isCallExpression(call) || !ts.isIdentifier(call.expression) || call.expression.text !== "defineOptions") {
+      continue;
+    }
+    const [options] = call.arguments;
+    if (options === undefined || !ts.isObjectLiteralExpression(options)) continue;
+    for (const property of options.properties) {
+      if (!ts.isPropertyAssignment(property)) continue;
+      const key = property.name;
+      if (!(ts.isIdentifier(key) || ts.isStringLiteral(key)) || key.text !== "name") continue;
+      const value = property.initializer;
+      return ts.isStringLiteralLike(value) ? value.text : value.getText(source);
+    }
+  }
+  return undefined;
 }
 
 /** The type with `undefined`, `null` and `void` taken out: an optional prop's or parameter's own type. */
@@ -309,6 +337,13 @@ export function apiDifferences(
       continue;
     }
     const say = (text: string) => differences.push(`${name}: ${text}`);
+    if (found.name === undefined) {
+      say(
+        `the component declares no name; the approved API says ${show(expected.name)}, as defineOptions({ name: ${show(expected.name)} }).`,
+      );
+    } else if (found.name !== expected.name) {
+      say(`the component's name is ${show(found.name)}; the approved API says ${show(expected.name)}.`);
+    }
     const compareTypes = (what: string, want: ReadType, got: ReadType) => {
       if (!sameType(want, got)) say(`${what} has the type ${typeText(got)}; the approved API says ${typeText(want)}.`);
     };

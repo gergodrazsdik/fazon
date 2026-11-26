@@ -17,7 +17,8 @@ export const apiFileName = "api.json";
  * defaults; JSON is written as `JSON.stringify` writes it with two spaces, as the manifest is.
  */
 export async function generateFiles(input: GenerateInput): Promise<GeneratedFile[]> {
-  const component = mapComponent(input.spec, input.specFile);
+  const component = mapComponent(input.spec, input.specFile, input.prefix);
+  const api = apiFile(component, input.specFile);
   const stories = storyFileName(input.spec);
   const contract = template("contract.test.ts.tmpl").fill("file", {
     spec: input.specFile,
@@ -33,7 +34,7 @@ export async function generateFiles(input: GenerateInput): Promise<GeneratedFile
     },
     {
       name: apiFileName,
-      content: `${JSON.stringify(apiFile(component, input.specFile), null, 2)}\n`,
+      content: `${JSON.stringify(api, null, 2)}\n`,
       importsComponent: false,
     },
   ];

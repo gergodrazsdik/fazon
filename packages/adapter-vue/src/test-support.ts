@@ -19,7 +19,7 @@ export function exampleSpec(name: string): Spec {
   return file.spec;
 }
 
-/** The generator's input for an example spec, with the default config and the example library's themes. */
+/** The generator's input for an example spec, with the example library's token prefix `fz` and themes. */
 export function exampleInput(name: string, overrides: Partial<GenerateInput> = {}): GenerateInput {
   const spec = exampleSpec(name);
   const specFile = `specs/${name}.md`;
@@ -30,7 +30,8 @@ export function exampleInput(name: string, overrides: Partial<GenerateInput> = {
     manifest: buildManifest(spec, { file: specFile, themes: ["light", "dark"] }),
     directory: `src/components/${name}`,
     icons: "lucide",
-    baseStyles: baseStyles(),
+    baseStyles: baseStyles("fz"),
+    prefix: "fz",
     ...overrides,
   };
 }

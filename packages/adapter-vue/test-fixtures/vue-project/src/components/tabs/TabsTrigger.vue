@@ -1,5 +1,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <script setup lang="ts">
+defineOptions({ name: "FzTabsTrigger" });
 withDefaults(defineProps<{ value: string; disabled?: boolean; asChild?: boolean }>(), {
   disabled: false,
   asChild: false,

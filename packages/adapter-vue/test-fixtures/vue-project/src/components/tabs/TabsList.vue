@@ -1,5 +1,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <script setup lang="ts">
+defineOptions({ name: "FzTabsList" });
 defineProps<{ label: string }>();
 defineSlots<{ default?(): unknown }>();
 </script>
