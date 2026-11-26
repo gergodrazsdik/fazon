@@ -65,7 +65,7 @@ describe("the Playwright check", () => {
 });
 
 describe("the working copy", () => {
-  it("copies the repository without node_modules, .git, .fazon or what's skipped, and links its dependencies", async () => {
+  it("copies the repository without node_modules, .git, .fazon or what's skipped, and links its dependencies but not their caches", async () => {
     await write("repo/src/a.ts", "a");
     await write("repo/.git/HEAD", "ref");
     await write("repo/.fazon/runs/x/run.json", "{}");
@@ -73,6 +73,12 @@ describe("the working copy", () => {
     await write("repo/baselines/light/a.png", "png");
     await write("repo/node_modules/vite/package.json", "{}");
     await write("repo/node_modules/@scope/tool/package.json", "{}");
+    await write("repo/node_modules/.bin/vite", "#!/bin/sh");
+    await write("repo/node_modules/.pnpm/vite@1.0.0/node_modules/vite/package.json", "{}");
+    await write("repo/node_modules/.modules.yaml", "layoutVersion: 5");
+    for (const cache of [".vite", ".vite-temp", ".cache", ".vitest-cache"]) {
+      await write(`repo/node_modules/${cache}/x`, "cache");
+    }
     const work = path.join(root, "work");
     await makeWorkingCopy(path.join(root, "repo"), work, ["baselines"]);
     expect(await readFile(path.join(work, "src/a.ts"), "utf8")).toBe("a");
@@ -84,6 +90,15 @@ describe("the working copy", () => {
     expect(await readlink(path.join(work, "node_modules/@scope/tool"))).toBe(
       path.join(root, "repo/node_modules/@scope/tool"),
     );
+    for (const linked of [".bin", ".pnpm", ".modules.yaml"]) {
+      expect(await readlink(path.join(work, "node_modules", linked))).toBe(
+        path.join(root, "repo/node_modules", linked),
+      );
+    }
+    // The host's tool caches would point into the read-only mount; the tools make their own.
+    for (const cache of [".vite", ".vite-temp", ".cache", ".vitest-cache"]) {
+      await expect(lstat(path.join(work, "node_modules", cache))).rejects.toThrow();
+    }
   });
 });
 

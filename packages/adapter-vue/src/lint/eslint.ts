@@ -88,7 +88,7 @@ function vueLayoutRulesOff(): Linter.RulesRecord {
  */
 export function fazonVueEslint(): Linter.Config[] {
   return defineConfig(
-    { name: "fazon/ignores", ignores: ["**/dist/", "**/storybook-static/", "**/coverage/"] },
+    { name: "fazon/ignores", ignores: ["**/dist/", "**/storybook-static/", "**/coverage/", "**/.fazon/"] },
     js.configs.recommended,
     tseslint.configs.recommended,
     vue.configs["flat/recommended"],

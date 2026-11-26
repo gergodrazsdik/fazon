@@ -159,6 +159,16 @@ ${script}</script>
   });
 });
 
+describe("what ESLint ignores", () => {
+  it("skips build output and the run records under .fazon/, whose Storybook builds aren't source", async () => {
+    const lint = eslint();
+    for (const ignored of ["dist/a.js", "storybook-static/a.js", "coverage/a.js", ".fazon/runs/x/storybook/a.js"]) {
+      expect(await lint.isPathIgnored(ignored), ignored).toBe(true);
+    }
+    expect(await lint.isPathIgnored("src/a.ts")).toBe(false);
+  });
+});
+
 describe("the lint configuration files fazon init writes", () => {
   it("call the factories the package's lint subpath exports, without a licence header", async () => {
     const files = lintConfigFiles();
