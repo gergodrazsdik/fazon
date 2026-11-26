@@ -99,7 +99,6 @@ async function changesSince(
   record: RunRecord,
   provenance: Provenance,
   details: VerifyDetails | undefined,
-  checkFiles: boolean,
 ): Promise<{ errors: Message[]; warnings: Message[] }> {
   const { repo, config, component, spec } = setup;
   const then = record.inputs ?? {};
@@ -138,9 +137,10 @@ async function changesSince(
       hint: generate,
     });
   }
-  // The checks' hash covers the spec, the component's directory and the token set: with the spec
-  // and the token set unchanged, a different hash means the component's files changed.
-  if (checkFiles && errors.length === 0) {
+  // The checks' hash covers the spec, the component's directory but its provenance file, and the
+  // token set: with the spec and the token set unchanged, a different hash means the component's
+  // files changed. Accepting writes only the provenance file, so a run accepted already compares too.
+  if (errors.length === 0) {
     const last = record.iterations.at(-1);
     const checked = details?.components.find((c) => c.name === component)?.inputs;
     if (last === undefined || checked === undefined) {
@@ -244,10 +244,8 @@ export async function accept(
     last === undefined
       ? undefined
       : await readVerifyDetails(path.join(runDirectory(repo, record.id), checksPhaseFiles(last.n).directory));
-  // Accepting writes the provenance file, which is in the component's directory, so a run
-  // accepted already can't be compared with its checks again; the provenance names it.
   const already = read.provenance.generation?.runs.at(-1)?.id === record.id;
-  const { errors, warnings } = await changesSince(setup, record, read.provenance, details, !already);
+  const { errors, warnings } = await changesSince(setup, record, read.provenance, details);
   if (errors.length > 0) return { status: "refused", messages: errors };
 
   let provenance: Provenance;

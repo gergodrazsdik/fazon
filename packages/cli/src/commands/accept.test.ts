@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   componentInputsHash,
+  encodePng,
   hashApi,
   hashText,
   parseSpecFile,
@@ -25,6 +26,7 @@ import {
   captureJson,
   copyExample,
   fakeEnvironment,
+  image,
   minimalConfig,
   removeRepository,
   repository,
@@ -229,6 +231,36 @@ describe("fazon accept", () => {
     expect(await read(provenanceFile)).toBe(first);
     expect(json.result).toMatchObject({ run: generateId, alreadyAccepted: true });
     expect(messagesOf(json)[0]?.text).toMatch(new RegExp(`^Button's run ${generateId} was accepted already, on `));
+  });
+
+  it("compares a run accepted already with its checks too: the provenance file isn't in their hash", async () => {
+    await writeRun(generateId);
+    expect((await captureJson(["accept", "button"], machine)).code).toBe(0);
+    expect((await captureJson(["approve", "button"], machine)).code).toBe(0);
+    expect((await captureJson(["accept", "button"], machine)).json.result).toMatchObject({ alreadyAccepted: true });
+    await write("src/components/button/Button.vue", "<template><button /></template>\n");
+    const { code, json } = await captureJson(["accept", "button"], machine);
+    expect(code).toBe(2);
+    expect(messagesOf(json)[0]?.text).toContain(`Files in src/components/button/ changed since the run ${generateId}`);
+  });
+
+  it("is followed by baseline update, which writes the accepted run's captures", async () => {
+    const record = await writeRun(generateId, { versions: { ...example.versions, image } });
+    const captures = path.join(runDirectory(root, generateId), record.iterations.at(-1)?.verification?.captures ?? "");
+    for (const story of newStories.filter((s) => s.component === "button")) {
+      await mkdir(path.dirname(path.join(captures, story.path)), { recursive: true });
+      await writeFile(path.join(captures, story.path), encodePng({ width: 1, height: 1, data: new Uint8Array(4) }));
+    }
+    await write("node_modules/lucide-static/package.json", '{ "name": "lucide-static", "version": "1.2.3" }\n');
+    await write("node_modules/lucide-static/LICENSE", "ISC License\n");
+    expect((await captureJson(["accept", "button"], machine)).code).toBe(0);
+    const { code, json } = await captureJson(["baseline", "update", "button"], machine);
+    expect(code).toBe(0);
+    expect(json.result).toMatchObject({
+      image,
+      runs: [{ component: "button", run: generateId, iteration: 3 }],
+      written: ["light/button/a.png", "light/button/b.png", "light/button/c.png"],
+    });
   });
 
   it("refuses (2) a run that needs a person or was interrupted, and writes nothing", async () => {
