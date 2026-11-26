@@ -2,9 +2,11 @@
 // `@fazon/adapter-vue/storybook/preview`: the browser half of the Storybook setup, for a consumer's
 // .storybook/preview.ts. The token set's themes are the `theme` global, which the verifier sets;
 // a decorator puts it on the document's root element as `data-theme` (docs/spec/tokens.md#the-build,
-// docs/spec/story-matrix.md#rendering). The story files' own decorator renders the frame.
+// docs/spec/story-matrix.md#rendering). The story files' own decorator renders the frame. The
+// preview passes the themes from `.storybook/generated/themes.ts`, which `fazon sync` writes.
 import type { Decorator, Preview } from "@storybook/vue3-vite";
 
+/** The themes and default theme: in a consumer's preview, the exports of `.storybook/generated/themes.ts`. */
 export interface FazonPreviewOptions {
   /** The token set's themes, the default first: the `theme` modifier's contexts. */
   readonly themes: readonly string[];

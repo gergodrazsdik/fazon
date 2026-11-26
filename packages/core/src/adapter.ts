@@ -73,6 +73,21 @@ export interface EntryInput {
   readonly components: readonly EntryComponent[];
 }
 
+/** What the generated themes module works from: the token set's theme modifier. */
+export interface ThemesInput {
+  /** The themes, the default first, then the others in the order of the theme modifier's contexts. */
+  readonly themes: readonly string[];
+  /** The theme modifier's `default`. */
+  readonly defaultTheme: string;
+}
+
+/** A file the adapter writes outside the components' directories. */
+export interface SetupFile {
+  /** Relative to the repository root, with `/` separators, such as `.storybook/generated/themes.ts`. */
+  readonly path: string;
+  readonly content: string;
+}
+
 /** A JSON Schema fragment, as plain data. */
 export type JsonSchema = Readonly<Record<string, unknown>>;
 
@@ -109,6 +124,12 @@ export interface Adapter {
    * @throws AdapterError when the entry file's generated block can't be found unambiguously
    */
   entryFile(input: EntryInput): Promise<string>;
+  /**
+   * **Storybook setup:** the generated module the Storybook preview imports the token set's themes
+   * and default theme from, so a theme added to the token set reaches the theme switch. The same
+   * input always gives the same file, byte for byte.
+   */
+  themesFile(input: ThemesInput): Promise<SetupFile>;
 }
 
 /** The adapter can't write a file from its input: a person has to change the spec or a file. */

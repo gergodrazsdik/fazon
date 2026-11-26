@@ -16,6 +16,8 @@ const rootFiles = {
   tabs: "src/components/tabs/Tabs.vue",
 } as const;
 const sfc = "<template><div /></template>\n";
+/** The themes module the Vue adapter writes for the Storybook preview. */
+const themesModule = ".storybook/generated/themes.ts";
 
 /**
  * A repository with the minimal config, the three example specs, the example library's token set,
@@ -67,6 +69,9 @@ describe("fazon sync", () => {
     }
     const expected = (await filesUnder(path.join(golden, "src"))).map((file) => file.replace(/\.golden$/, ""));
     expect(written).toEqual(expected);
+    // The themes module the Storybook preview imports.
+    expect(await filesUnder(path.join(root, ".storybook"))).toEqual(["generated/themes.ts"]);
+    expect(await read(themesModule)).toBe(await readFile(path.join(golden, `${themesModule}.golden`), "utf8"));
     const result = json.result as {
       check: boolean;
       files: Change[];
@@ -75,7 +80,10 @@ describe("fazon sync", () => {
       pending: string[];
     };
     expect(result.check).toBe(false);
-    expect(result.files).toEqual(written.map((file) => ({ path: `src/${file}`, change: "added" })));
+    expect(result.files).toEqual([
+      { path: themesModule, change: "added" },
+      ...written.map((file) => ({ path: `src/${file}`, change: "added" })),
+    ]);
     expect(result.unchanged).toBe(0);
     expect(result.components).toEqual(["button", "dialog", "tabs"]);
     expect(result.pending).toEqual([]);
@@ -97,14 +105,14 @@ describe("fazon sync", () => {
     expect(again.code).toBe(0);
     expect((again.json.result as { files: Change[] }).files).toEqual([]);
     expect(again.json.messages).toContainEqual(
-      expect.objectContaining({ text: expect.stringMatching(/^Everything is up to date: 14 files\.$/) as string }),
+      expect.objectContaining({ text: expect.stringMatching(/^Everything is up to date: 15 files\.$/) as string }),
     );
     const after = await stat(path.join(root, "src/components/button/generated/Button.stories.ts"));
     expect(after.mtimeMs).toBe(before.mtimeMs);
 
     const check = await captureJson(["sync", "--check"], machine());
     expect(check.code).toBe(0);
-    expect(check.json.result).toMatchObject({ check: true, files: [], unchanged: 14 });
+    expect(check.json.result).toMatchObject({ check: true, files: [], unchanged: 15 });
   });
 
   it("fails --check on an edited, a missing or an extra generated file, and writes nothing", async () => {
@@ -139,6 +147,37 @@ describe("fazon sync", () => {
     await expect(stat(path.join(root, "src/components/tabs/generated/Old.stories.ts"))).rejects.toThrow();
     expect(await read("src/components/tabs/generated/provenance.json")).toBe("{}\n");
     expect((await captureJson(["sync", "--check"], machine())).code).toBe(0);
+  });
+
+  it("writes the token set's themes into the themes module, which --check holds to the token set", async () => {
+    await captureJson(["sync"], machine());
+    expect(await read(themesModule)).toContain('export const themes = ["light", "dark"] as const;\n');
+
+    // A theme added to the token set, and a new default: the module is out of date until the next sync.
+    await cp(path.join(root, "tokens/themes/dark.json"), path.join(root, "tokens/themes/contrast.json"));
+    const resolverFile = path.join(root, "tokens/tokens.resolver.json");
+    const resolver = JSON.parse(await readFile(resolverFile, "utf8")) as {
+      modifiers: { theme: { contexts: Record<string, unknown>; default: string } };
+    };
+    resolver.modifiers.theme.contexts.contrast = [{ $ref: "themes/contrast.json" }];
+    resolver.modifiers.theme.default = "dark";
+    await writeFile(resolverFile, `${JSON.stringify(resolver, null, 2)}\n`);
+
+    const check = await captureJson(["sync", "--check"], machine());
+    expect(check.code).toBe(1);
+    expect((check.json.result as { files: Change[] }).files).toContainEqual({ path: themesModule, change: "modified" });
+
+    await captureJson(["sync"], machine());
+    const generated = await read(themesModule);
+    expect(generated).toContain('export const themes = ["dark", "light", "contrast"] as const;\n');
+    expect(generated).toContain('export const defaultTheme = "dark";\n');
+    expect((await captureJson(["sync", "--check"], machine())).code).toBe(0);
+
+    // A hand edit is a difference like any other generated file's.
+    await writeFile(path.join(root, themesModule), generated.replace('"contrast"', '"sepia"'));
+    const edited = await captureJson(["sync", "--check"], machine());
+    expect(edited.code).toBe(1);
+    expect((edited.json.result as { files: Change[] }).files).toEqual([{ path: themesModule, change: "modified" }]);
   });
 
   it("removes the generated directory of a component whose spec is gone, and reports it under --check", async () => {

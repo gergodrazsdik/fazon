@@ -165,6 +165,28 @@ describe("the contract tests in Vitest's browser mode", () => {
   });
 });
 
+describe("the themes module", () => {
+  it("is what the preview takes the themes and the default theme from", async () => {
+    const themes = path.join(project, ".storybook/generated/themes.ts");
+    const original = await readFile(themes, "utf8");
+    const test = path.join(project, "src/components/button/theme.test.ts");
+    await writeFile(
+      themes,
+      original
+        .replace('["light", "dark"]', '["dark", "light"]')
+        .replace('defaultTheme = "light"', 'defaultTheme = "dark"'),
+    );
+    await writeFile(test, conditionsTest.replace('toBe("light")', 'toBe("dark")'));
+    try {
+      const results = await vitest("src/components/button/theme.test.ts");
+      expect(results.get("renders a story in the verifier's conditions")?.status).toBe("passed");
+    } finally {
+      await writeFile(themes, original);
+      await rm(test);
+    }
+  });
+});
+
 describe("the Storybook setup", () => {
   it("builds the generated stories, with the icon set's license notice", async () => {
     const output = path.join(project, "storybook-static");

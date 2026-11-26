@@ -92,8 +92,9 @@ interface Plan {
 }
 
 /**
- * Regenerates the token CSS, every component's `generated/` directory and the entry file's exports
- * from the specs and the token set, or, with `check`, only compares them. Files whose content is
+ * Regenerates the token CSS, the themes module the Storybook preview imports (the adapter's
+ * `themesFile`), every component's `generated/` directory and the entry file's exports from the
+ * specs and the token set, or, with `check`, only compares them. Files whose content is
  * already right aren't rewritten; each file is replaced atomically. Generated files no spec gives
  * any more are removed: a component directory without a spec loses its `generated/` directory, and
  * a component's `generated/` directory loses files the adapter no longer writes, except its
@@ -175,6 +176,25 @@ async function plan(root: string, config: Config, adapter: Adapter): Promise<Pla
 
   const files = new Map<string, string>();
   files.set(normalise(config.paths.tokensCss), tokens.css);
+
+  // The themes module, for the Storybook preview: the default theme first, as the token CSS has them.
+  const { themes, defaultTheme } = tokens.tokenSet;
+  const themesFile = await adapter.themesFile({
+    themes: [defaultTheme, ...themes.filter((theme) => theme !== defaultTheme)],
+    defaultTheme,
+  });
+  const themesPath = normalise(themesFile.path);
+  if (
+    themesFile.path !== themesPath ||
+    path.posix.isAbsolute(themesPath) ||
+    themesPath.split("/").some((segment) => segment === ".." || segment === ".") ||
+    files.has(themesPath) ||
+    themesPath === normalise(config.paths.entry) ||
+    themesPath.startsWith(`${normalise(config.paths.components)}/`)
+  ) {
+    throw new Error(`The ${adapter.id} adapter may not write its themes module at '${themesFile.path}'.`);
+  }
+  files.set(themesPath, themesFile.content);
 
   const components = config.paths.components;
   const styles = baseStyles(config.tokens.prefix ?? "");
