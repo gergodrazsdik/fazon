@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `fazon verify` runs the source checks (build, lint, test, package) and the rendered checks (a11y, tokens, layout, visual) in the pinned verifier image, with a run record, exemptions, renamed baselines and `--base` marks; `fazon baseline update` writes baselines, `fazon.json` and `NOTICE.md` from a qualifying run; `just test-verify` runs them end to end.
 - A paragraph content node for spec fixtures, `{ p: "text" }`, which renders as a `<p>`; plain strings stay inline text.
 - `fazon sync` writes the token set's themes into `.storybook/generated/themes.ts`, which the Storybook preview imports, so a new theme reaches the theme switch and `sync --check` catches drift.
 - Fazon's lint rules: a Stylelint plugin (`@fazon/core/stylelint`) for `raw-value`, `raw-token` and `unknown-token`, the `inline-suppression` rule for ESLint, Stylelint and TypeScript directives, the Vue adapter's ESLint and Stylelint configuration (`@fazon/adapter-vue/lint`), and lint output as findings.

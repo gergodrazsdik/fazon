@@ -9,7 +9,7 @@ Additions for Claude Code only; everything shared is in AGENTS.md (imported abov
   - pushing: `git push`;
   - GitHub: `gh` (pull requests with `gh pr create --body-file <file>`, `gh pr edit --body-file <file>`), and `just github-settings` / `just github-settings-check`;
   - installing dependencies: `pnpm install` (or `just install`). pnpm 12's store lock fails with "Read-only file system" inside the sandbox, wherever the store points;
-  - containers: `podman` and `docker`, for example `just test-rendered`.
+  - containers: `podman` and `docker`, for example `just test-rendered` and `just test-verify`.
 
   A call only runs outside when the whole command matches: no `cd … &&`, pipes, heredocs, `$(...)` or redirections around it. Project settings can't add sandbox exclusions; they live in each user's own settings.
 - **Start sessions with `just claude`** (extra arguments are passed through). When `fazon-vue-example` is cloned next to this repo, it adds that directory (`--add-dir ../fazon-vue-example`) and loads its CLAUDE.md, so work across both repos needs no sandbox exceptions for file edits there.

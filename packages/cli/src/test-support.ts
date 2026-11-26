@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { validateWithSchema } from "@fazon/core";
-import type { Environment } from "./environment.js";
+import type { Environment, ExecOptions, ExecResult } from "./environment.js";
 import { run } from "./run.js";
 
 export const image = "ghcr.io/gergodrazsdik/fazon-verifier@sha256:" + "4f1c2a9e".repeat(8);
@@ -18,14 +18,29 @@ export interface FakeMachine {
   readonly nodeVersion?: string;
   /** Installed programs, with what `<program> --version` prints. */
   readonly programs?: Readonly<Record<string, string>>;
+  /** Runs a program other than with `--version`; `undefined` leaves it to the default (exit 1). */
+  readonly handle?: (
+    program: string,
+    args: readonly string[],
+    options: ExecOptions | undefined,
+  ) => Promise<ExecResult | undefined> | undefined;
 }
 
-export function fakeEnvironment({ cwd, env = {}, nodeVersion = "26.13.1", programs = {} }: FakeMachine): Environment {
+export function fakeEnvironment({
+  cwd,
+  env = {},
+  nodeVersion = "26.13.1",
+  programs = {},
+  handle,
+}: FakeMachine): Environment {
   return {
     cwd,
     env,
     nodeVersion,
-    exec: (program, args) => {
+    user: { uid: 1000, gid: 1000 },
+    exec: (program, args, options) => {
+      const handled = handle?.(program, args, options);
+      if (handled !== undefined) return handled;
       const output = programs[program];
       if (output === undefined) return Promise.resolve(undefined);
       return Promise.resolve(

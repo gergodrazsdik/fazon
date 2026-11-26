@@ -28,6 +28,14 @@ Every run's files live under `.fazon/` in the repository where Fazon runs. Git i
       captures/1/           captures and diff images of each iteration, by theme
       judge/3.json          each iteration's judge plan and results
       report/index.html     the report built from this run
+    20261125T171502Z-verify-a41c/
+      run.json              the run record
+      verify.json           what the record has no field for, such as each story's visual status, per-component check statuses and the --base changes
+      captures/             captures and diff images, by theme and component, such as dark/button/<story>.png
+      logs/                 each tool's output, by step, such as build-types.log
+      reports/              the lint and test tools' JSON reports
+      storybook/            the static Storybook build the rendered checks load
+      package/              the packed library tarball
 ```
 
 A run's ID is its start time in UTC, the component's kebab-case name (or `verify`), and four random hex digits: `20261125T164012Z-button-3f9a`. IDs sort by start time.
@@ -41,10 +49,10 @@ Transcripts are local only. CI never uploads them, and published measurement rec
 | Field | Content |
 |---|---|
 | `id`, `kind`, `parent`, `component` | The run, its kind (propose, generate, feedback, verify), the run a feedback run answers, and the component. |
-| `status`, `reason` | `running`, `passed`, `needs-a-person` with its reason, or `stopped`. |
+| `status`, `reason` | `running`, `passed`, `failed`, `needs-a-person` with its reason, or `stopped`. Only a verify run ends `failed`: it has a blocking finding, or, with the reason `check-error`, a check ended in error or the image couldn't run the checks. Only an agent run ends `needs-a-person`. |
 | `started`, `ended` | UTC timestamps. |
 | `measurement` | The round and repeat of a measured run. |
-| `versions` | The framework, adapter and Claude Code versions, the verifier image by digest, and the judge version. |
+| `versions` | The framework, adapter and Claude Code versions, the verifier image by digest, and the judge version. Claude Code's version is absent when the run made no agent call (a verify run), and the judge version when the run used no judge. |
 | `inputs` | Hashes of the spec, the approved API, the token set, the conventions doc and the config at the start. |
 | `config` | The caps, models, escalation threshold, judge policy and whether the judge was calibrated. |
 | `iterations` | Each iteration: its agent call (model, effort, tokens, cost, duration, how it ended, transcript, files changed), any permission violations, its checks with their findings, the judge's summary, and its outcome. |

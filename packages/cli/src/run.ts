@@ -46,7 +46,7 @@ export async function run(
     verbose: leading.includes("--verbose"),
     color: io.colors === true && !leading.includes("--no-color") && !isSet(environment, "NO_COLOR"),
   };
-  const context: Context = { environment, global };
+  const context: Context = { environment, global, stderr: io.stderr };
 
   let command = cliName;
   let outcome: Outcome;

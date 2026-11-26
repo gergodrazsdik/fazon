@@ -52,8 +52,8 @@ async function verifyRun(
 ): Promise<void> {
   const dir = runDirectory(root, id);
   await writeRunRecord(dir, {
-    ...runningRecord(id, { status: "needs-a-person", ended: "2026-11-26T10:05:00Z" }),
-    versions: { framework: "0.0.0", claudeCode: "none", image: options.image ?? image, judge: 1 },
+    ...runningRecord(id, { status: "failed", ended: "2026-11-26T10:05:00Z" }),
+    versions: { framework: "0.0.0", image: options.image ?? image },
   });
   const stories = (button.manifest?.stories ?? []).flatMap((story) =>
     ["light", "dark"].map((theme) => ({

@@ -60,7 +60,7 @@ export function runningRecord(id: string, overrides: Partial<RunRecord> = {}): R
     kind: "verify",
     status: "running",
     started: "2026-11-26T10:00:00Z",
-    versions: { framework: "0.0.0", adapter: "0.0.0", claudeCode: "none", image, judge: 1 },
+    versions: { framework: "0.0.0", adapter: "0.0.0", image },
     config: {
       caps: { iterations: 5, budgetUsd: 10, runMinutes: 90, callMinutes: 20 },
       models: { generator: "claude-sonnet-5-5", escalation: "claude-opus-5-5", judge: "claude-sonnet-5-5" },

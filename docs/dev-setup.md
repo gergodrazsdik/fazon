@@ -52,6 +52,8 @@ just check    # the checks CI runs: linters, ESLint, Prettier, build, tests
 
 `just test-rendered` runs the rendered checks' fixtures in the verifier image, with its Chromium and fonts. It builds `localhost/fazon-verifier:dev` from `verifier/` when that image doesn't exist; `just test-rendered <image>` uses another, such as the image published from `main`, by digest. The container mounts the checkout read-only with its installed dependencies, so run `just install` first, on linux/amd64. Set `CONTAINER_CLI=podman` when `docker` isn't available.
 
+`just test-verify` runs `fazon verify` and `fazon baseline update` end to end: it builds the packages, writes a component library with the example Button under `.fazon/e2e/`, verifies it in the verifier image, writes its baselines, verifies it again, and then seeds one defect per check. `fazon.yaml` pins an image by digest, so the image needs one: Podman gives an image it builds a digest (`CONTAINER_CLI=podman just test-verify` builds `localhost/fazon-verifier:dev` when it's missing); with Docker, pass an image pulled by digest, `just test-verify ghcr.io/gergodrazsdik/fazon-verifier@sha256:<digest>`. The `verify-e2e` workflow runs it in CI. `FAZON_E2E_KEEP=1` keeps the project and its runs for a look.
+
 The Vue adapter's browser integration tests run the generated contract tests in Vitest's browser mode and build a Storybook, so they need Chromium and stay out of `just check`:
 
 ```sh

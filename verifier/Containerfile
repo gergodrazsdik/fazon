@@ -42,9 +42,9 @@ RUN fc-cache --force
 # Renders don't depend on the host's time zone.
 ENV TZ=UTC
 
-# The Fazon packages go here, in a later M1 step (T-0046): the CLI and the verifier, built from
-# the same commit as this image, installed with their pinned dependencies (playwright-core 1.65.1)
-# and owned by root. Until then the image holds no Fazon code.
+# The image holds no Fazon code: `fazon verify` mounts the consumer's repository read-only and
+# runs the CLI the repository installs, with the repository's own dependencies, inside this image
+# (verifier/README.md). Their Playwright must need the Chromium build this image carries.
 
 # The version label overrides the base image's (Playwright's version); images are pre-releases
 # until M5.

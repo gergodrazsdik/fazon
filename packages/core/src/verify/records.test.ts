@@ -6,7 +6,15 @@ import { afterEach, describe, expect, it } from "vitest";
 import { decodePng, encodePng } from "../checks/visual.js";
 import { compareWithBase, componentCheckStatuses, gitBlobId, ociPlatform, optimizePng } from "./details.js";
 import { finishRecord } from "./in-image.js";
-import { listRunIds, newRunId, readRunRecord, runDirectory, writeRunRecord, type CheckResult } from "./run-record.js";
+import {
+  listRunIds,
+  newRunId,
+  readRunRecord,
+  runDirectory,
+  runRecordProblems,
+  writeRunRecord,
+  type CheckResult,
+} from "./run-record.js";
 import { exampleButton, png, runningRecord } from "./test-support.js";
 
 let root: string | undefined;
@@ -32,13 +40,35 @@ describe("run records", () => {
     await writeRunRecord(dir, runningRecord(id));
     expect(await readRunRecord(dir)).toEqual(runningRecord(id));
     expect(await readdir(dir)).toEqual(["run.json"]);
-    await expect(writeRunRecord(dir, runningRecord(id, { status: "failed" as "passed" }))).rejects.toThrow(
-      /isn't valid/,
-    );
+    await expect(writeRunRecord(dir, runningRecord(id, { status: "needs-a-person" }))).rejects.toThrow(/isn't valid/);
     expect(JSON.parse(await readFile(path.join(dir, "run.json"), "utf8"))).toMatchObject({ status: "running" });
   });
 
-  it("end as passed, or as needing a person with check-error when a check couldn't run", () => {
+  it("fit each kind of run: failed only for a verify run, Claude Code's version only where an agent ran", () => {
+    const verify = runningRecord("20261126T100000Z-verify-abcd");
+    expect(verify.versions).not.toHaveProperty("claudeCode");
+    expect(verify.versions).not.toHaveProperty("judge");
+    expect(runRecordProblems(verify)).toEqual([]);
+    expect(runRecordProblems({ ...verify, status: "failed" })).toEqual([]);
+    expect(runRecordProblems({ ...verify, status: "failed", reason: "check-error" })).toEqual([]);
+    expect(runRecordProblems({ ...verify, status: "failed", reason: "budget" })).not.toEqual([]);
+    expect(runRecordProblems({ ...verify, status: "needs-a-person", reason: "check-error" })).not.toEqual([]);
+    expect(runRecordProblems({ ...verify, status: "passed", reason: "check-error" })).not.toEqual([]);
+
+    const generate = {
+      ...verify,
+      id: "20261126T100000Z-button-abcd",
+      kind: "generate",
+      component: "Button",
+      versions: { ...verify.versions, claudeCode: "2.1.332" },
+    };
+    expect(runRecordProblems(generate)).toEqual([]);
+    expect(runRecordProblems({ ...generate, status: "needs-a-person", reason: "budget" })).toEqual([]);
+    expect(runRecordProblems({ ...generate, status: "failed" })).not.toEqual([]);
+    expect(runRecordProblems({ ...generate, versions: verify.versions })).not.toEqual([]);
+  });
+
+  it("end as passed, or as failed, with check-error when a check couldn't run", () => {
     const record = runningRecord("20261126T100000Z-verify-abcd");
     const pass: CheckResult = { check: "build", status: "pass", durationSeconds: 1, findings: [] };
     const fail: CheckResult = {
@@ -55,11 +85,14 @@ describe("run records", () => {
       totals: { durationSeconds: 60 },
     });
     expect(finishRecord(record, [pass, fail], ended)).not.toHaveProperty("reason");
-    expect(finishRecord(record, [pass, fail], ended).status).toBe("needs-a-person");
+    expect(finishRecord(record, [pass, fail], ended).status).toBe("failed");
     expect(finishRecord(record, [{ ...pass, status: "error" }], ended)).toMatchObject({
-      status: "needs-a-person",
+      status: "failed",
       reason: "check-error",
     });
+    for (const checks of [[pass], [pass, fail], [{ ...pass, status: "error" as const }]]) {
+      expect(runRecordProblems(finishRecord(record, checks, ended))).toEqual([]);
+    }
   });
 });
 

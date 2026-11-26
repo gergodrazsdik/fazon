@@ -6,6 +6,26 @@
   "type": "object",
   "required": ["fazon", "id", "kind", "status", "started", "versions", "config", "iterations", "handEdits", "totals"],
   "additionalProperties": false,
+  "allOf": [
+    {
+      "description": "A verify run ends as passed, failed or stopped; an agent run never ends as failed, and records Claude Code's version.",
+      "if": { "properties": { "kind": { "const": "verify" } } },
+      "then": { "properties": { "status": { "not": { "const": "needs-a-person" } } } },
+      "else": {
+        "properties": { "status": { "not": { "const": "failed" } }, "versions": { "required": ["claudeCode"] } }
+      }
+    },
+    {
+      "description": "A reason only with the end it explains: any reason for needs-a-person, check-error for failed.",
+      "if": { "required": ["reason"] },
+      "then": {
+        "anyOf": [
+          { "properties": { "status": { "const": "needs-a-person" } } },
+          { "properties": { "status": { "const": "failed" }, "reason": { "const": "check-error" } } }
+        ]
+      }
+    }
+  ],
   "properties": {
     "fazon": { "const": 0 },
     "id": { "$ref": "#/$defs/runId" },
@@ -18,9 +38,12 @@
       "description": "The component; absent for a verify run, which covers them all.",
       "$ref": "#/$defs/componentName"
     },
-    "status": { "enum": ["running", "passed", "needs-a-person", "stopped"] },
+    "status": {
+      "description": "`failed` ends a verify run with a blocking finding or a check that couldn't run; `needs-a-person` ends an agent run (propose, generate, feedback) that can't go on without one.",
+      "enum": ["running", "passed", "failed", "needs-a-person", "stopped"]
+    },
     "reason": {
-      "description": "Why a run needs a person.",
+      "description": "Why a run needs a person, or `check-error` when a verify run failed because a check ended in error or the image couldn't run the checks.",
       "enum": ["iterations", "budget", "run-time", "violation", "dependency", "shared-code", "check-error", "inputs-changed"]
     },
     "started": { "type": "string", "format": "date-time" },
@@ -37,14 +60,22 @@
     },
     "versions": {
       "type": "object",
-      "required": ["framework", "claudeCode", "image", "judge"],
+      "required": ["framework", "image"],
       "additionalProperties": false,
       "properties": {
         "framework": { "type": "string", "minLength": 1 },
         "adapter": { "type": "string", "minLength": 1 },
-        "claudeCode": { "type": "string", "minLength": 1 },
+        "claudeCode": {
+          "description": "Claude Code's version; absent when the run made no agent call (a verify run).",
+          "type": "string",
+          "minLength": 1
+        },
         "image": { "type": "string", "pattern": "^.+@sha256:[0-9a-f]{64}$" },
-        "judge": { "description": "The judge version.", "type": "integer", "minimum": 1 }
+        "judge": {
+          "description": "The judge version; absent when the run used no judge.",
+          "type": "integer",
+          "minimum": 1
+        }
       }
     },
     "inputs": {

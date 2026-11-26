@@ -1,0 +1,63 @@
+---
+# Runs `fazon verify` and `fazon baseline update` end to end in the verifier image built from the
+# same commit (`just test-verify`, scripts/test-verify.sh, packages/cli/e2e/): a library with the
+# example Button passes every check, gets its baselines, passes against them, and fails each check
+# with the rule a seeded defect breaks. Podman runs the image: an image it builds has a digest to
+# pin in fazon.yaml, which a locally built Docker image hasn't. Nothing is pushed.
+name: verify-e2e
+
+on:
+  pull_request:
+    paths:
+      - "packages/**"
+      - "verifier/**"
+      - "docs/spec/schemas/**"
+      - "docs/spec/examples/specs/**"
+      - "docs/spec/example-library/tokens/**"
+      - "scripts/test-verify.sh"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig*.json"
+      - ".github/workflows/verify-e2e.yml"
+  push:
+    branches: [main]
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  LOCAL_TAG: localhost/fazon-verifier:ci
+
+jobs:
+  verify-e2e:
+    name: verify-e2e
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      # The exact pnpm version package.json's packageManager names; no third-party setup action.
+      - name: Install pnpm
+        run: npm install -g "pnpm@$(jq -r '.packageManager | sub("^pnpm@"; "")' package.json)"  # zizmor: ignore[adhoc-packages]
+      # On the runner, which is linux/amd64 like the image: the container mounts them read-only.
+      - name: Install the dependencies (lockfile only)
+        run: pnpm install --frozen-lockfile
+      - name: Build the packages
+        run: pnpm run build
+      - name: Build the verifier image
+        run: >-
+          podman build --platform linux/amd64
+          --build-arg "REVISION=$GITHUB_SHA" --tag "$LOCAL_TAG" --file verifier/Containerfile verifier
+      - name: Verify the example library in the image
+        env:
+          CONTAINER_CLI: podman
+        run: scripts/test-verify.sh "$LOCAL_TAG"
