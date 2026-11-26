@@ -77,7 +77,10 @@ export {
   makeWorkingCopy,
   playwrightProblems,
   processRunner,
+  runImageChecks,
   verifyInImage,
+  type ImageChecksOptions,
+  type ImageChecksOutcome,
   type InImageOptions,
   type InImageOutcome,
 } from "./in-image.js";
