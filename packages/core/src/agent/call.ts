@@ -6,10 +6,17 @@ import { spawn } from "node:child_process";
 import { createWriteStream } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import type { SelfChecks } from "../adapter.js";
+import type { JsonSchema, SelfChecks } from "../adapter.js";
 import type { EffortLevel, ModelPrice } from "../config/types.js";
 import { StreamJsonReader, tokenCost, type InitEvent, type TokenCounts } from "./output.js";
-import { agentSettings, agentTools, deniedTools, findSecretFiles } from "./settings.js";
+import {
+  agentSettings,
+  agentTools,
+  deniedTools,
+  findSecretFiles,
+  readOnlyTools,
+  type AgentAccess,
+} from "./settings.js";
 import { changedFiles, takeSnapshot, violations, type AgentScope, type Snapshot } from "./snapshot.js";
 import { claudeCodeCommand } from "./version.js";
 
@@ -55,6 +62,10 @@ export interface AgentCallResult {
   readonly error?: string;
   /** Claude Code's exit code; `null` when it was killed. */
   readonly exitCode: number | null;
+  /** The agent's final message, when the call reported a successful result. */
+  readonly finalText?: string;
+  /** The call's structured output, when it was given `jsonSchema` and Claude Code reported one. */
+  readonly structuredOutput?: unknown;
 }
 
 export interface AgentCallOptions {
@@ -66,6 +77,10 @@ export interface AgentCallOptions {
   readonly scope: AgentScope;
   /** The adapter's self-check commands for the component. */
   readonly selfChecks: SelfChecks;
+  /** `read` for a call that may change no file and run no command, as a propose call; `edit` by default. */
+  readonly access?: AgentAccess;
+  /** A JSON Schema the final answer must match (`--json-schema`): Claude Code returns it as structured output. */
+  readonly jsonSchema?: JsonSchema;
   readonly model: string;
   /** Left out: the model's default effort. */
   readonly effort?: EffortLevel;
@@ -108,7 +123,11 @@ export function claudeArguments(options: {
   readonly model: string;
   readonly effort?: EffortLevel;
   readonly maxBudgetUsd?: number;
+  /** `read`: only the reading tools; `edit` by default. */
+  readonly access?: AgentAccess;
+  readonly jsonSchema?: JsonSchema;
 }): string[] {
+  const tools: readonly string[] = options.access === "read" ? readOnlyTools : agentTools;
   return [
     "--print",
     "--output-format",
@@ -123,7 +142,7 @@ export function claudeArguments(options: {
     "--permission-prompts",
     "none",
     "--tools",
-    agentTools.join(","),
+    tools.join(","),
     "--disallowed-tools",
     deniedTools.join(","),
     "--strict-mcp-config",
@@ -134,6 +153,7 @@ export function claudeArguments(options: {
     options.model,
     ...(options.effort === undefined ? [] : ["--effort", options.effort]),
     ...(options.maxBudgetUsd === undefined ? [] : ["--max-budget-usd", budgetArgument(options.maxBudgetUsd)]),
+    ...(options.jsonSchema === undefined ? [] : ["--json-schema", JSON.stringify(options.jsonSchema)]),
   ];
 }
 
@@ -175,6 +195,7 @@ export async function runAgentCall(options: AgentCallOptions): Promise<AgentCall
     scope: options.scope,
     selfChecks: options.selfChecks,
     secretFiles: await findSecretFiles(options.repo),
+    ...(options.access === undefined ? {} : { access: options.access }),
   });
   await writeFile(settingsFile, `${JSON.stringify(settings, null, 2)}\n`);
   const before = options.before ?? (await takeSnapshot(options.repo));
@@ -187,6 +208,8 @@ export async function runAgentCall(options: AgentCallOptions): Promise<AgentCall
       model: options.model,
       ...(options.effort === undefined ? {} : { effort: options.effort }),
       ...(options.maxBudgetUsd === undefined ? {} : { maxBudgetUsd: options.maxBudgetUsd }),
+      ...(options.access === undefined ? {} : { access: options.access }),
+      ...(options.jsonSchema === undefined ? {} : { jsonSchema: options.jsonSchema }),
     }),
     cwd: options.repo,
     env: options.env,
@@ -236,6 +259,10 @@ export async function runAgentCall(options: AgentCallOptions): Promise<AgentCall
     interrupted: claude.stopped === "signal",
     ...(outcome.error === undefined ? {} : { error: outcome.error }),
     exitCode: claude.exitCode,
+    ...(outcome.end === "completed" && result?.text !== undefined ? { finalText: result.text } : {}),
+    ...(outcome.end === "completed" && result?.structuredOutput !== undefined
+      ? { structuredOutput: result.structuredOutput }
+      : {}),
   };
 }
 

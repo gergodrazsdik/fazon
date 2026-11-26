@@ -12,6 +12,12 @@ import { trimSlashes, type AgentScope } from "./snapshot.js";
 /** The built-in tools the agent has (`--tools`): reading, searching, editing files, and the shell for the self-checks. */
 export const agentTools = ["Read", "Glob", "Grep", "Edit", "Write", "Bash"] as const;
 
+/** The built-in tools of a call that only reads, such as a propose call: no edits and no shell. */
+export const readOnlyTools = ["Read", "Glob", "Grep"] as const;
+
+/** What a call may do: edit its component's files and run the self-checks, or only read. */
+export type AgentAccess = "edit" | "read";
+
 /**
  * Tools denied outright (`--disallowed-tools`), in case a tool list grows: web access, subagents
  * (the Agent tool, which Claude Code also reports as `Task`), notebooks, and every MCP tool.
@@ -52,6 +58,8 @@ export interface AgentSettingsInput {
    * sandbox on Linux ignores glob patterns in its filesystem rules, so they are also denied by path.
    */
   readonly secretFiles?: readonly string[];
+  /** `read` for a call that may change nothing, as a propose call; `edit` by default. */
+  readonly access?: AgentAccess;
 }
 
 /** The settings file passed with `--settings`: only the keys the harness sets. */
@@ -92,14 +100,21 @@ function relativeRule(tool: "Read" | "Edit", file: string): string {
 export function agentSettings(input: AgentSettingsInput): AgentSettings {
   const directory = trimSlashes(input.scope.directory);
   const absolute = (relative: string) => path.join(input.repo, relative);
+  const readOnly = input.access === "read";
   const allow = [
     "Read",
     "Glob",
     "Grep",
-    ...input.scope.patterns.map((pattern) => relativeRule("Edit", `${directory}/${pattern}`)),
-    ...input.selfChecks.commands.map((command) => `Bash(${command})`),
+    ...(readOnly
+      ? []
+      : [
+          ...input.scope.patterns.map((pattern) => relativeRule("Edit", `${directory}/${pattern}`)),
+          ...input.selfChecks.commands.map((command) => `Bash(${command})`),
+        ]),
   ];
   const deny = [
+    // A call that only reads may edit nothing and run nothing; Edit rules cover the Write tool too.
+    ...(readOnly ? ["Edit", "Bash"] : []),
     relativeRule("Edit", `${directory}/${generatedDirectory}/**`),
     ...unreadableDirectories.flatMap((name) => [
       relativeRule("Read", `${name}/**`),
@@ -117,7 +132,7 @@ export function agentSettings(input: AgentSettingsInput): AgentSettings {
       allowUnsandboxedCommands: false,
       network: { allowedDomains: [] },
       filesystem: {
-        allowWrite: [absolute(directory), ...input.selfChecks.cacheDirectories.map(absolute)],
+        allowWrite: readOnly ? [] : [absolute(directory), ...input.selfChecks.cacheDirectories.map(absolute)],
         denyWrite: [input.repo, absolute(path.posix.join(directory, generatedDirectory))],
         denyRead: [...unreadableDirectories, ...(input.secretFiles ?? [])].map(absolute),
       },

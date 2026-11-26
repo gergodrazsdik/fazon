@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Reads Claude Code's `--output-format stream-json` output (one JSON event per line): the
 // `system`/`init` event (version, model, session, how it's authenticated, tools and MCP servers),
-// each assistant message's token usage, and the final `result` event (cost, tokens, how it ended).
+// each assistant message's token usage, and the final `result` event (cost, tokens, how it ended, the
+// final message and any structured output).
 import type { ModelPrice } from "../config/types.js";
 
 /** Token counts, as the run record's `$defs.tokens` stores them. */
@@ -38,6 +39,10 @@ export interface ResultEvent {
   readonly unknownCostBasis: boolean;
   /** The errors an error result lists. */
   readonly errors: readonly string[];
+  /** The agent's final message (`result`), on a successful result. */
+  readonly text?: string;
+  /** The structured output (`structured_output`) when the call was given a JSON Schema (`--json-schema`). */
+  readonly structuredOutput?: unknown;
 }
 
 type Json = Record<string, unknown>;
@@ -114,6 +119,8 @@ function parseResult(event: Json): ResultEvent {
     models,
     unknownCostBasis,
     errors: Array.isArray(event.errors) ? event.errors.map(String) : [],
+    ...optional("text", text(event.result)),
+    ...optional("structuredOutput", event.structured_output ?? undefined),
   };
 }
 

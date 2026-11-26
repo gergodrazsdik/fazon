@@ -17,8 +17,10 @@ export {
   agentTools,
   deniedTools,
   findSecretFiles,
+  readOnlyTools,
   unreadableDirectories,
   unreadableFiles,
+  type AgentAccess,
   type AgentSettings,
   type AgentSettingsInput,
 } from "./settings.js";
