@@ -13,6 +13,8 @@ export interface GlobalOptions {
 export interface Context {
   readonly environment: Environment;
   readonly global: GlobalOptions;
+  /** Progress for a person, on standard error, while a long command runs. */
+  readonly stderr?: (text: string) => void;
 }
 
 /** A command's parsed arguments. */

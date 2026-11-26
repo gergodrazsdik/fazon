@@ -2,8 +2,10 @@
 import type { ParseArgsOptionsConfig } from "node:util";
 import type { Context, Invocation } from "./commands/context.js";
 import { doctor } from "./commands/doctor.js";
+import { baselineUpdate } from "./commands/baseline-update.js";
 import { specCheck } from "./commands/spec-check.js";
 import { sync } from "./commands/sync.js";
+import { verify } from "./commands/verify.js";
 import type { Outcome } from "./outcome.js";
 
 /** One command of docs/spec/cli.md. */
@@ -105,8 +107,10 @@ export const commands: readonly Command[] = [
     name: "verify",
     group: "The loop",
     usage: "fazon verify [<component>...] [--base <ref>] [--no-judge]",
-    summary: "Render and check components in the verifier image.",
-    arrives: "M1 steps 7 and 8",
+    summary: "Render and check components in the verifier image; --base marks the baselines that changed since a ref.",
+    // `--in-image <run>` is internal: the host starts the image with it.
+    options: { base: { type: "string" }, "no-judge": { type: "boolean" }, "in-image": { type: "string" } },
+    run: verify,
   },
   {
     name: "judge",
@@ -119,8 +123,9 @@ export const commands: readonly Command[] = [
     name: "baseline update",
     group: "The loop",
     usage: "fazon baseline update (<component>... [--story <name>]... | --all)",
-    summary: "Write baselines from the latest qualifying run.",
-    arrives: "M1 step 8",
+    summary: "Write baselines from the latest qualifying run, and remove orphans.",
+    options: { story: { type: "string", multiple: true }, all: { type: "boolean" } },
+    run: baselineUpdate,
   },
   {
     name: "sync",

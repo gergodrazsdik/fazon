@@ -59,8 +59,18 @@ The [smoke test](smoke/) runs in the image and fails unless:
 
 It writes the captures and `results.json`, with each capture's SHA-256, to the output directory (a temporary directory when none is given). It installs `playwright-core` from [smoke/package-lock.json](smoke/package-lock.json) inside the container, so the container needs network access.
 
+## How `fazon verify` runs in it
+
+The image holds no Fazon code. `fazon verify` on the host checks the environment, writes the run's first record and starts the image with the container runtime (`FAZON_CONTAINER_RUNTIME`, or Docker, then Podman):
+
+- **Platform and network:** `--platform linux/amd64` and `--network none`.
+- **Mounts:** the repository read-only at `/fazon/src`, or, when its dependencies are linked from outside it (a workspace, `link:` dependencies), the nearest directory that holds them all. The run's directory, `.fazon/runs/<id>/`, is the only writable mount.
+- **User:** the host's user, so the run's files are the developer's: Podman's `--userns=keep-id`, Docker's `--user <uid>:<gid>`. On GitHub's runners both are uid 1001, as the image's `pwuser`.
+- **Command:** `node <the repository's fazon>/dist/bin.js verify --in-image <run> [<component>...]`, an internal entry, with the repository's installed dependencies. These are installed on the host, so the host must be linux/amd64 as the image is (CI's runners are; a Mac or an ARM machine can't run `fazon verify` yet).
+
+Inside, the CLI checks that the Playwright the repository installs, and Fazon's own playwright-core, need the Chromium build the image carries; copies the repository into a writable working copy in the container (`/tmp/fazon-verify/work`, with a `node_modules` of links to the repository's, so the tools can write their caches); runs the source checks with the adapter's commands (`npm pack`, as the image has npm but no pnpm); serves the static Storybook build on the loopback interface and renders every story in every theme; and writes the run record after each phase, the captures, diffs, logs, reports, the Storybook build and the packed tarball beside it.
+
 ## Not in it yet
 
-- **Fazon's code.** The CLI and the verifier are installed in a later M1 step (T-0046), at the place the Containerfile marks.
 - **License notices and an SBOM** for Chromium, the fonts and the operating system packages, and **signed releases** with provenance: M5 (T-0066, [licensing](../docs/spec/licensing.md#the-verifier-image)).
 - **Other architectures.** Captures are made only on linux/amd64.
