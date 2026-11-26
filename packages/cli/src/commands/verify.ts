@@ -247,10 +247,13 @@ async function firstRecord(id: string, started: Date, config: Config, repo: stri
   };
 }
 
-/** The baselines that differ from those at the ref, with git on the host. */
+/**
+ * The baselines that differ from those at the ref, with git on the host. The path is relative to
+ * the repository's directory, which may be a subdirectory of the git checkout.
+ */
 async function baseChanges(environment: Environment, repo: string, config: Config, ref: string) {
   const directory = config.paths.baselines.split(path.sep).join("/");
-  const listed = await environment.exec("git", ["ls-tree", "-r", "--full-tree", ref, "--", directory], {
+  const listed = await environment.exec("git", ["ls-tree", "-r", ref, "--", directory], {
     cwd: repo,
     timeoutMs: 60_000,
   });
