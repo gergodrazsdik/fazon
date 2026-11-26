@@ -2,7 +2,8 @@
 # Runs `fazon verify` and `fazon baseline update` end to end in the verifier image built from the
 # same commit (`just test-verify`, scripts/test-verify.sh, packages/cli/e2e/): a library with the
 # example Button passes every check, gets its baselines, passes against them, and fails each check
-# with the rule a seeded defect breaks. Podman runs the image: an image it builds has a digest to
+# with the rule a seeded defect breaks; and `fazon generate --clean` with a fake Claude Code that
+# writes the known-good Button back passes in one iteration. Podman runs the image: an image it builds has a digest to
 # pin in fazon.yaml, which a locally built Docker image hasn't. Nothing is pushed.
 name: verify-e2e
 

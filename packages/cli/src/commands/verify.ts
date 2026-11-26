@@ -46,7 +46,7 @@ const { version } = require("../../package.json") as { version: string };
  * The CLI the image runs: the one the repository installs, as its lockfile pins it, or this one
  * when the repository doesn't install it (as in the framework's own development).
  */
-async function inImageCli(repo: string): Promise<{ package: string; bin: string }> {
+export async function inImageCli(repo: string): Promise<{ package: string; bin: string }> {
   const installed = await findPackage(repo, "fazon");
   if (installed !== undefined) {
     const manifest = JSON.parse(await readFile(path.join(installed, "package.json"), "utf8")) as {
@@ -62,7 +62,7 @@ async function inImageCli(repo: string): Promise<{ package: string; bin: string 
 }
 
 /** Variables the container gets from the host, when set. Never a credential (CLI-003). */
-const passedThrough = ["CI", "NO_COLOR"] as const;
+export const passedThrough = ["CI", "NO_COLOR"] as const;
 
 export async function verify(invocation: Invocation, context: Context): Promise<Outcome> {
   const inImage = invocation.options["in-image"];

@@ -265,6 +265,18 @@ export interface AgentRunRequest {
   readonly proposal?: string;
   readonly feedback?: FeedbackInput;
   readonly measurement?: { readonly round: number; readonly repeat: number };
+  /**
+   * Runs once the run lock is held, before the run starts: a stop ends the command with no run
+   * (and releases the lock); otherwise the dependencies it returns join the request's. What must
+   * not happen while another run of the component is in progress goes here, such as
+   * `generate --clean` removing the component's files.
+   */
+  readonly prepare?: () => Promise<Stop | PreparedRun>;
+}
+
+/** What a request's `prepare` adds to the run. */
+export interface PreparedRun {
+  readonly dependencies?: AgentRunRequest["dependencies"];
 }
 
 /** Whether the refresh writes a file: one in the component's `generated/` directory, or the package entry file. */
@@ -318,6 +330,8 @@ export async function runAgentCommand(
   else external.addEventListener("abort", onInterrupt, { once: true });
 
   try {
+    const prepared = (await request.prepare?.()) ?? {};
+    if ("stop" in prepared) return prepared;
     const readOnly = request.access === "read";
     const connection = agentLoopCall({
       repo,
@@ -347,6 +361,7 @@ export async function runAgentCommand(
       {
         call: connection.call,
         ...request.dependencies,
+        ...prepared.dependencies,
         inputs: () => readRunInputs(setup, { api: request.approvedApi === true }),
         signal: interrupt.signal,
       },

@@ -5,6 +5,7 @@ import { accept } from "./commands/accept.js";
 import { approve } from "./commands/approve.js";
 import { doctor } from "./commands/doctor.js";
 import { baselineUpdate } from "./commands/baseline-update.js";
+import { generate } from "./commands/generate.js";
 import { propose } from "./commands/propose.js";
 import { report } from "./commands/report.js";
 import { specCheck } from "./commands/spec-check.js";
@@ -89,7 +90,10 @@ export const commands: readonly Command[] = [
     group: "The loop",
     usage: "fazon generate <component> [--clean]",
     summary: "Run the loop until the checks pass or a cap is reached.",
-    arrives: "M2",
+    // `--in-image <run> --iteration <n>` is internal: the host starts the image with it.
+    options: { clean: { type: "boolean" }, "in-image": { type: "string" }, iteration: { type: "string" } },
+    maxPositionals: 1,
+    run: generate,
   },
   {
     name: "feedback",

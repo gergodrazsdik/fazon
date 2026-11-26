@@ -96,7 +96,7 @@ function changeLine({ path, change }: FileChange): string {
   return `${change.padEnd(9)}${path}`;
 }
 
-function problemMessage(problem: SyncProblem): Message {
+export function problemMessage(problem: SyncProblem): Message {
   const location =
     problem.file === undefined
       ? ""
