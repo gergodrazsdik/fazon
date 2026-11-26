@@ -110,6 +110,15 @@ Dialog, Menu, Popover, Select, Tabs and Tooltip are built on Reka UI. Each part 
 - **Rendering:** each story renders the fixture with the story's `set` values. A decorator renders the story frame (with `frame.width`).
 - **Themes:** the theme is a Storybook global the verifier sets.
 
+### Fixtures in stories
+
+How a story file renders a fixture:
+
+- **Parts** render in their parent's default slot, before the slot's own content. So a component or part with child parts has a `default` slot in `api.json`, required when one child part has `count: one`.
+- **Instances under a `many` parent:** when the parent has one instance, every instance of the child part goes to it; otherwise each parent instance gets one, in order, and `fazon sync` refuses any other count.
+- **Icons** render as their SVG inside `span[data-fazon-icon]`, with `display: contents`.
+- **Models:** a model prop the fixture sets is bound to a `ref` the story owns; the others stay uncontrolled.
+
 ### Contract tests
 
 `generated/<name>.contract.test.ts` runs in Vitest's browser mode:

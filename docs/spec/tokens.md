@@ -115,7 +115,7 @@ The prefix keeps a library's properties apart from an app's own. It is lowercase
 - **Units:** dimensions keep their unit, durations are written in seconds, colours as hex or `rgba()`, cubic Béziers as `cubic-bezier()`, and font families as a list.
 - **Selecting a theme:** `data-theme="<theme>"` on the root element or any ancestor; without it, the default theme applies. A subtree can switch either way: `data-theme="light"` inside a `data-theme="dark"` ancestor applies the light theme again. The build doesn't follow `prefers-color-scheme`. An app that wants to sets the attribute itself. The verifier sets it on the root element.
 
-How the library's package ships the file is decided in M1 (Q-0011).
+The library's package ships the file beside its components, exported as `<package>/tokens.css` ([ADR 0021](../adr/0021-settled-questions.md)).
 
 ## Base styles
 

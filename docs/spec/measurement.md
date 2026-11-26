@@ -36,6 +36,8 @@ Every component is measured **5 times** per measurement round. Every published n
 | 1 | end of M2 | Button, Badge, Link, Dialog |
 | 2 | end of M4 | all 17 |
 
+**Budget:** measured runs and calibration rounds through M3 share a budget of USD 150 ([ADR 0021](../adr/0021-settled-questions.md)). Before a round starts, its estimate is compared with what's left; a round that would exceed it waits for the maintainer's approval. The budget for M4's round is set before it.
+
 ## Loop metrics
 
 From the run records of a round:
