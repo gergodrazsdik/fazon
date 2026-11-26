@@ -194,7 +194,7 @@ export async function runAgent(options: AgentRunOptions, dependencies: LoopDepen
       },
       findings,
       ...(previous === undefined ? {} : { previous }),
-      ...(n === 1 && options.feedback !== undefined ? { feedback: options.feedback.text } : {}),
+      ...(options.feedback === undefined ? {} : { feedback: options.feedback.text }),
       signal,
     });
     const callEnded = now();

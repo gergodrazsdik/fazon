@@ -569,7 +569,7 @@ describe("inputs, hand edits and cost", () => {
 });
 
 describe("a feedback run", () => {
-  it("is linked to its parent, carries the feedback and the parent's findings, and starts fresh on the generator", async () => {
+  it("is linked to its parent, carries the feedback in every call and the parent's findings in the first, and starts fresh on the generator", async () => {
     const parentFindings = [finding("layout", "target-size")];
     const h = harness({ phases: [checks(failing("lint", "raw-value"))] });
     const run = options({
@@ -589,7 +589,7 @@ describe("a feedback run", () => {
       findings: parentFindings,
       left: { iterations: 5, budgetUsd: 10 },
     });
-    expect(h.calls[1]).not.toHaveProperty("feedback");
+    expect(h.calls[1]).toMatchObject({ feedback: "Make the focus ring thicker." });
     expect(h.calls[1]?.findings.map((f) => f.rule)).toEqual(["raw-value"]);
   });
 
