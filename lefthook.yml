@@ -36,7 +36,7 @@ pre-commit:
       glob: "{docs/spec/schemas/*.json,docs/spec/examples/**/*.md,docs/spec/examples/**/*.json,scripts/check-spec-examples.sh}"
       run: scripts/check-spec-examples.sh
     - name: spdx
-      glob: "*.{sh,bash,ts,mts,cts,tsx,js,mjs,cjs,jsx,vue,css,html}"
+      glob: "*.{sh,bash,ts,mts,cts,tsx,js,mjs,cjs,jsx,vue,css,html,tmpl,md}"  # the script picks plugin/**/*.md out of the Markdown
       run: scripts/check-spdx.sh {staged_files}
     - name: eslint
       glob: "*.{ts,mts,cts,js,mjs,cjs}"

@@ -4,7 +4,10 @@
 # right after a shebang (AGENTS.md, docs/spec/licensing.md):
 #   - files under a templates/ directory, whose text Fazon writes into other repositories: MIT-0;
 #   - every other source file: GPL-3.0-or-later.
-# Source files are shell scripts, TypeScript, JavaScript, Vue single-file components, CSS and HTML.
+# Source files are shell scripts, TypeScript, JavaScript, Vue single-file components, CSS and HTML,
+# template files (*.tmpl), and the Claude Code plugin's Markdown (plugin/**/*.md: its skills).
+# The identifier may also follow a front matter's opening '---' line, as a YAML comment, so a
+# skill's front matter stays the first thing in its file.
 #
 # Usage: scripts/check-spdx.sh [<file>...]   (default: every tracked source file)
 set -euo pipefail
@@ -12,7 +15,7 @@ set -euo pipefail
 root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$root"
 
-pattern='\.(sh|bash|ts|mts|cts|tsx|js|mjs|cjs|jsx|vue|css|html)$'
+pattern='\.(sh|bash|ts|mts|cts|tsx|js|mjs|cjs|jsx|vue|css|html|tmpl)$'
 if [[ $# -gt 0 ]]; then
   files=("$@")
 else
@@ -22,7 +25,7 @@ fi
 failed=0
 checked=0
 for file in "${files[@]}"; do
-  [[ $file =~ $pattern ]] || continue
+  [[ $file =~ $pattern || ($file == plugin/* && $file == *.md) ]] || continue
   [[ -f $file ]] || continue
   if [[ $file == templates/* || $file == */templates/* ]]; then
     want=MIT-0
@@ -31,14 +34,14 @@ for file in "${files[@]}"; do
   fi
   head_lines=$(head -n 2 "$file")
   first=${head_lines%%$'\n'*}
-  if [[ $first == '#!'* ]]; then
+  if [[ $first == '#!'* || $first == '---' ]]; then
     line=${head_lines#*$'\n'}
   else
     line=$first
   fi
   checked=$((checked + 1))
   if [[ $line != *"SPDX-License-Identifier: $want"* ]]; then
-    echo "FAIL $file: expected 'SPDX-License-Identifier: $want' on its first line, or after a shebang" >&2
+    echo "FAIL $file: expected 'SPDX-License-Identifier: $want' on its first line, or after a shebang or front matter's opening '---'" >&2
     failed=1
   fi
 done
