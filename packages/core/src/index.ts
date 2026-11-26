@@ -162,3 +162,42 @@ export {
   type JudgeInput,
   type LoopDependencies,
 } from "./loop/types.js";
+// The propose run and the connection between the agent call and the loop (T-0050 step 4): the
+// loop's agent call, the run lock, the proposed API and its prompt, and SPEC-019's marker.
+export {
+  agentLoopCall,
+  loopResult,
+  noSelfChecks,
+  type AgentLoopCall,
+  type AgentLoopCallOptions,
+} from "./loop/agent-call.js";
+export {
+  acquireRunLock,
+  locksDirectory,
+  readRunLock,
+  runLockFile,
+  type RunLock,
+  type RunLockOptions,
+  type RunLockResult,
+} from "./records/run-lock.js";
+export {
+  apiFields,
+  applyProposal,
+  proposalSchema,
+  readProposal,
+  type ApiField,
+  type AppliedProposal,
+  type ProposedApi,
+} from "./spec/proposal.js";
+export { placeholderMarker } from "./spec/rules.js";
+export {
+  capsText,
+  joinPrompt,
+  promptFence,
+  promptSection,
+  roleTokenList,
+  roleTokens,
+  type CapsLeft,
+  type RoleToken,
+} from "./prompt/common.js";
+export { proposePrompt, type ProposePromptInput } from "./prompt/propose.js";
