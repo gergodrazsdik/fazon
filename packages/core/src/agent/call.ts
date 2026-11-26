@@ -18,6 +18,7 @@ import {
   type AgentAccess,
 } from "./settings.js";
 import { changedFiles, takeSnapshot, violations, type AgentScope, type Snapshot } from "./snapshot.js";
+import { claudeCodeJsonSchema } from "./json-schema.js";
 import { claudeCodeCommand } from "./version.js";
 
 /** How an agent call ended, as the run record's `call.end` stores it. */
@@ -153,7 +154,9 @@ export function claudeArguments(options: {
     options.model,
     ...(options.effort === undefined ? [] : ["--effort", options.effort]),
     ...(options.maxBudgetUsd === undefined ? [] : ["--max-budget-usd", budgetArgument(options.maxBudgetUsd)]),
-    ...(options.jsonSchema === undefined ? [] : ["--json-schema", JSON.stringify(options.jsonSchema)]),
+    ...(options.jsonSchema === undefined
+      ? []
+      : ["--json-schema", JSON.stringify(claudeCodeJsonSchema(options.jsonSchema))]),
   ];
 }
 
