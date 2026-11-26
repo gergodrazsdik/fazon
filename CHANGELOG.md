@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `fazon accept <component>` accepts the component's latest generate or feedback run into its provenance file when it passed and its spec, approved API, token set and files are unchanged since, and prints the `fazon baseline update` command when stories are new or changed.
 - `fazon propose <component>`: one read-only agent call drafts the API from the spec, and the harness writes it into the spec's API fields for review as a diff.
 - `fazon approve <component>` records the approved API's hash and date in the component's provenance file.
 - `fazon spec check` reports placeholders left from the spec template (SPEC-019), so a fresh spec no longer passes.

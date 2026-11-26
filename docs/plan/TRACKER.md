@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0102, F-0023, Q-0024.
+Next free IDs: T-0102, F-0025, Q-0024.
 
 ## Now
 
@@ -112,7 +112,10 @@ Complete 2026-11-26: the CLI (`doctor`, `spec check`, `sync`, `verify`, `baselin
   - [~] Step 5: `fazon generate [--clean]` and the generation skill (steps 2, 3)
     - [x] 5a: the checks phase, the generated-files refresh, the generate prompt and the generation skill — 2026-11-26, [#69](https://github.com/gergodrazsdik/fazon/pull/69): `imageChecksPhase` checks the whole library in the image, with the component's own diffs advisory; the refresh writes the component's `generated/` and the entry file at the run's start and before each check phase; the skill reaches the call in its prompt, not through `--plugin-dir`
     - [ ] 5b: the `fazon generate` command, wiring steps 4 and 5a (F-0021)
-  - [ ] Step 6: `fazon feedback` and `fazon accept` (step 5)
+  - [~] Step 6: `fazon feedback` and `fazon accept` (step 5)
+    - [x] 6a: `fazon accept` — 2026-11-26, [#71](https://github.com/gergodrazsdik/fazon/pull/71): the latest generate or feedback run, refused unless it passed and the spec, approved API, token set and component files are unchanged since its last checks, or while a run holds the lock; the generation part of provenance with the linked runs; the `baseline update` command for new, changed or orphaned stories
+    - [ ] 6b: `fazon feedback` (step 5b)
+    - [ ] 6c: `fazon baseline update` from an accepted generate or feedback run (F-0023, F-0024)
   - [x] Step 7: the HTML report: `fazon report` without `--summary` (step 3's records) — 2026-11-26, [#68](https://github.com/gergodrazsdik/fazon/pull/68): `buildReport` in `@fazon/core` writes `.fazon/runs/<id>/report/` with its images, no script and every value escaped; `FAZON_STORYBOOK_URL` for the story links (T-0101)
   - [ ] Step 8: the example repo: Badge, Link and Dialog specified, proposed, approved and generated with no hand edits, and Button regenerated with `--clean`; real runs within the default caps, their cost reported (steps 1, 4 to 7)
 - [ ] T-0094 The minimum Claude Code version: the framework declares it (the version M2's harness is built and tested against); `propose`, `generate` and `feedback` refuse an older one, and `doctor` reports it ([ADR 0021](../adr/0021-settled-questions.md)); 2.1.332 ([ADR 0023](../adr/0023-m2-skills-and-claude-code-version.md)), with T-0050's step 2; the check and `doctor` in [#66](https://github.com/gergodrazsdik/fazon/pull/66), the commands refuse with steps 4 to 6; `propose` refuses (3) in [#70](https://github.com/gergodrazsdik/fazon/pull/70)
@@ -192,6 +195,8 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 - [ ] F-0020 The agent call ([#66](https://github.com/gergodrazsdik/fazon/pull/66)) was built from Claude Code's docs, not a real run: confirm on step 8's first real run the stream-json init and result events, the cost under a subscription login, and that the sandbox's `allowWrite` for the component directory and caches wins over `denyWrite` for the repository, so the self-checks can write; and that a read-only propose call with `--json-schema` returns `structured_output` in the result event, with the proposal schema accepted (the harness falls back to the final message otherwise, [#70](https://github.com/gergodrazsdik/fazon/pull/70)) (2026-11-26)
 - [x] F-0021 The refresh before each check phase writes the component's generated files between agent calls; the connection between the agent call and the loop must not count them as hand edits: take the snapshot after the refresh, or subtract its changes (step 5b, [#69](https://github.com/gergodrazsdik/fazon/pull/69)) (2026-11-26) — 2026-11-26, [#70](https://github.com/gergodrazsdik/fazon/pull/70): `harnessFile`, with the component's `generated/` directory and the entry file by default
 - [ ] F-0022 `generationSkillFile()` finds `plugin/skills/generate/SKILL.md` relative to `@fazon/core`, so M5's packages must ship the skill where it looks (T-0065, [#69](https://github.com/gergodrazsdik/fazon/pull/69)) (2026-11-26)
+- [ ] F-0023 `fazon baseline update` doesn't read generate or feedback runs: `latestRun` in `packages/core/src/verify/baseline-update.ts` looks only for a `verify.json` at the run directory's root, while those runs write `checks/<n>/verify.json` and `captures/<n>/`, so after `generate` and `accept` it takes an older verify run or refuses, and baseline-lifecycle.md's new-component flow breaks ([#71](https://github.com/gergodrazsdik/fazon/pull/71)) (2026-11-26)
+- [ ] F-0024 `componentInputsHash` (`packages/core/src/verify/details.ts`) includes `generated/provenance.json`, so `accept`, or approving the same API again, changes the hash although the file changes no capture; once F-0023 is fixed, `baseline update` from an accepted run would refuse. Leave `provenance.json` out of the hash, then drop `accept`'s re-accept skip ([#71](https://github.com/gergodrazsdik/fazon/pull/71)) (2026-11-26)
 - [x] F-0013 The example token set's dark theme gives `color.text.action` on `color.surface.active` 3.28:1, below WCAG's 4.5:1: a ghost Button's active state fails `a11y`. The contrast table didn't pair those roles ([#57](https://github.com/gergodrazsdik/fazon/pull/57)'s end-to-end test waives it with an exemption; the example repo's Button will fail) (2026-11-26) — 2026-11-26: the dark theme's `color.text.action` is blue 200, 6.03:1 on the active surface ([fazon-vue-example#3](https://github.com/gergodrazsdik/fazon-vue-example/pull/3)); the contrast table pairs action text with every surface, and the end-to-end Button passes unwaived ([#57](https://github.com/gergodrazsdik/fazon/pull/57))
 
 ## Open questions
