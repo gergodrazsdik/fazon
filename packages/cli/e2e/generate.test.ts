@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// `fazon generate` end to end, in the verifier image (`just test-verify`): the example Button's
-// project (./project.ts), approved, generated with `--clean` by the fake Claude Code, whose one
-// call writes the known-good Button and its behaviour test back, so the in-image entry runs every
-// check of the iteration and the run passes. No real `claude -p` runs. Needs the built packages, a
+// `fazon generate` and `fazon feedback` end to end, in the verifier image (`just test-verify`): the
+// example Button's project (./project.ts), approved, generated with `--clean` by the fake Claude
+// Code, whose one call writes the known-good Button and its behaviour test back, so the in-image
+// entry runs every check of the iteration and the run passes; then one feedback run on it, whose
+// call changes nothing, passes the same way. No real `claude -p` runs. Needs the built packages, a
 // container runtime and the image, which scripts/test-verify.sh provides as FAZON_E2E_IMAGE.
 import { execFile } from "node:child_process";
 import { access, mkdir, readFile, rm } from "node:fs/promises";
@@ -25,6 +26,8 @@ interface Json {
 
 let project: string;
 let claude: string;
+/** The generate run's ID, which the feedback run answers. */
+let generated = "";
 
 async function fazon(args: readonly string[], env: Record<string, string> = {}): Promise<Json> {
   const { stdout, code } = await run(process.execPath, [cliBin, ...args, "--json"], {
@@ -65,7 +68,7 @@ afterAll(async () => {
   await rm(path.dirname(claude), { recursive: true, force: true });
 });
 
-describe("fazon generate in the verifier image", () => {
+describe("fazon generate and fazon feedback in the verifier image", () => {
   it("passes on its first iteration when the agent writes a component that passes every check", async () => {
     const approved = await fazon(["approve", "button"]);
     expect(approved.status, JSON.stringify(approved.messages)).toBe("ok");
@@ -97,5 +100,26 @@ describe("fazon generate in the verifier image", () => {
     await access(path.join(dir, "checks/1/checks.json"));
     await access(path.join(dir, "checks/1/verify.json"));
     await access(path.join(project, String(json.result.report)));
+    generated = String(json.result.run);
+  });
+
+  it("runs a feedback run linked to the generate run, which passes on its first iteration too", async () => {
+    expect(generated, "the generate run above passed").not.toBe("");
+    const json = await fazon(["feedback", "button", "-m", "Keep the component as it is."], {
+      PATH: `${path.dirname(claude)}${path.delimiter}${process.env.PATH ?? ""}`,
+    });
+    expect(json.status, JSON.stringify(json.messages)).toBe("ok");
+    expect(json.result).toMatchObject({
+      kind: "feedback",
+      status: "passed",
+      parent: generated,
+      component: "Button",
+      iterations: 1,
+    });
+    const dir = path.join(project, ".fazon/runs", String(json.result.run));
+    const record = JSON.parse(await readFile(path.join(dir, "run.json"), "utf8")) as { parent: string };
+    expect(validateWithSchema("run-record", record)).toEqual([]);
+    expect(record.parent).toBe(generated);
+    await access(path.join(dir, "checks/1/verify.json"));
   });
 });

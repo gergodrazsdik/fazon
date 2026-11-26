@@ -117,7 +117,7 @@ export interface LoopRunRequest {
  * lock is held: the pre-flight `fazon sync --check` outside the component (2), the image's
  * environment (3), and `--clean`. Then the loop, with the generate prompt, the generated-files
  * refresh, the checks in the verifier image and, until M3, no judge; and at the end the run's
- * HTML report. Exits 1 when the run needs a person.
+ * HTML report. A feedback run's result names its parent. Exits 1 when the run needs a person.
  */
 export async function runLoopCommand(
   setup: AgentCommandSetup,
@@ -126,6 +126,8 @@ export async function runLoopCommand(
 ): Promise<Outcome> {
   const { repo, config, adapter, component, spec, directory } = setup;
   const messages: Message[] = [];
+  const feedback = request.feedback;
+  if (feedback !== undefined) messages.push(feedbackMessage(feedback));
   const refresh = { root: repo, config, adapter, name: component };
   let removed: readonly string[] | undefined;
   let prompted: GenerateContext | undefined;
@@ -141,7 +143,7 @@ export async function runLoopCommand(
         return generatePrompt(prompted, input);
       },
       dependencies: { refreshGenerated: generatedRefresh(refresh), judge: noJudge },
-      ...(request.feedback === undefined ? {} : { feedback: request.feedback }),
+      ...(feedback === undefined ? {} : { feedback }),
       prepare: async () => {
         const stale = await staleOutside(setup);
         if (stale !== undefined) return stale;
@@ -174,9 +176,23 @@ export async function runLoopCommand(
     result: {
       ...runResult(done),
       component: spec.spec.name,
+      ...(feedback === undefined ? {} : { parent: feedback.parent }),
       ...(report === undefined ? {} : { report }),
       ...(removed === undefined ? {} : { removed }),
     },
+  };
+}
+
+/** Which run a feedback run answers, and what its first prompt carries from it. */
+function feedbackMessage(feedback: FeedbackInput): Message {
+  const count = feedback.findings.length;
+  const findings =
+    count === 0
+      ? "no findings, as that run left none that block"
+      : `the ${String(count)} blocking ${count === 1 ? "finding" : "findings"} of that run's last checks`;
+  return {
+    level: "info",
+    text: `This feedback run answers ${feedback.parent}: its first prompt carries your feedback and ${findings}.`,
   };
 }
 

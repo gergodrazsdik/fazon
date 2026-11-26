@@ -23,7 +23,7 @@ How the harness runs the loop: the kinds of run, what one iteration is, what blo
 |---|---|---|
 | **propose** | `fazon propose <component>` | One agent call drafts the API from the spec. No checks run; the run ends waiting for the developer to approve the API. |
 | **generate** | `fazon generate <component>` | Iterations until every check passes or a cap is reached. |
-| **feedback** | review feedback in `fazon report` | A generate run linked to the previous run, with the developer's feedback in the prompt. |
+| **feedback** | `fazon feedback <component>`, with the developer's feedback from the review in `fazon report` | A generate run linked to the previous run, with the developer's feedback in the prompt. |
 | **verify** | `fazon verify` | Renders and checks every component; no agent call. |
 
 Every run writes a run record. A feedback run names its parent run; a component's linked runs together form one piece of work in the measurements, and each feedback round counts as a human intervention.

@@ -4,6 +4,7 @@ import type { Context, Invocation } from "./commands/context.js";
 import { accept } from "./commands/accept.js";
 import { approve } from "./commands/approve.js";
 import { doctor } from "./commands/doctor.js";
+import { feedback } from "./commands/feedback.js";
 import { baselineUpdate } from "./commands/baseline-update.js";
 import { generate } from "./commands/generate.js";
 import { propose } from "./commands/propose.js";
@@ -100,7 +101,9 @@ export const commands: readonly Command[] = [
     group: "The loop",
     usage: "fazon feedback <component> (-m <text> | --file <path>)",
     summary: "Another round, with the developer's feedback.",
-    arrives: "M2",
+    options: { message: { type: "string", short: "m", multiple: true }, file: { type: "string", multiple: true } },
+    maxPositionals: 1,
+    run: feedback,
   },
   {
     name: "report",
