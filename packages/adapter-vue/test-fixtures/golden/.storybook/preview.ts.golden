@@ -1,0 +1,6 @@
+// The stories' preview: the token set's CSS, the library's styles, and the theme as the `theme`
+// global, which sets `data-theme` on the document's root element.
+import { fazonPreview } from "@fazon/adapter-vue/storybook/preview";
+import "../src/tokens.css";
+
+export default fazonPreview({ themes: ["light", "dark"] });

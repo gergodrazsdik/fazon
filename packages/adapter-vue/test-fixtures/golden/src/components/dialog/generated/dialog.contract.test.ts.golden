@@ -6,19 +6,26 @@ import { commands } from "vitest/browser";
 import api from "./api.json";
 import * as stories from "./Dialog.stories";
 
+/** The components' API as their files declare it, and how it differs from api.json, a sentence each. */
+interface ApiReading {
+  components: unknown;
+  differences: string[];
+}
+
 /**
  * Reads the API of the files api.json names, in its form, with vue-component-meta: a Vitest
  * browser command the Vue adapter's Vitest configuration provides, as it runs on the server.
  */
-function readApi(): Promise<unknown> {
+function readApi(): Promise<ApiReading> {
   return (
-    commands as unknown as { fazonVueApi: () => Promise<unknown> }
+    commands as unknown as { fazonVueApi: () => Promise<ApiReading> }
   ).fazonVueApi();
 }
 
 describe("Dialog: contract-api", () => {
   it("matches the approved API in api.json", async () => {
-    expect(await readApi()).toEqual(api.components);
+    const { components, differences } = await readApi();
+    expect(components, differences.join("\n")).toEqual(api.components);
   });
 });
 
