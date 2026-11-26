@@ -9,9 +9,15 @@
         "*.githubusercontent.com",
         "ghcr.io",
         "registry.npmjs.org",
-        "pypi.org"
+        "pypi.org",
+        "files.pythonhosted.org",
+        "cdn.playwright.dev",
+        "playwright.download.prss.microsoft.com"
       ]
     }
+  },
+  "env": {
+    "NODE_USE_ENV_PROXY": "1"
   },
   "permissions": {
     "deny": [
