@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0101, F-0019, Q-0023.
+Next free IDs: T-0102, F-0021, Q-0024.
 
 ## Now
 
@@ -111,13 +111,14 @@ Complete 2026-11-26: the CLI (`doctor`, `spec check`, `sync`, `verify`, `baselin
   - [ ] Step 4: `fazon propose` and `fazon approve` (steps 2, 3)
   - [ ] Step 5: `fazon generate [--clean]` and the generation skill (steps 2, 3)
   - [ ] Step 6: `fazon feedback` and `fazon accept` (step 5)
-  - [ ] Step 7: the HTML report: `fazon report` without `--summary` (step 3's records)
+  - [x] Step 7: the HTML report: `fazon report` without `--summary` (step 3's records) — 2026-11-26, [#68](https://github.com/gergodrazsdik/fazon/pull/68): `buildReport` in `@fazon/core` writes `.fazon/runs/<id>/report/` with its images, no script and every value escaped; `FAZON_STORYBOOK_URL` for the story links (T-0101)
   - [ ] Step 8: the example repo: Badge, Link and Dialog specified, proposed, approved and generated with no hand edits, and Button regenerated with `--clean`; real runs within the default caps, their cost reported (steps 1, 4 to 7)
 - [ ] T-0094 The minimum Claude Code version: the framework declares it (the version M2's harness is built and tested against); `propose`, `generate` and `feedback` refuse an older one, and `doctor` reports it ([ADR 0021](../adr/0021-settled-questions.md)); 2.1.332 ([ADR 0023](../adr/0023-m2-skills-and-claude-code-version.md)), with T-0050's step 2
 - [x] T-0095 The prefixed component name in the Vue adapter: `defineOptions({ name })` (the token prefix in PascalCase before the component's name) in the API mapping, `api.json` and the contract test, the conventions template and, with M2, the generation skill; and pin a behaviour-test helper (`vitest-browser-vue`) in the adapter's scaffold ([ADR 0022](../adr/0022-build-from-source-and-component-names.md), [fazon-vue-example#2](https://github.com/gergodrazsdik/fazon-vue-example/pull/2)) — 2026-11-26, [#60](https://github.com/gergodrazsdik/fazon/pull/60): `api.json` records each component's and part's name, the reader reads `defineOptions`, `contract-api` checks it, and `fazon sync` refuses a one-word component when `tokens.prefix` isn't set; `vitest-browser-vue` 3.1.0 pinned; the conventions template arrives with `fazon init` (T-0065), the generation skill with T-0050
 - [ ] T-0096 `fazon verify` on hosts other than linux/amd64: the host's `node_modules` is mounted into the image, so `verify` refuses elsewhere ([#57](https://github.com/gergodrazsdik/fazon/pull/57); see Q-0021)
 - [ ] T-0097 JSON Schemas for each command's `--json` result (`verify`, `baseline update`, `sync`, `doctor`, `spec check`), as cli.md promises ([#57](https://github.com/gergodrazsdik/fazon/pull/57))
 - [ ] T-0098 The rendered and source checks' remaining gaps: pseudo-elements in `tokens`; MATRIX-005; Vite and Storybook warnings as findings; the `package` check's `styles` rule loading the styles in a browser, and accepting any reachable stylesheet, so the exported `tokens.css` alone passes it ([fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4)) ([#56](https://github.com/gergodrazsdik/fazon/pull/56), [#57](https://github.com/gergodrazsdik/fazon/pull/57))
+- [ ] T-0101 The reusable `verify.yml` uploads the HTML report: `fazon report --no-open` on the run and `.fazon/runs/<id>/report/` in the `fazon-report` artifact beside `summary.md`; workflow.md's artifact table says so ([#68](https://github.com/gergodrazsdik/fazon/pull/68))
 - [x] T-0099 Prepare the example repo for `fazon verify` (step 12): the build emits type declarations, the exports map includes the stylesheet, and `fazon`, `playwright` 1.65.1 and `lucide-static` are dev dependencies ([#57](https://github.com/gergodrazsdik/fazon/pull/57)) — 2026-11-26, [fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4): the build emits the declarations from a Vite plugin (F-0017)
 - [x] T-0100 The example repo's ruleset requires only `lint`, `zizmor` and `pr-title`: add `framework-pin`, `library` and `fazon / verify` as required checks, so a failing verify blocks the merge (maintainer: `just github-settings`; [fazon-vue-example#5](https://github.com/gergodrazsdik/fazon-vue-example/pull/5)) — 2026-11-26, [fazon-vue-example#6](https://github.com/gergodrazsdik/fazon-vue-example/pull/6): applied by the maintainer; `just github-settings-check` reports no differences
 

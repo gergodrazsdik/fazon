@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `fazon report` builds a run's HTML report (gallery, checks and findings, judge verdicts, visual diffs, cost, iterations and the next step) in `.fazon/runs/<id>/report/`, self-contained with its images, and opens it in the browser; `--no-open` only prints its path, and `FAZON_STORYBOOK_URL` sets the Storybook its screenshots link to.
 - The `ci` workflow runs the Vue adapter's browser tests (`just test-browser`) on pull requests.
 - The reusable `verify.yml` workflow (`verify`, `judge` skipped until M3, `comment`) and `fazon report --summary`, with a self-test that calls it on the end-to-end fixture.
 - `fazon verify` runs the source checks (build, lint, test, package) and the rendered checks (a11y, tokens, layout, visual) in the pinned verifier image, with a run record, exemptions, renamed baselines and `--base` marks; `fazon baseline update` writes baselines, `fazon.json` and `NOTICE.md` from a qualifying run; `just test-verify` runs them end to end.
