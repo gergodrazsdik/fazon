@@ -285,7 +285,9 @@ export async function runImageChecks(options: ImageChecksOptions): Promise<Image
   const storybookDir = path.join(output, "storybook");
   const packDir = path.join(output, "package");
   const commands = adapter.sourceCommands({
-    components: components.map((c) => c.directory),
+    // A component with a spec but no root file yet has nothing to lint or test: only its
+    // generated manifest and API, which the linters ignore.
+    components: components.filter((c) => c.generated).map((c) => c.directory),
     storybookDir,
     packDir,
     reports,

@@ -57,6 +57,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- `fazon verify` and the generate run's checks pass over a component that has a spec but no code yet, instead of ending in error.
 - A feedback run carries the developer's feedback in every prompt, not only the first, as its calls share no session.
 - `fazon baseline update` takes the captures of a component's latest generate or feedback run when it passed, from its passing iteration, not only those of verify runs. A component's inputs hash leaves out its provenance file, so approving or accepting doesn't stop `baseline update`, and `fazon accept` compares a run accepted already with its checks again.
 - `fazon verify` failed with `EROFS` on a laptop once Vite, Vitest or Storybook had left caches in `node_modules`; the working copy now links only the packages and pnpm's own entries. `fazonVueEslint()` ignores the run records in `.fazon/`.

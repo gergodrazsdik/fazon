@@ -97,6 +97,44 @@ describe("the rendered checks", () => {
     await access(path.join(runDir, "captures/dark/button/label--variant-primary--size-md--hover.png"));
   });
 
+  it("skip a component with a spec but no root file yet, whose stories the Storybook build doesn't have", async () => {
+    const manifest = button.manifest;
+    if (manifest === undefined) throw new Error("The example Button has no manifest.");
+    const [first] = manifest.stories;
+    if (first === undefined) throw new Error("The example Button has no stories.");
+    const badge: VerifyComponent = {
+      ...button,
+      name: "badge",
+      spec: { ...button.spec, name: "Badge" },
+      generated: false,
+      manifest: {
+        ...manifest,
+        component: "Badge",
+        stories: [{ ...first, name: "badge--empty--default", storybookId: "badge--empty-default" }],
+      },
+    };
+    const seen: string[] = [];
+    const result = await run({
+      components: [button, badge],
+      allComponents: [button, badge],
+      storybookIndex: new Map([["Button", (button.manifest?.stories ?? []).map((s) => s.storybookId)]]),
+      renderer: {
+        render: (component, story, theme) => {
+          seen.push(`${component.name} ${story.name} ${theme}`);
+          return Promise.resolve(rendered());
+        },
+      },
+    });
+    expect(statuses(result)).toEqual([
+      ["a11y", "pass"],
+      ["tokens", "pass"],
+      ["layout", "pass"],
+      ["visual", "pass"],
+    ]);
+    expect(seen).toHaveLength(27 * 2);
+    expect(seen.every((s) => s.startsWith("button "))).toBe(true);
+  });
+
   it("compare with the baselines: unchanged, changed with a diff image, orphans, and renamed pairs", async () => {
     const story = "button--label--variant-primary--size-md--default";
     const changed = "button--label--variant-secondary--size-md--default";

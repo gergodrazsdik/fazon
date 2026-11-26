@@ -20,6 +20,26 @@ export const cliBin = path.join(workspace, "packages/cli/dist/bin.js");
 
 /** A stand-in for the `lucide-static` package: the icon the Button stories use, and a license. */
 export const lucideLicense = "ISC License (a stand-in for the end-to-end test)\n";
+/** A spec with no API and no component yet, which `fazon sync` gives only its manifest and API. */
+const badgeSpec = `---
+fazon: 0
+name: Badge
+tier: primitive
+summary: Labels an item with a short status.
+---
+
+## Purpose
+
+Labels an item with a short status, such as New.
+
+## Behaviour
+
+- Not interactive.
+
+## Never
+
+- Never used as a button.
+`;
 const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>\n`;
 
 const packageJson = {
@@ -161,6 +181,9 @@ export async function createProject(options: ProjectOptions, parent = tmpdir()):
   await write("src/index.ts", 'import "./tokens.css";\n');
   await write(".gitignore", "node_modules/\ndist/\n.fazon/\nfazon.local.yaml\n");
   await write("specs/button.md", await readFile(path.join(examples, "examples/specs/valid/button.md"), "utf8"));
+  // A component with a spec but no code yet, as between its spec and its first generate run: the
+  // checks pass it over until its root file exists.
+  await write("specs/badge.md", badgeSpec);
   await cp(path.join(examples, "example-library/tokens"), path.join(root, "tokens"), { recursive: true });
   await applyTokenFixes(path.join(root, "tokens"));
   await cp(new URL("library/Button.vue", import.meta.url), path.join(root, "src/components/button/Button.vue"));
