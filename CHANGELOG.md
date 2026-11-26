@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The reusable `verify.yml` workflow (`verify`, `judge` skipped until M3, `comment`) and `fazon report --summary`, with a self-test that calls it on the end-to-end fixture.
 - `fazon verify` runs the source checks (build, lint, test, package) and the rendered checks (a11y, tokens, layout, visual) in the pinned verifier image, with a run record, exemptions, renamed baselines and `--base` marks; `fazon baseline update` writes baselines, `fazon.json` and `NOTICE.md` from a qualifying run; `just test-verify` runs them end to end.
 - A paragraph content node for spec fixtures, `{ p: "text" }`, which renders as a `<p>`; plain strings stay inline text.
 - `fazon sync` writes the token set's themes into `.storybook/generated/themes.ts`, which the Storybook preview imports, so a new theme reaches the theme switch and `sync --check` catches drift.
@@ -37,3 +38,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - The baseline lifecycle, version 0: where baselines live, how `fazon baseline update` writes them, and how the visual check treats them locally and in CI.
 - The check catalogue, version 0: one rule sheet per check, and passing and failing HTML fixtures for the rendered checks.
 - The story matrix rules, version 0: how stories are generated, produced, captured and named, the story manifest's JSON Schema, and the example specs' manifests.
+
+### Fixed
+
+- `fazon verify --base` read the base's baselines from the checkout's root, so a project in a subdirectory saw every baseline as added.
