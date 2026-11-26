@@ -1,6 +1,7 @@
 # The workflow `fazon init` writes into a consumer repository, as .github/workflows/fazon.yml.
 # Before M5 the reusable workflow is referenced by the framework commit the repository pins;
-# from M5, by a release tag.
+# from M5, by a release tag. A repository whose install needs more than
+# `pnpm install --frozen-lockfile` passes `install-command` under `with:` (docs/spec/workflow.md#installing).
 ---
 name: fazon
 

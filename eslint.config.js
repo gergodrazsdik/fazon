@@ -6,8 +6,19 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  // Local, gitignored directories: agents' worktrees (.claude/worktrees) and run records (.fazon) are never linted.
-  { ignores: ["**/dist/", "**/coverage/", "docs/", "**/node_modules/", ".claude/", "**/.fazon/"] },
+  // Local, gitignored directories: agents' worktrees (.claude/worktrees), run records (.fazon) and the
+  // consumer project the reusable workflow's self-test writes (packages/cli/e2e/selftest) are never linted.
+  {
+    ignores: [
+      "**/dist/",
+      "**/coverage/",
+      "docs/",
+      "**/node_modules/",
+      ".claude/",
+      "**/.fazon/",
+      "packages/cli/e2e/selftest/",
+    ],
+  },
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,

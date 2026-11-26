@@ -45,3 +45,8 @@ storybook-static/
 # Fazon's run records and HTML reports stay out of git (the committed
 # per-component provenance files live elsewhere; ADR 0003).
 .fazon/
+
+# The reusable workflow's self-test writes its consumer project next to its setup script
+# (packages/cli/e2e/selftest/setup.sh).
+packages/cli/e2e/selftest/*
+!packages/cli/e2e/selftest/setup.sh

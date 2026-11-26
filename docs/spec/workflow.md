@@ -44,8 +44,9 @@ jobs:
 
 | Input | Default | Meaning |
 |---|---|---|
-| `working-directory` | `.` | Where `fazon.yaml` and `package.json` are. |
-| `node-version-file` | `.node-version` | The Node.js version to install. |
+| `working-directory` | `.` | Where `fazon.yaml` and `package.json` are, from the repository's root. |
+| `node-version-file` | `.node-version` | The file that names the Node.js version to install, from the repository's root. |
+| `install-command` | `pnpm install --frozen-lockfile` | The command that installs the dependencies; see [installing](#installing). |
 | `artifact-retention-days` | `14` | How long the artifacts are kept. |
 | `timeout-minutes` | `30` | The `verify` job's limit; the `judge` job has half of it. |
 
@@ -55,7 +56,7 @@ jobs:
 
 | Output | Meaning |
 |---|---|
-| `status` | The `verify` job's status from `fazon verify`: `ok`, `failed` or `error`. |
+| `status` | The `verify` job's status: `fazon verify`'s `ok`, `failed` or `error`. It is `failed` when `fazon spec check` or `fazon sync --check` fails or `fazon verify` refuses, and `error` when `fazon verify` didn't run. |
 
 ## Jobs
 
@@ -64,18 +65,29 @@ jobs:
 The required check, named `<caller job> / verify` (for example `fazon / verify`). Permissions: `contents: read`; no secret.
 
 1. Check out the pull request with its history, and without persisting credentials.
-2. Install Node.js and the repository's dependencies from its lockfile.
+2. Install Node.js and the repository's dependencies from its lockfile, as [installing](#installing) describes.
 3. `fazon doctor`. It refuses when `fazon.local.yaml` exists. Before M5, it also checks that the installed CLI comes from the commit the workflow was called at ([ADAPTER-003](adapter-boundary.md#rules)).
 4. `fazon spec check` and `fazon sync --check`.
-5. `fazon verify --base <base branch> --no-judge`. It runs the source and rendered checks in the pinned verifier image, started with Docker exactly as on a laptop, and marks the stories whose baselines the pull request adds or changes.
-6. `fazon report --summary` writes the job summary.
-7. Upload the artifacts, even when a step failed.
+5. `fazon verify --base <base branch> --no-judge`. It runs the source and rendered checks in the pinned verifier image, started with the runner's Docker exactly as on a laptop, and marks the stories whose baselines the pull request adds or changes.
+6. Upload the artifacts, even when a step failed: `fazon-storybook`, `fazon-package` and `fazon-run` first.
+7. `fazon report --summary` writes the job summary, under a heading with the job's status and any of steps 2 to 4 that failed, with links to the artifacts; it is uploaded as `fazon-report`.
 
-The job fails when any check has a blocking finding.
+The job fails when any check has a blocking finding, or any step fails.
+
+#### Installing
+
+The job installs pnpm at the version `package.json`'s `packageManager` names, when it names one, and then runs the `install-command` input with bash in the working directory. The default, `pnpm install --frozen-lockfile`, installs from the lockfile. A repository whose install needs more passes its own command, which may also set variables for the later steps through the file `$GITHUB_ENV` names. Before M5, the example repository builds the pinned framework commit first ([ADR 0022](../adr/0022-build-from-source-and-component-names.md)):
+
+```yaml
+    with:
+      install-command: scripts/framework.sh && pnpm install --frozen-lockfile
+```
+
+The other steps run the CLI as `node_modules/.bin/fazon` in the working directory, where a package manager installs it.
 
 ### `judge`
 
-Runs after `verify` passes, unless the judge's policy is `off` or the secret is missing. Permissions: `contents: read`; the API key, as an environment variable for this job only.
+Runs after `verify` passes, unless the judge's policy is `off` or the secret is missing. Until the judge arrives in M3 (T-0056), `fazon verify` reports it unavailable and the job is skipped; the summary says so. Permissions: `contents: read`; the API key, as an environment variable for this job only.
 
 1. Check out, install, and download `verify`'s run and captures.
 2. `fazon judge <run>`: the judge looks at the stories with added or changed baselines, within the CI cap ([judge](judge.md#cost)).
@@ -87,7 +99,7 @@ With policy `advisory` (the default), the job fails only on its own errors, neve
 
 Runs after the other two, whatever their result, for pull requests from branches of the same repository. Permissions: `pull-requests: write`.
 
-It downloads the summary the earlier jobs wrote, and creates or updates one comment on the pull request, found by a hidden marker (`<!-- fazon:summary -->`), with that summary. It checks out nothing, runs no code from the repository, and never sees the API key. Pull requests from forks get a read-only token, so for them the job is skipped, and the job summary is the only place for the result.
+It downloads the summary the earlier jobs wrote (`summary.md` in the `fazon-report` artifact), and creates or updates one comment on the pull request, found by a hidden marker (`<!-- fazon:summary -->`), with that summary. It checks out nothing, runs no code from the repository, and never sees the API key. Pull requests from forks get a read-only token, so for them the job is skipped, and the job summary is the only place for the result.
 
 ## What it reports
 
@@ -98,14 +110,14 @@ The **summary**, in the job summary and the comment, gives each component:
 - the baselines the pull request adds, changes, removes or renames;
 - the judge's cost.
 
-It links to the artifacts.
+It links to the artifacts: `fazon report --summary` ends with a placeholder line, `<!-- fazon:artifacts -->`, which the workflow replaces with the links.
 
 | Artifact | Content |
 |---|---|
-| `fazon-report` | the HTML report, with captures, diff images, before-and-after images of changed baselines, and judge findings |
+| `fazon-report` | the HTML report, with captures, diff images, before-and-after images of changed baselines, and judge findings; until the HTML report arrives in M2, only the summary (`summary.md`) |
 | `fazon-storybook` | the static Storybook build |
 | `fazon-package` | the packed library tarball |
-| `fazon-run` | the verify run's record and captures, which the `judge` job reads |
+| `fazon-run` | the verify run's directory without its Storybook build and tarball: the record, `verify.json`, captures and diff images, logs and tool reports, which the `judge` job reads |
 
 No artifact contains a transcript, a credential or the agent's prompts.
 

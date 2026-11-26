@@ -28,7 +28,7 @@ LICENSES/                MIT-0.txt: the license of template text Fazon writes in
 packages/                cli/ (the `fazon` package), core/ (`@fazon/core`), adapter-vue/ (`@fazon/adapter-vue`)
 verifier/                the verifier image: Containerfile, fonts, smoke test (verifier/README.md)
 .claude/settings.json    committed Claude Code sandbox and deny rules
-.github/                 workflows/ (lint.yml, ci.yml, verifier.yml, rendered.yml, verify-e2e.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
+.github/                 workflows/ (lint.yml, ci.yml, verifier.yml, rendered.yml, verify-e2e.yml, verify.yml, verify-selftest.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
 docs/design/brief.md     the design brief (complete; changes only when the maintainer asks)
 docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker

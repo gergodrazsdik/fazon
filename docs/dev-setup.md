@@ -54,6 +54,8 @@ just check    # the checks CI runs: linters, ESLint, Prettier, build, tests
 
 `just test-verify` runs `fazon verify` and `fazon baseline update` end to end: it builds the packages, writes a component library with the example Button under `.fazon/e2e/`, verifies it in the verifier image, writes its baselines, verifies it again, and then seeds one defect per check. `fazon.yaml` pins an image by digest, so the image needs one: Podman gives an image it builds a digest (`CONTAINER_CLI=podman just test-verify` builds `localhost/fazon-verifier:dev` when it's missing); with Docker, pass an image pulled by digest, `just test-verify ghcr.io/gergodrazsdik/fazon-verifier@sha256:<digest>`. The `verify-e2e` workflow runs it in CI. `FAZON_E2E_KEEP=1` keeps the project and its runs for a look.
 
+The reusable workflow consumers call, `.github/workflows/verify.yml` ([interface](spec/workflow.md)), is tested by `verify-selftest.yml`, which calls it on the same project: `packages/cli/e2e/selftest/setup.sh`, its install command, builds the packages and the image with Podman and writes the project into its own directory (gitignored). The project passes, so the workflow must end `ok`; run the workflow by hand with `seed` to check that a defect per check makes it end `failed`.
+
 The Vue adapter's browser integration tests run the generated contract tests in Vitest's browser mode and build a Storybook, so they need Chromium and stay out of `just check`:
 
 ```sh

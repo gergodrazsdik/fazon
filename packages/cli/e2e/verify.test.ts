@@ -5,12 +5,12 @@
 // breaks, `visual` with a diff image. Needs the built packages, a container runtime and the image,
 // which scripts/test-verify.sh provides as FAZON_E2E_IMAGE (by digest).
 import { execFile } from "node:child_process";
-import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { validateWithSchema } from "@fazon/core";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { cliBin, createProject, lucideLicense, workspace } from "./project.js";
+import { cliBin, createProject, lucideLicense, seedDefects, workspace } from "./project.js";
 
 const run = promisify(execFile);
 const image = process.env.FAZON_E2E_IMAGE ?? "";
@@ -126,27 +126,7 @@ describe("fazon verify and fazon baseline update in the verifier image", () => {
   });
 
   it("fail each check with the rule a seeded defect breaks", async () => {
-    const vue = path.join(project, "src/components/button/Button.vue");
-    const original = await readFile(vue, "utf8");
-    const seeded = original
-      // test: contract-api, a default that differs from the approved API
-      .replace('size: "md"', 'size: "lg"')
-      // a11y: spec-aria, an attribute the spec lists that no story shows any more
-      .replace(`:aria-disabled="props.loading ? 'true' : undefined"`, "")
-      // lint and tokens: raw-value
-      .replace("</style>", '.button[data-variant="ghost"] {\n  border-color: #2050d0;\n}\n</style>')
-      // layout: clipped-text
-      .replace(
-        "</style>",
-        '.button[data-size="sm"] {\n  max-inline-size: 4ch;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n</style>',
-      );
-    expect(seeded).not.toBe(original);
-    await writeFile(vue, seeded);
-    // build: types
-    await writeFile(path.join(project, "src/components/button/seed.ts"), 'export const size: number = "md";\n');
-    // package: export, an entry that leaves the component out (and build: generated, as sync wrote it)
-    const entry = path.join(project, "src/index.ts");
-    await writeFile(entry, (await readFile(entry, "utf8")).replace(/^export \{ default as Button \}.*\n/m, ""));
+    const broken = await seedDefects(project);
 
     const json = await fazon("verify", "--no-judge");
     expect(json.status, JSON.stringify(json.messages)).toBe("failed");
@@ -156,17 +136,7 @@ describe("fazon verify and fazon baseline update in the verifier image", () => {
     expect(run.status).toBe("failed");
     expect(run).not.toHaveProperty("reason");
     const rules = new Set(findings.filter((f) => f.blocking).map((f) => `${f.check}/${f.rule}`));
-    for (const expected of [
-      "build/types",
-      "build/generated",
-      "lint/raw-value",
-      "test/contract-api",
-      "package/export",
-      "a11y/spec-aria",
-      "tokens/raw-value",
-      "layout/clipped-text",
-      "visual/changed",
-    ]) {
+    for (const expected of [...broken, "visual/changed"]) {
       expect([...rules], expected).toContain(expected);
     }
     const changed = findings.filter((f) => f.check === "visual" && f.rule === "changed");

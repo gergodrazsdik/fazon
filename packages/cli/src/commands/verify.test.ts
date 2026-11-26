@@ -299,6 +299,31 @@ describe("fazon verify", () => {
     };
     expect(details.base).toEqual((json.result as { base: unknown }).base);
   });
+
+  it("compares the baselines with --base when the repository is a subdirectory of the checkout", async () => {
+    const outer = await repository();
+    try {
+      const lib = path.join(outer, "packages/lib");
+      await mkdir(path.dirname(lib), { recursive: true });
+      await cp(root, lib, { recursive: true });
+      const file = baselinePath("light", "button", "button--a");
+      await mkdir(path.dirname(path.join(lib, "baselines", file)), { recursive: true });
+      await writeFile(path.join(lib, "baselines", file), png(1));
+      const identity = ["-c", "user.name=t", "-c", "user.email=t@example.com", "-c", "commit.gpgsign=false"];
+      await git("git", ["init", "--quiet"], { cwd: outer });
+      await git("git", [...identity, "add", "."], { cwd: outer });
+      await git("git", [...identity, "commit", "--quiet", "-m", "base"], { cwd: outer });
+      await writeFile(path.join(lib, "baselines", file), png(2));
+
+      const { json } = await captureJson(["verify", "--base", "HEAD", "--no-judge"], machine(lib, { checks: passing }));
+      expect((json.result as { base: unknown }).base).toEqual({
+        ref: "HEAD",
+        changes: [{ path: file, mark: "changed" }],
+      });
+    } finally {
+      await removeRepository(outer);
+    }
+  });
 });
 
 describe("fazon baseline update", () => {
