@@ -49,14 +49,26 @@ describe("fazon spec new", () => {
     expect(text.match(/^## .*$/gm)).toEqual(["## Purpose", "## Behaviour", "## Never"]);
   });
 
-  it("writes a spec that fazon spec check passes, beside the others", async () => {
+  it("writes a spec that fazon spec check fails only for its placeholders (SPEC-019), beside the others", async () => {
     for (const name of ["button", "dialog", "tabs"]) {
       await copyExample(root, `valid/${name}.md`, `specs/${name}.md`);
     }
     expect((await capture(["spec", "new", "html-editor"], machine)).code).toBe(0);
     const { code, json } = await captureJson(["spec", "check"], machine);
+    expect(code).toBe(1);
+    const specs = (json.result as { specs: { spec: string; findings: { rule: string; line: number }[] }[] }).specs;
+    expect(specs.filter((spec) => spec.findings.length > 0).map((spec) => spec.spec)).toEqual(["specs/html-editor.md"]);
+    const findings = specs.find((spec) => spec.spec === "specs/html-editor.md")?.findings ?? [];
+    expect(findings.map((finding) => finding.rule)).toEqual(["SPEC-019", "SPEC-019", "SPEC-019", "SPEC-019"]);
+  });
+
+  it("writes a spec that fazon spec check passes once its placeholders are replaced", async () => {
+    await capture(["spec", "new", "badge"], machine);
+    const text = (await read("specs/badge.md")).replace(/TODO: [^\n"]*/g, "Content.");
+    await writeFile(path.join(root, "specs/badge.md"), text);
+    const { code, json } = await captureJson(["spec", "check", "badge"], machine);
     expect(code).toBe(0);
-    expect(json.messages).toContainEqual({ level: "info", text: "4 specs checked: no findings." });
+    expect(json.messages).toContainEqual({ level: "info", text: "1 spec checked: no findings." });
   });
 
   it("writes no license header or copyright line (LICENSE-002), with LF line endings", async () => {

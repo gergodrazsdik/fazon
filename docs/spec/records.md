@@ -21,6 +21,8 @@ Every run's files live under `.fazon/` in the repository where Fazon runs. Git i
 
 ```text
 .fazon/
+  locks/
+    button.json             the run lock of a component with an agent run in progress: the run, its process and start time
   runs/
     20261125T164012Z-button-3f9a/
       run.json              the run record

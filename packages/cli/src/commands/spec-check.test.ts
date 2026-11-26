@@ -48,7 +48,7 @@ describe("fazon spec check", () => {
 
   it("says which rules it checked", async () => {
     const { stdout } = await capture(["spec", "check"], machine);
-    expect(stdout).toContain("Checked SPEC-001 and SPEC-002; the other SPEC rules arrive in M2.");
+    expect(stdout).toContain("Checked SPEC-001, SPEC-002 and SPEC-019; the other SPEC rules arrive in M2.");
   });
 
   it("fails (1) with each finding's rule, path, line and message", async () => {

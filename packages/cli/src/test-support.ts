@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Helpers for the CLI's tests: a fake machine and a captured run. Not exported from the package.
+import { execFile } from "node:child_process";
 import { copyFile, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -18,6 +19,9 @@ export interface FakeMachine {
   readonly cwd: string;
   readonly env?: Readonly<Record<string, string | undefined>>;
   readonly nodeVersion?: string;
+  /** The Claude Code executable, as the agent commands run it. */
+  readonly claudeCode?: string;
+  readonly interrupt?: AbortSignal;
   /** Installed programs, with what `<program> --version` prints. */
   readonly programs?: Readonly<Record<string, string>>;
   /** Runs a program other than with `--version`; `undefined` leaves it to the default (exit 1). */
@@ -34,12 +38,16 @@ export function fakeEnvironment({
   nodeVersion = "26.13.1",
   programs = {},
   handle,
+  claudeCode,
+  interrupt,
 }: FakeMachine): Environment {
   return {
     cwd,
     env,
     nodeVersion,
     user: { uid: 1000, gid: 1000 },
+    ...(claudeCode === undefined ? {} : { claudeCode }),
+    ...(interrupt === undefined ? {} : { interrupt }),
     exec: (program, args, options) => {
       const handled = handle?.(program, args, options);
       if (handled !== undefined) return handled;
@@ -109,4 +117,26 @@ export async function copyExample(root: string, example: string, to: string): Pr
 
 export function removeRepository(root: string): Promise<void> {
   return rm(root, { recursive: true, force: true });
+}
+
+/** The core's fake Claude Code (packages/core/src/agent/test-support.ts), which @fazon/core doesn't export. */
+interface AgentTestSupport {
+  fakeClaude(): Promise<string>;
+}
+
+/** Writes the core's fake Claude Code into a temporary directory and returns its path; vitest loads it from the core's source. */
+export async function fakeClaudeCode(): Promise<string> {
+  const source = new URL("../../core/src/agent/test-support.ts", import.meta.url);
+  const support = (await import(source.href)) as AgentTestSupport;
+  return support.fakeClaude();
+}
+
+/** Makes a directory a git repository, as the agent call's snapshots need. */
+export function gitInit(root: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    execFile("git", ["init", "--quiet", "."], { cwd: root }, (error) => {
+      if (error === null) resolve();
+      else reject(new Error(`git init failed: ${error.message}`));
+    });
+  });
 }

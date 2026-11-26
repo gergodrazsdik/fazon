@@ -4,12 +4,14 @@ import { adapterId, mapComponent, mapValueSchema } from "./api.js";
 import { selfChecks, sourceCommands, testRule } from "./commands.js";
 import { themesFile } from "./config-files.js";
 import { entryFileText, generateFiles } from "./generate.js";
+import { apiMappingText } from "./mapping-text.js";
 
 /** The Vue 3 adapter (docs/spec/adapter-boundary.md#the-vue-adapter). */
 export const vueAdapter: Adapter = {
   id: adapterId,
   framework: "Vue 3",
   extensionSchema: { map: mapValueSchema },
+  apiMappingText,
   componentFiles(spec) {
     return {
       files: mapComponent(spec, "").scopes.map((scope) => ({

@@ -78,7 +78,7 @@ Run:
 fazon spec check <component>
 ```
 
-It exits 0 when the spec is valid and 1 with findings, each with its rule, its line and a hint. Fix each finding in the spec and run it again, until it reports no findings. When a fix would change what the developer said, such as dropping a state or renaming a field, ask them first. Never leave the spec in a state the check rejects: if a field can't be made valid yet, take it out and note it for after `fazon approve`.
+It exits 0 when the spec is valid and 1 with findings, each with its rule, its line and a hint. Fix each finding in the spec and run it again, until it reports no findings. When a fix would change what the developer said, such as dropping a state or renaming a field, ask them first. Never leave the spec in a state the check rejects: if a field can't be made valid yet, take it out and note it for after `fazon approve`. The one exception is a `TODO:` placeholder the developer hasn't answered yet: the check reports each one (SPEC-019), and `fazon propose` and `fazon approve` refuse the spec until they're replaced.
 
 ## Finish
 

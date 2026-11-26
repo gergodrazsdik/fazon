@@ -179,6 +179,11 @@ export interface Adapter {
   /** The framework the adapter targets, for messages. */
   readonly framework: string;
   readonly extensionSchema: ExtensionSchema;
+  /**
+   * The **API mapping** as Markdown, for the agent's prompt: how each neutral member becomes the
+   * framework's API, and what `extensions` the adapter takes. `fazon propose` gives it to the agent.
+   */
+  readonly apiMappingText?: string;
   /** **Component files:** the component's and its parts' file names, and the patterns the agent may write. */
   componentFiles(spec: Spec): ComponentFiles;
   /**

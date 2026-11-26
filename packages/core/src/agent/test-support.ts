@@ -29,7 +29,9 @@ export async function writeFiles(root: string, files: Readonly<Record<string, st
 /**
  * The fake Claude Code. `FAKE_CLAUDE` picks what it does:
  *
- * - `success`: the init event, one assistant message reported twice (once per content block), and a successful result;
+ * - `success`: the init event, one assistant message reported twice (once per content block), and a
+ *   successful result whose final message is `FAKE_CLAUDE_RESULT` ("Done." by default), with
+ *   `FAKE_CLAUDE_STRUCTURED` (JSON) as its structured output when set;
  * - `budget`: a result with `error_max_budget_usd`, exit 1;
  * - `crash`: the init event, a message on standard error, exit 2 without a result;
  * - `malformed`: a line that isn't JSON, exit 0;
@@ -83,7 +85,12 @@ process.stdin.on("end", () => {
   });
   switch (mode) {
     case "success":
-      init(); assistant(); assistant(); result("success", { result: "Done." }); process.exit(0);
+      init(); assistant(); assistant();
+      result("success", {
+        result: env.FAKE_CLAUDE_RESULT === undefined ? "Done." : env.FAKE_CLAUDE_RESULT,
+        ...(env.FAKE_CLAUDE_STRUCTURED ? { structured_output: JSON.parse(env.FAKE_CLAUDE_STRUCTURED) } : {}),
+      });
+      process.exit(0);
     case "budget":
       init(); assistant(); result("error_max_budget_usd", { errors: ["Budget limit reached"] }); process.exit(1);
     case "error-result":

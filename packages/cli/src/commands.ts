@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { ParseArgsOptionsConfig } from "node:util";
 import type { Context, Invocation } from "./commands/context.js";
+import { approve } from "./commands/approve.js";
 import { doctor } from "./commands/doctor.js";
 import { baselineUpdate } from "./commands/baseline-update.js";
+import { propose } from "./commands/propose.js";
 import { report } from "./commands/report.js";
 import { specCheck } from "./commands/spec-check.js";
 import { specNew } from "./commands/spec-new.js";
@@ -62,7 +64,7 @@ export const commands: readonly Command[] = [
     name: "spec check",
     group: "Specs",
     usage: "fazon spec check [<component>...]",
-    summary: "Validate specs (SPEC-001 and SPEC-002 so far; the rest in M2).",
+    summary: "Validate specs (SPEC-001, SPEC-002 and SPEC-019 so far; the rest in M2).",
     run: specCheck,
   },
   {
@@ -70,14 +72,16 @@ export const commands: readonly Command[] = [
     group: "The loop",
     usage: "fazon propose <component>",
     summary: "The agent drafts the API into the spec.",
-    arrives: "M2",
+    maxPositionals: 1,
+    run: propose,
   },
   {
     name: "approve",
     group: "The loop",
     usage: "fazon approve <component>",
     summary: "Approve the spec's API (decision 1).",
-    arrives: "M2",
+    maxPositionals: 1,
+    run: (invocation, context) => approve(invocation, context),
   },
   {
     name: "generate",

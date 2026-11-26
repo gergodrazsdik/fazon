@@ -106,7 +106,7 @@ After the developer upgrades the CLI package, this sets `image` in `fazon.yaml` 
 fazon spec new <component> [--tier primitive|form-control|composite]
 ```
 
-Writes `specs/<component>.md` from the template, with every required field and heading, and `TODO:` placeholders where the developer's content goes; it writes no API. `--tier` defaults to `primitive`. It creates the specs directory when it doesn't exist, and refuses (2) when the file exists, or when the component's PascalCase name wouldn't give back the file name (SPEC-002), as for `heading-2`. The spec skill drafts the content with the developer. Result: the path written, the component's name and its tier.
+Writes `specs/<component>.md` from the template, with every required field and heading, and `TODO:` placeholders where the developer's content goes; it writes no API. `--tier` defaults to `primitive`. It creates the specs directory when it doesn't exist, and refuses (2) when the file exists, or when the component's PascalCase name wouldn't give back the file name (SPEC-002), as for `heading-2`. The spec skill drafts the content with the developer. Until it replaces each placeholder, `spec check` reports the placeholder (SPEC-019), so `propose` and `approve` refuse the spec. Result: the path written, the component's name and its tier.
 
 ### `fazon spec check`
 
@@ -118,13 +118,20 @@ Validates the named specs, or all of them, by every SPEC rule ([validation](spec
 
 ## The loop
 
+`propose`, `generate` and `feedback` start agent runs. Each one takes the component's run lock, `.fazon/locks/<component>.json` ([the `.fazon/` directory](records.md#the-fazon-directory)), for as long as its run goes on, and refuses (2) while another process holds it: that is a run in progress. A lock left by a process that's gone is taken over. Each refuses (3) with a Claude Code older than the minimum, as `doctor` reports it, and an interrupt (Ctrl+C) stops the run's call and ends the run as `stopped` (130).
+
 ### `fazon propose`
 
 ```text
 fazon propose <component>
 ```
 
-A [propose run](loop-and-caps.md#runs): the agent drafts the API from the spec. The harness writes the proposed API into the spec's API fields, so the developer reviews it as a diff, edits it if needed, and then approves it. Result: the run, and the fields changed.
+A [propose run](loop-and-caps.md#runs): the agent drafts the API from the spec. The harness writes the proposed API into the spec's API fields, so the developer reviews it as a diff, edits it if needed, and then approves it. Result: the run, its status and reason, iterations, cost, the path of its record, the spec, and the fields changed.
+
+- **The call only reads** ([agent permissions](agent-permissions.md#a-propose-call)): the agent can't edit the spec, so its answer is the API as one JSON object, given to Claude Code as a JSON Schema (`--json-schema`) and read from its structured output, or else from its final message.
+- **What's written:** the API fields the answer has replace the spec's, a new field goes where the [format](spec-format.md#top-level-fields) orders it, and an API field it doesn't have is removed. A part keeps its `states`, `produce` and `a11y`, and `extensions` keeps the blocks of adapters other than the one in use. Every other line of the file stays as it was.
+- **An answer that can't be used:** when it has no JSON object, has fields that aren't API fields, or would make the spec break a SPEC rule, the call ends in error, the run needs a person (1), and the spec stays as it was.
+- **Refusals:** it refuses (2) when the spec has findings (the template's placeholders, SPEC-019, included), and when the component has a run in progress; and (3) with a Claude Code older than the minimum.
 
 ### `fazon approve`
 
@@ -132,7 +139,7 @@ A [propose run](loop-and-caps.md#runs): the agent drafts the API from the spec. 
 fazon approve <component>
 ```
 
-Decision 1. Runs `spec check` on the spec, then records the hash of its API and today's date in the component's [provenance file](records.md#provenance). It refuses (2) when the spec has findings. A later change to the API needs another `approve`. Result: the API hash.
+Decision 1. Runs `spec check` on the spec, then records the hash of its API and today's date in the component's [provenance file](records.md#provenance), with the spec's path and hash. It refuses (2) when the spec has findings, and when the provenance file isn't valid. A later change to the API needs another `approve`; an accepted `generation` stays in the file until the next `accept`. It needs no agent, and warns when the spec has no API. Result: the component, the spec, the provenance file, the API hash and the date, and the previous API hash when it changed.
 
 ### `fazon generate`
 
