@@ -10,7 +10,7 @@ Next free IDs: T-0101, F-0019, Q-0023.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M2: break T-0050 down into steps with the maintainer before starting it
+1. M2 (T-0050): steps 1, 2, 3 and 7 in parallel; then 4, 5 and 6 in order; step 8 last
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -104,8 +104,16 @@ Complete 2026-11-26: the CLI (`doctor`, `spec check`, `sync`, `verify`, `baselin
 
 ### M2 The loop
 
-- [ ] T-0050 `spec new`, `spec check`, the spec skill, `propose`, `generate`, caps, run records, the HTML report; Badge, Link and Dialog generated from specs with no hand edits, and Button regenerated the same way; the generation skill declares `defineOptions({ name })` from `api.json` and writes behaviour tests with `vitest-browser-vue` (T-0095) (break down at M2 start)
-- [ ] T-0094 The minimum Claude Code version: the framework declares it (the version M2's harness is built and tested against); `propose`, `generate` and `feedback` refuse an older one, and `doctor` reports it ([ADR 0021](../adr/0021-settled-questions.md))
+- [ ] T-0050 `spec new`, `spec check`, the spec skill, `propose`, `generate`, caps, run records, the HTML report; Badge, Link and Dialog generated from specs with no hand edits, and Button regenerated the same way; the generation skill declares `defineOptions({ name })` from `api.json` and writes behaviour tests with `vitest-browser-vue` (T-0095) (broken down with the maintainer 2026-11-26, [ADR 0023](../adr/0023-m2-skills-and-claude-code-version.md))
+  - [ ] Step 1: `fazon spec new` with the spec template, and `plugin/` with the spec skill
+  - [ ] Step 2: the headless agent call: the generated `claude -p` settings, the snapshots around each call, PERM-002 and hand edits, cost and tokens from Claude Code's output; tested against a fake `claude` (T-0094)
+  - [ ] Step 3: caps, escalation, how an agent run ends, and the run record and provenance of agent runs
+  - [ ] Step 4: `fazon propose` and `fazon approve` (steps 2, 3)
+  - [ ] Step 5: `fazon generate [--clean]` and the generation skill (steps 2, 3)
+  - [ ] Step 6: `fazon feedback` and `fazon accept` (step 5)
+  - [ ] Step 7: the HTML report: `fazon report` without `--summary` (step 3's records)
+  - [ ] Step 8: the example repo: Badge, Link and Dialog specified, proposed, approved and generated with no hand edits, and Button regenerated with `--clean`; real runs within the default caps, their cost reported (steps 1, 4 to 7)
+- [ ] T-0094 The minimum Claude Code version: the framework declares it (the version M2's harness is built and tested against); `propose`, `generate` and `feedback` refuse an older one, and `doctor` reports it ([ADR 0021](../adr/0021-settled-questions.md)); 2.1.332 ([ADR 0023](../adr/0023-m2-skills-and-claude-code-version.md)), with T-0050's step 2
 - [x] T-0095 The prefixed component name in the Vue adapter: `defineOptions({ name })` (the token prefix in PascalCase before the component's name) in the API mapping, `api.json` and the contract test, the conventions template and, with M2, the generation skill; and pin a behaviour-test helper (`vitest-browser-vue`) in the adapter's scaffold ([ADR 0022](../adr/0022-build-from-source-and-component-names.md), [fazon-vue-example#2](https://github.com/gergodrazsdik/fazon-vue-example/pull/2)) — 2026-11-26, [#60](https://github.com/gergodrazsdik/fazon/pull/60): `api.json` records each component's and part's name, the reader reads `defineOptions`, `contract-api` checks it, and `fazon sync` refuses a one-word component when `tokens.prefix` isn't set; `vitest-browser-vue` 3.1.0 pinned; the conventions template arrives with `fazon init` (T-0065), the generation skill with T-0050
 - [ ] T-0096 `fazon verify` on hosts other than linux/amd64: the host's `node_modules` is mounted into the image, so `verify` refuses elsewhere ([#57](https://github.com/gergodrazsdik/fazon/pull/57); see Q-0021)
 - [ ] T-0097 JSON Schemas for each command's `--json` result (`verify`, `baseline update`, `sync`, `doctor`, `spec check`), as cli.md promises ([#57](https://github.com/gergodrazsdik/fazon/pull/57))
