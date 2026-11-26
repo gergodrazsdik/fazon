@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { ParseArgsOptionsConfig } from "node:util";
 import type { Context, Invocation } from "./commands/context.js";
+import { accept } from "./commands/accept.js";
 import { approve } from "./commands/approve.js";
 import { doctor } from "./commands/doctor.js";
 import { baselineUpdate } from "./commands/baseline-update.js";
@@ -115,7 +116,8 @@ export const commands: readonly Command[] = [
     group: "The loop",
     usage: "fazon accept <component>",
     summary: "Accept the latest run (decision 2).",
-    arrives: "M2",
+    maxPositionals: 1,
+    run: (invocation, context) => accept(invocation, context),
   },
   {
     name: "verify",

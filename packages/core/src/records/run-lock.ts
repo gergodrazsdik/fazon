@@ -70,6 +70,22 @@ function processRunning(pid: number): boolean {
 }
 
 /**
+ * The run in progress that holds a component's lock: the lock's holder while its process still
+ * runs; `undefined` when there's no lock, or it's stale. Neither takes nor removes the lock, for a
+ * command that only has to wait for a run, such as `fazon accept`.
+ * @param component the component's kebab-case name
+ */
+export async function heldRunLock(
+  root: string,
+  component: string,
+  options: Pick<RunLockOptions, "isRunning"> = {},
+): Promise<RunLock | undefined> {
+  const holder = await readRunLock(root, component);
+  if (holder === undefined) return undefined;
+  return (options.isRunning ?? processRunning)(holder.pid) ? holder : undefined;
+}
+
+/**
  * Takes the component's run lock for `run`. Refuses while another run holds it and its process
  * still runs; a lock left by a process that's gone (a crash), or one that can't be read, is removed
  * and taken over.

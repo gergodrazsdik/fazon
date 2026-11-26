@@ -184,6 +184,14 @@ fazon accept <component>
 
 Decision 2. Marks the component's latest run as accepted, and writes the `generation` part of its provenance file. It refuses (2) when that run didn't pass, or when the spec, approved API or component files changed since. When the run has new or changed stories, it prints the `baseline update` command to run next. Result: the accepted run.
 
+- **Which run:** the component's latest generate or feedback run; propose runs write no code and are passed over. With a feedback run, the provenance counts every run linked to it through `parent` ([provenance](records.md#provenance)).
+- **Where it's recorded:** in the provenance file only; the run record has no field for it. The file's spec hash becomes the one the run started from.
+- **What it compares:** the spec's hash and the approved API's hash with the run record's `inputs`, the approved API with the provenance file's, the token set's hash with `inputs`, and the component's files with the hash its last iteration's checks recorded in `checks/<n>/verify.json` (its spec, its directory's files and the token set, as for `baseline update`). A changed token set refuses too, since the run's checks and captures saw other tokens. A changed conventions doc or config only warns.
+- **It also refuses (2)** when the component has no generate or feedback run, while a run of it is in progress (its [run lock](records.md#the-fazon-directory) is held), when a run linked to it is missing, and when the provenance file is missing or isn't valid.
+- **A run accepted already** is reported as such, and the file isn't written again. Its files aren't compared again: the file `accept` wrote is in the component's directory.
+- **New or changed stories:** the component's `new` and `changed` stories and its orphans in the last iteration's `verify.json`.
+- **Result:** the component, the run, its kind and status, its record, the provenance file, the date, the provenance's runs, hand edits and cost, the new and changed stories and orphans, the `baseline update` command when there are any, and `alreadyAccepted` for a run accepted before.
+
 ### `fazon verify`
 
 ```text
