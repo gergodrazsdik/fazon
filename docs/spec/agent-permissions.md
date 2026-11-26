@@ -52,6 +52,15 @@ Each call's prompt carries:
 
 It may read other files of the repository to stay consistent with existing components.
 
+The prompt starts with the instructions of the generation skill, `plugin/skills/generate/SKILL.md` in the framework, without its front matter, and the component's files, the patterns the agent may write and the self-check commands. What stays the same for the run (the skill, the files, the spec, the approved API, the role tokens and the conventions doc) comes first, then the feedback, the findings and the iteration. Details:
+
+- **The approved API** is the adapter's data files in `generated/` after the refresh at the run's start (`api.json` for Vue): the API with the mapping applied, as the contract tests compare it.
+- **The role tokens** are each role token's custom property, path and type; never a resolved value.
+- **The findings** are the blocking findings of the latest iteration whose checks ran, the first 50 in full and the rest counted by check and rule, with the checks that ended in error or were skipped, and how the previous call ended when it didn't complete.
+- **Every included file** is in a fenced block whose fence is longer than any run of backticks in it.
+
+The skill reaches the call in its prompt, not as a plugin (`--plugin-dir`): the call's `--tools` list has no Skill tool, every call has to follow the instructions rather than leave it to the model to load them, and a plugin would add its commands, agents, hooks and MCP servers to a call whose tools and settings PERM-001 fixes. A developer's interactive session loads the same `plugin/` with `--plugin-dir` for the spec skill ([ADR 0023](../adr/0023-m2-skills-and-claude-code-version.md)).
+
 ## What the agent may run
 
 Exactly the adapter's self-check commands, scoped to its component: type-check, lint and the component's tests. For the Vue adapter they could be:
@@ -121,6 +130,7 @@ The harness checks Claude Code's first event: a call that lists a denied tool or
 ## Files the harness maintains
 
 - **Generated files:** at the start of each run, the harness regenerates the component's `generated/` directory from the spec: the story files and contract tests (written by the adapter) and the story manifest. Until the component's root file exists, only the story manifest and API (see the entry file below). They are committed with the component.
+- **The refresh during a run:** a generate or feedback run refreshes the component's `generated/` directory and the entry file's exports with `fazon sync`'s code at its start, and again before each check phase, as the call before it may have written the component's root file, which the story files, contract tests and export wait for. It writes nothing else `fazon sync` maintains: other components' generated files, the token CSS and the Storybook themes stay a person's to sync, and the `build` check's rule `generated` reports them when they're stale. The files the refresh writes are the harness's, not hand edits (PERM-005).
 - **The package entry file:** `fazon sync` exports a component and its parts once the component's root file exists, such as `Button.vue`. Until then, sync writes only the component's story manifest and API, with no story files, contract tests or export, so the library and its checks build before the component is generated.
 - **The token CSS:** `fazon sync` builds it from the token set ([the build](tokens.md#the-build)); the agent reads the role tokens, never this file's raw values.
 - **The Storybook themes:** `fazon sync` writes the token set's themes and default theme into the module the Storybook preview imports them from (for Vue, `.storybook/generated/themes.ts`), so a theme added to the token set reaches the theme switch.

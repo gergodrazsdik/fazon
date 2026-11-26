@@ -13,7 +13,13 @@ import type { Config } from "../config/types.js";
 import { loadTokenIndex } from "../lint/tokens.js";
 import { syncRepository } from "../sync/sync.js";
 import { loadComponents, storyProps, type VerifyComponent } from "./components.js";
-import { componentCheckStatuses, componentInputsHash, ociPlatform, writeVerifyDetails } from "./details.js";
+import {
+  componentCheckStatuses,
+  componentInputsHash,
+  ociPlatform,
+  writeVerifyDetails,
+  type VerifyDetails,
+} from "./details.js";
 import { applyExemptions } from "./exemptions.js";
 import { capturesDirectory, runRenderedChecks, skippedRenderedChecks, type RenderedChecksResult } from "./rendered.js";
 import { readRunRecord, writeRunRecord, type CheckResult, type RunRecord } from "./run-record.js";
@@ -208,12 +214,38 @@ export function finishRecord(record: RunRecord, checks: readonly CheckResult[], 
   };
 }
 
-/** Runs every check of a verify run inside the verifier image. */
-export async function verifyInImage(options: InImageOptions): Promise<InImageOutcome> {
-  const { repo, runDir, config, adapter, log } = options;
-  let record = await readRunRecord(runDir);
-  if (record === undefined) throw new Error(`The run's record is missing in ${runDir}.`);
+/** What `runImageChecks` needs besides `InImageOptions`: where its files go. */
+export interface ImageChecksOptions extends InImageOptions {
+  /**
+   * Where the tools' logs (`logs/`), JSON reports (`reports/`), the static Storybook build
+   * (`storybook/`) and the packed library (`package/`) go, absolute: the run's directory for a
+   * verify run, `checks/<n>` in it for an agent run's iteration.
+   */
+  readonly output: string;
+  /** The captures' and diff images' directory, relative to the run's directory: `captures`, or `captures/<n>`. */
+  readonly captures: string;
+  /** Called with the source checks' results before the rendered checks start, to record the step. */
+  readonly sourceChecked?: (checks: readonly CheckResult[]) => Promise<void>;
+  /**
+   * How the run counts the checks, after the exemptions and before each component's statuses:
+   * a generate run makes its component's visual diffs advisory. Unchanged by default.
+   */
+  readonly context?: (checks: CheckResult[]) => CheckResult[];
+}
 
+/** The checks' results with the exemptions applied, and what the run record has no field for. */
+export type ImageChecksOutcome =
+  | { readonly kind: "done"; readonly checks: CheckResult[]; readonly details: VerifyDetails }
+  | { readonly kind: "environment"; readonly problems: readonly string[] };
+
+/**
+ * Runs every check in the verifier image (docs/spec/check-catalogue.md#order-and-results): the
+ * Playwright check, then, in a writable working copy, the source checks and the rendered checks
+ * of the named components (all when none is named), and the spec exemptions. Writes no record:
+ * a verify run and an agent run's iteration each record the results their own way.
+ */
+export async function runImageChecks(options: ImageChecksOptions): Promise<ImageChecksOutcome> {
+  const { repo, config, adapter, log, output } = options;
   const problems = await playwrightProblems(
     repo,
     options.browsersPath ?? process.env.PLAYWRIGHT_BROWSERS_PATH ?? defaultBrowsersPath,
@@ -243,15 +275,15 @@ export async function verifyInImage(options: InImageOptions): Promise<InImageOut
     npm_config_cache: path.join(path.dirname(work), "npm-cache"),
     npm_config_update_notifier: "false",
   };
-  const run = processRunner(runDir, env);
+  const run = processRunner(output, env);
   const reports = {
-    eslint: path.join(runDir, "reports", "eslint.json"),
-    stylelint: path.join(runDir, "reports", "stylelint.json"),
-    test: path.join(runDir, "reports", "vitest.json"),
+    eslint: path.join(output, "reports", "eslint.json"),
+    stylelint: path.join(output, "reports", "stylelint.json"),
+    test: path.join(output, "reports", "vitest.json"),
   };
-  await mkdir(path.join(runDir, "reports"), { recursive: true });
-  const storybookDir = path.join(runDir, "storybook");
-  const packDir = path.join(runDir, "package");
+  await mkdir(path.join(output, "reports"), { recursive: true });
+  const storybookDir = path.join(output, "storybook");
+  const packDir = path.join(output, "package");
   const commands = adapter.sourceCommands({
     components: components.map((c) => c.directory),
     storybookDir,
@@ -270,8 +302,7 @@ export async function verifyInImage(options: InImageOptions): Promise<InImageOut
     run,
     generated: () => syncRepository(work, config, adapter, { check: true }),
   });
-  record = { ...record, verification: { checks: source.checks } };
-  await writeRunRecord(runDir, record);
+  await options.sourceChecked?.(source.checks);
 
   let rendered: RenderedChecksResult;
   if (!source.storybook) {
@@ -295,14 +326,15 @@ export async function verifyInImage(options: InImageOptions): Promise<InImageOut
         : storyProps(component.spec, component.manifest, story)(component.spec.name, 0),
   );
   let at = 0;
-  const checks = [...source.checks, ...rendered.checks].map((check) => {
+  const waived = [...source.checks, ...rendered.checks].map((check) => {
     const findings = exemptions.findings.slice(at, at + check.findings.length);
     at += check.findings.length;
     const status = check.status === "fail" && !findings.some((f) => f.blocking) ? "pass" : check.status;
     return { ...check, status, findings };
   });
+  const checks = options.context?.(waived) ?? waived;
 
-  await writeVerifyDetails(runDir, {
+  const details: VerifyDetails = {
     fazon: 0,
     platform: ociPlatform(),
     components: components.map((component) => ({
@@ -314,14 +346,34 @@ export async function verifyInImage(options: InImageOptions): Promise<InImageOut
     orphans: rendered.orphans,
     incomplete: rendered.incomplete,
     unusedExemptions: exemptions.unused.filter((u) => components.some((c) => c.name === u.component)),
+  };
+  return { kind: "done", checks, details };
+}
+
+/** Runs every check of a verify run inside the verifier image. */
+export async function verifyInImage(options: InImageOptions): Promise<InImageOutcome> {
+  const { runDir } = options;
+  const first = await readRunRecord(runDir);
+  if (first === undefined) throw new Error(`The run's record is missing in ${runDir}.`);
+  let record = first;
+  const outcome = await runImageChecks({
+    ...options,
+    output: runDir,
+    captures: capturesDirectory,
+    sourceChecked: async (checks) => {
+      record = { ...record, verification: { checks: [...checks] } };
+      await writeRunRecord(runDir, record);
+    },
   });
-  record = finishRecord(record, checks, new Date());
+  if (outcome.kind === "environment") return outcome;
+  await writeVerifyDetails(runDir, outcome.details);
+  record = finishRecord(record, outcome.checks, new Date());
   await writeRunRecord(runDir, record);
   return { kind: "done", record };
 }
 
 async function renderStories(
-  options: InImageOptions,
+  options: ImageChecksOptions,
   work: string,
   storybookDir: string,
   components: readonly VerifyComponent[],
@@ -365,6 +417,7 @@ async function renderStories(
       baselinesDir: path.join(options.repo, options.config.paths.baselines),
       image: options.config.image,
       runDir: options.runDir,
+      captures: options.captures,
       storybookIndex,
       progress: (done, total) => {
         const step = Math.max(1, Math.floor(total / 10));

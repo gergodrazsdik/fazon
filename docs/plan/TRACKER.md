@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0102, F-0021, Q-0024.
+Next free IDs: T-0102, F-0023, Q-0024.
 
 ## Now
 
@@ -109,7 +109,9 @@ Complete 2026-11-26: the CLI (`doctor`, `spec check`, `sync`, `verify`, `baselin
   - [x] Step 2: the headless agent call: the generated `claude -p` settings, the snapshots around each call, PERM-002 and hand edits, cost and tokens from Claude Code's output; tested against a fake `claude` (T-0094) — 2026-11-26, [#66](https://github.com/gergodrazsdik/fazon/pull/66): `runAgentCall` in `@fazon/core`, the flags and keys confirmed for 2.1.332 in agent-permissions.md, the adapter's `selfChecks` (F-0020)
   - [x] Step 3: caps, escalation, how an agent run ends, and the run record and provenance of agent runs — 2026-11-26, [#67](https://github.com/gergodrazsdik/fazon/pull/67): `runAgent` with the agent call, checks, refresh, judge hook, clock and interrupt injected; the `FAZON-NEEDS` line for a needed dependency or shared-code change, which the generation skill teaches (step 5); run records shared with verify in `records/`; provenance with the approved API's hash
   - [ ] Step 4: `fazon propose` and `fazon approve` (steps 2, 3)
-  - [ ] Step 5: `fazon generate [--clean]` and the generation skill (steps 2, 3)
+  - [~] Step 5: `fazon generate [--clean]` and the generation skill (steps 2, 3)
+    - [x] 5a: the checks phase, the generated-files refresh, the generate prompt and the generation skill — 2026-11-26, [#69](https://github.com/gergodrazsdik/fazon/pull/69): `imageChecksPhase` checks the whole library in the image, with the component's own diffs advisory; the refresh writes the component's `generated/` and the entry file at the run's start and before each check phase; the skill reaches the call in its prompt, not through `--plugin-dir`
+    - [ ] 5b: the `fazon generate` command, wiring steps 4 and 5a (F-0021)
   - [ ] Step 6: `fazon feedback` and `fazon accept` (step 5)
   - [x] Step 7: the HTML report: `fazon report` without `--summary` (step 3's records) — 2026-11-26, [#68](https://github.com/gergodrazsdik/fazon/pull/68): `buildReport` in `@fazon/core` writes `.fazon/runs/<id>/report/` with its images, no script and every value escaped; `FAZON_STORYBOOK_URL` for the story links (T-0101)
   - [ ] Step 8: the example repo: Badge, Link and Dialog specified, proposed, approved and generated with no hand edits, and Button regenerated with `--clean`; real runs within the default caps, their cost reported (steps 1, 4 to 7)
@@ -188,6 +190,8 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 - [ ] F-0018 pinact needs a version comment beside every pinned SHA, and the framework has no release tag before M5, so a consumer that runs pinact can't pin `verify.yml` by SHA without an exemption: the example repo's `.pinact.yaml` exempts only that workflow at a full SHA, which its ADAPTER-003 check verifies ([fazon-vue-example#5](https://github.com/gergodrazsdik/fazon-vue-example/pull/5)). The stub `fazon init` writes and workflow.md should say so until M5 (T-0065) (2026-11-26)
 - [ ] F-0019 `spec check` doesn't flag the template's `TODO:` placeholders, so a fresh spec passes and `approve` would accept one: a SPEC rule or a warning for leftover placeholders, with the other M2 SPEC work ([#65](https://github.com/gergodrazsdik/fazon/pull/65)) (2026-11-26)
 - [ ] F-0020 The agent call ([#66](https://github.com/gergodrazsdik/fazon/pull/66)) was built from Claude Code's docs, not a real run: confirm on step 8's first real run the stream-json init and result events, the cost under a subscription login, and that the sandbox's `allowWrite` for the component directory and caches wins over `denyWrite` for the repository, so the self-checks can write (2026-11-26)
+- [ ] F-0021 The refresh before each check phase writes the component's generated files between agent calls; the connection between the agent call and the loop must not count them as hand edits: take the snapshot after the refresh, or subtract its changes (step 5b, [#69](https://github.com/gergodrazsdik/fazon/pull/69)) (2026-11-26)
+- [ ] F-0022 `generationSkillFile()` finds `plugin/skills/generate/SKILL.md` relative to `@fazon/core`, so M5's packages must ship the skill where it looks (T-0065, [#69](https://github.com/gergodrazsdik/fazon/pull/69)) (2026-11-26)
 - [x] F-0013 The example token set's dark theme gives `color.text.action` on `color.surface.active` 3.28:1, below WCAG's 4.5:1: a ghost Button's active state fails `a11y`. The contrast table didn't pair those roles ([#57](https://github.com/gergodrazsdik/fazon/pull/57)'s end-to-end test waives it with an exemption; the example repo's Button will fail) (2026-11-26) — 2026-11-26: the dark theme's `color.text.action` is blue 200, 6.03:1 on the active surface ([fazon-vue-example#3](https://github.com/gergodrazsdik/fazon-vue-example/pull/3)); the contrast table pairs action text with every surface, and the end-to-end Button passes unwaived ([#57](https://github.com/gergodrazsdik/fazon/pull/57))
 
 ## Open questions

@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The generate run's checks phase in the verifier image over the whole library, the generated-files refresh, the generate prompt and the generation skill (`plugin/skills/generate/`).
 - `fazon report` builds a run's HTML report (gallery, checks and findings, judge verdicts, visual diffs, cost, iterations and the next step) in `.fazon/runs/<id>/report/`, self-contained with its images, and opens it in the browser; `--no-open` only prints its path, and `FAZON_STORYBOOK_URL` sets the Storybook its screenshots link to.
 - The loop in `@fazon/core`: the iteration, budget and run-time caps, escalation to the escalation model, how an agent run ends, and run records for propose, generate and feedback runs; reading and writing a component's provenance file, with the approved API's hash.
 - `fazon spec new` writes a spec from the MIT-0 template, and the Claude Code plugin in `plugin/` has its first skill, `spec`, which drafts a spec with the developer and runs `fazon spec check` until it's clean.

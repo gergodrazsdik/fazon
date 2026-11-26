@@ -31,6 +31,13 @@ export const provenanceFileName = "provenance.json";
 export interface SyncOptions {
   /** Write nothing; only report the files that differ (`fazon sync --check`). */
   readonly check: boolean;
+  /**
+   * Only the files this keeps, by path relative to the repository root with `/` separators, are
+   * written, removed or reported: a generate run refreshes its own component's generated files and
+   * the entry file, and leaves the rest to `fazon sync` (docs/spec/agent-permissions.md#files-the-harness-maintains).
+   * Every file by default.
+   */
+  readonly only?: (file: string) => boolean;
 }
 
 /** Something that stops `sync`: a person has to fix a spec, the token set or a file first. */
@@ -117,9 +124,11 @@ export async function syncRepository(
   const planned = await plan(root, config, adapter);
   if ("problems" in planned) return { ok: false, problems: planned.problems };
 
+  const keep = options.only ?? (() => true);
   const changes: FileChange[] = [];
   let unchanged = 0;
   for (const [file, content] of planned.files) {
+    if (!keep(file)) continue;
     const current = await readOptional(path.join(root, file));
     if (current === content) {
       unchanged++;
@@ -128,7 +137,7 @@ export async function syncRepository(
     }
   }
   const orphans = await findOrphans(root, config, planned.components, new Set(planned.files.keys()));
-  for (const file of orphans.files) changes.push({ path: file, change: "removed" });
+  for (const file of orphans.files.filter((file) => keep(file))) changes.push({ path: file, change: "removed" });
   changes.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 
   if (!options.check) {
@@ -140,10 +149,10 @@ export async function syncRepository(
         await writeAtomically(target, planned.files.get(change.path) ?? "");
       }
     }
-    for (const directory of orphans.directories) {
+    for (const directory of orphans.directories.filter((d) => keep(`${d}/`))) {
       await rm(path.join(root, directory), { recursive: true, force: true });
     }
-    for (const directory of orphans.emptied) {
+    for (const directory of orphans.emptied.filter((d) => keep(`${d}/`))) {
       await removeEmptyDirectories(path.join(root, directory));
     }
   }
