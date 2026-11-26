@@ -160,7 +160,13 @@ A [generate run](loop-and-caps.md#runs), until every check passes or a cap is re
 fazon feedback <component> (-m <text> | --file <path>)
 ```
 
-Starts a [feedback run](loop-and-caps.md#feedback) linked to the component's latest run, with the developer's feedback in its first prompt. It refuses (2) when the component has no run. Result: as for `generate`.
+Starts a [feedback run](loop-and-caps.md#feedback) linked to the component's latest run, with the developer's feedback in its first prompt. It refuses (2) when the component has no run. Exits 1 when the run ends as needs a person. Result: as for `generate`, with the run it answers as `parent`.
+
+- **Which run:** the component's latest generate or feedback run, as for `accept`, whatever its status: one that passed, needs a person or was interrupted. Propose runs are passed over. A newer run of the component whose record can't be read refuses (2), as it may be the latest.
+- **The feedback:** exactly one `-m <text>` (`--message`) or `--file <path>`, a text file read from the current directory; neither, both, or either one twice refuses (2), and so do a file that can't be read and a text that's empty once surrounding white space is trimmed.
+- **The run:** its first prompt carries the feedback and the blocking findings of the parent's last iteration whose checks ran; later prompts carry their own iteration's findings, as in a generate run. The run starts with fresh caps on the generator model, and its record names the parent (`parent`).
+- **Before the run:** `generate`'s refusals and errors, none of which starts a run or a call, in this order: the feedback; the component and its spec; a Claude Code older than the minimum (3); the spec's findings and the approved API; the component's latest run; the run lock; the pre-flight `fazon sync --check`; and the image (3). It takes no `--clean`: the agent starts from the component's files as they are.
+- **The report:** built when the run ends, as for `generate`.
 
 ### `fazon report`
 
