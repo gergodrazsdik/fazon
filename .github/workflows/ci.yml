@@ -64,3 +64,32 @@ jobs:
         run: pnpm run format:check
       - name: Test
         run: pnpm test
+
+  # The Vue adapter's browser tests (`just test-browser`): the generated contract tests of the
+  # multi-part fixture components and the Storybook build, in Playwright's Chromium (T-0093).
+  browser:
+    name: browser
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      # The exact pnpm version package.json's packageManager names; no third-party setup action.
+      - name: Install pnpm
+        run: npm install -g "pnpm@$(jq -r '.packageManager | sub("^pnpm@"; "")' package.json)"  # zizmor: ignore[adhoc-packages]
+      - name: Install the dependencies (lockfile only)
+        run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm run build
+      - name: Install Chromium for Playwright (the adapter's pinned version)
+        run: pnpm --filter @fazon/adapter-vue exec playwright install --with-deps --only-shell chromium
+      - name: The adapter's browser tests (contract tests and the Storybook build)
+        run: pnpm exec vitest run --config packages/adapter-vue/integration/vitest.config.ts

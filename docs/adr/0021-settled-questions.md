@@ -1,7 +1,7 @@
 # 0021: Token CSS in the package, no headers in the example repository, a minimum Claude Code version, a measurement budget, paragraph nodes, generated themes
 
 - Status: accepted
-- Date: 2026-11-27
+- Date: 2026-11-26
 - Tracker: Q-0010, Q-0011, Q-0019, Q-0020, F-0009, F-0011
 
 ## Context and problem statement
