@@ -185,7 +185,7 @@ export function processRunner(runDir: string, env: NodeJS.ProcessEnv, timeoutMs 
   };
 }
 
-/** The run's verify part, ended: passed without a blocking finding or an error. */
+/** The run's verify part, ended: passed without a blocking finding or an error, else failed (records.md). */
 export function finishRecord(record: RunRecord, checks: readonly CheckResult[], ended: Date): RunRecord {
   const errored = checks.some((check) => check.status === "error");
   const blocking = checks.some((check) => check.findings.some((finding) => finding.blocking));
@@ -194,7 +194,7 @@ export function finishRecord(record: RunRecord, checks: readonly CheckResult[], 
   delete rest.reason;
   return {
     ...rest,
-    status: failed ? "needs-a-person" : "passed",
+    status: failed ? "failed" : "passed",
     ...(errored ? { reason: "check-error" as const } : {}),
     ended: ended.toISOString().replace(/\.\d{3}Z$/, "Z"),
     verification: { checks: [...checks], captures: capturesDirectory },

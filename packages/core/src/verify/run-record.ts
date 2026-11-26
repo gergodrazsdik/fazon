@@ -14,7 +14,7 @@ export const runsDirectory = ".fazon/runs";
 export const runRecordFile = "run.json";
 
 export type RunKind = "propose" | "generate" | "feedback" | "verify";
-export type RunStatus = "running" | "passed" | "needs-a-person" | "stopped";
+export type RunStatus = "running" | "passed" | "failed" | "needs-a-person" | "stopped";
 export type RunReason =
   "iterations" | "budget" | "run-time" | "violation" | "dependency" | "shared-code" | "check-error" | "inputs-changed";
 
@@ -44,9 +44,11 @@ export interface RunRecord {
   readonly versions: {
     readonly framework: string;
     readonly adapter?: string;
-    readonly claudeCode: string;
+    /** Absent when the run made no agent call, as in a verify run. */
+    readonly claudeCode?: string;
     readonly image: string;
-    readonly judge: number;
+    /** Absent when the run used no judge. */
+    readonly judge?: number;
   };
   readonly inputs?: Readonly<Partial<Record<"spec" | "api" | "tokens" | "conventions" | "config", string>>>;
   readonly config: {

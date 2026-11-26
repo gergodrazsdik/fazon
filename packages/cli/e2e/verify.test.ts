@@ -94,7 +94,11 @@ describe("fazon verify and fazon baseline update in the verifier image", () => {
     const [button] = json.result.components as { stories: Record<string, number> }[];
     expect(button?.stories).toEqual({ unchanged: 0, changed: 0, new: 54 });
     const { run, findings } = await record(json);
+    expect(validateWithSchema("run-record", run)).toEqual([]);
     expect(run.status).toBe("passed");
+    // No agent call and no judge: the record names neither version.
+    expect(run.versions).not.toHaveProperty("claudeCode");
+    expect(run.versions).not.toHaveProperty("judge");
     // The spec's exemption waives the ghost variant's active contrast: kept, marked, not blocking.
     const waived = findings.filter((f) => f.check === "a11y" && f.rule === "color-contrast");
     expect(waived.length).toBeGreaterThan(0);
@@ -150,7 +154,9 @@ describe("fazon verify and fazon baseline update in the verifier image", () => {
     expect(json.status, JSON.stringify(json.messages)).toBe("failed");
     expect(json.exitCode).toBe(1);
     const { findings, dir, run } = await record(json);
-    expect(run.status).toBe("needs-a-person");
+    expect(validateWithSchema("run-record", run)).toEqual([]);
+    expect(run.status).toBe("failed");
+    expect(run).not.toHaveProperty("reason");
     const rules = new Set(findings.filter((f) => f.blocking).map((f) => `${f.check}/${f.rule}`));
     for (const expected of [
       "build/types",

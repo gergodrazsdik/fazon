@@ -7,6 +7,7 @@ import { promisify } from "node:util";
 import {
   baselinePath,
   encodePng,
+  listRunIds,
   readRunRecord,
   runDirectory,
   writeRunRecord,
@@ -92,7 +93,7 @@ function machine(
           const failed = container.checks.some((c) => c.status !== "pass");
           await writeRunRecord(dir, {
             ...first,
-            status: failed ? "needs-a-person" : "passed",
+            status: failed ? "failed" : "passed",
             ended: first.started,
             verification: { checks: container.checks, captures: "captures" },
           });
@@ -166,6 +167,11 @@ describe("fazon verify", () => {
     expect(command.slice(3)).toEqual(["verify", "--in-image", result.run]);
     expect(args.join(" ")).not.toMatch(/ANTHROPIC/);
     expect(JSON.stringify(json.messages)).toContain("The judge isn't available yet");
+    // No agent call and no judge: the record names neither version.
+    const record = await readRunRecord(runDirectory(root, result.run));
+    expect(record).toMatchObject({ kind: "verify", status: "passed", versions: { image } });
+    expect(record?.versions).not.toHaveProperty("claudeCode");
+    expect(record?.versions).not.toHaveProperty("judge");
   });
 
   it("says nothing about the judge with --no-judge, and passes the component names on", async () => {
@@ -198,6 +204,9 @@ describe("fazon verify", () => {
     expect(text.code).toBe(1);
     expect(text.stdout).toContain("lint/raw-value src/components/button/Button.vue:3: #2050d0 is a literal");
     expect(text.stdout).toContain("button: build pass, lint fail");
+    const [id = ""] = await listRunIds(root);
+    expect(await readRunRecord(runDirectory(root, id))).toMatchObject({ status: "failed" });
+    expect(await readRunRecord(runDirectory(root, id))).not.toHaveProperty("reason");
   });
 
   it("ends in error (3) when a check couldn't run", async () => {
@@ -215,7 +224,7 @@ describe("fazon verify", () => {
     expect(code).toBe(3);
     expect(JSON.stringify(json.messages)).toContain("Playwright is version 1.70.0");
     const record = await readRunRecord(runDirectory(root, (json.result as { run: string }).run));
-    expect(record).toMatchObject({ status: "needs-a-person", reason: "check-error" });
+    expect(record).toMatchObject({ status: "failed", reason: "check-error" });
   });
 
   it("ends in error (3) without a container runtime or the image", async () => {

@@ -94,8 +94,9 @@ In the local review, the developer can send feedback in plain words. That starts
 
 | End | When |
 |---|---|
-| **passed** | An iteration passed. The run goes to the local review. |
-| **needs a person** | A cap stopped it after a failed iteration; a [permission violation](agent-permissions.md#hand-edits); the component needs a dependency or a change to shared code; a check ended in error twice in a row. |
+| **passed** | An iteration passed. The run goes to the local review. A verify run passes when every check passed. |
+| **failed** | Only a verify run: a check found a blocking finding, or ended in error, or the image couldn't run the checks (reason `check-error`). |
+| **needs a person** | Only an agent run: a cap stopped it after a failed iteration; a [permission violation](agent-permissions.md#hand-edits); the component needs a dependency or a change to shared code; a check ended in error twice in a row. |
 | **stopped** | The developer interrupted it. |
 
 Every end keeps the run record and the report. "Needs a person" lists its reason and the findings.

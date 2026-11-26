@@ -61,9 +61,6 @@ async function inImageCli(repo: string): Promise<{ package: string; bin: string 
   };
 }
 
-/** The judge's version this framework version records; the judge itself arrives in M3. */
-export const judgeVersion = 1;
-
 /** Variables the container gets from the host, when set. Never a credential (CLI-003). */
 const passedThrough = ["CI", "NO_COLOR"] as const;
 
@@ -177,7 +174,7 @@ async function verifyOnHost(invocation: Invocation, context: Context): Promise<O
     // The run stopped before it ended: the image couldn't run the checks.
     const tail = (result?.stderr ?? "").trim().split("\n").slice(-8).join("\n");
     const ended = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
-    record = { ...record, status: "needs-a-person", reason: "check-error", ended };
+    record = { ...record, status: "failed", reason: "check-error", ended };
     await writeRunRecord(runDir, record);
     return environmentError(
       result === undefined
@@ -229,7 +226,8 @@ async function firstRecord(id: string, started: Date, config: Config, repo: stri
     kind: "verify",
     status: "running",
     started: started.toISOString().replace(/\.\d{3}Z$/, "Z"),
-    versions: { framework: version, adapter: version, claudeCode: "none", image: config.image, judge: judgeVersion },
+    // No agent call and, until M3, no judge: neither version is recorded.
+    versions: { framework: version, adapter: version, image: config.image },
     inputs,
     config: {
       caps: {
