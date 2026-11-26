@@ -6,7 +6,8 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  { ignores: ["**/dist/", "**/coverage/", "docs/", "**/node_modules/"] },
+  // Local, gitignored directories: agents' worktrees (.claude/worktrees) and run records (.fazon) are never linted.
+  { ignores: ["**/dist/", "**/coverage/", "docs/", "**/node_modules/", ".claude/", "**/.fazon/"] },
   js.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
