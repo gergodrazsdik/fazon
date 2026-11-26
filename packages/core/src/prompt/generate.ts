@@ -61,11 +61,13 @@ export type GenerateCall = Pick<LoopCallInput, "iteration" | "left" | "findings"
 export const listedFindings = 50;
 
 /**
- * The generation skill's file in the framework: `plugin/skills/generate/SKILL.md`, beside the
- * packages, in the checkout or the framework commit a consumer builds from (ADR 0022, ADR 0023).
+ * The generation skill's file as the package carries it: `plugin/skills/generate/SKILL.md`,
+ * copied into `dist/skills/generate/` by the build (packages/core/scripts/copy-schemas.ts), so it
+ * is found wherever the package is installed. This module sits two levels below the package root
+ * both as src/prompt/generate.ts (tests) and as dist/prompt/generate.js.
  */
 export function generationSkillFile(): string {
-  return fileURLToPath(new URL("../../../../plugin/skills/generate/SKILL.md", import.meta.url));
+  return fileURLToPath(new URL("../../dist/skills/generate/SKILL.md", import.meta.url));
 }
 
 /** A skill's instructions: its text after the front matter, trimmed. */

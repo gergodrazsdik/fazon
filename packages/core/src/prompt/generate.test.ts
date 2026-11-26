@@ -87,6 +87,13 @@ function call(extra: Partial<GenerateCall> = {}): GenerateCall {
 }
 
 describe("the generation skill", () => {
+  it("is the plugin's file, copied into the package so it's found wherever the package is installed", async () => {
+    const file = generationSkillFile();
+    expect(file).toBe(fileURLToPath(new URL("../../dist/skills/generate/SKILL.md", import.meta.url)));
+    const plugin = fileURLToPath(new URL("../../../../plugin/skills/generate/SKILL.md", import.meta.url));
+    expect(await readFile(file, "utf8")).toBe(await readFile(plugin, "utf8"));
+  });
+
   it("is the plugin's skill, without its front matter and license comment", async () => {
     const text = await readFile(generationSkillFile(), "utf8");
     expect(text.split("\n").slice(0, 3)).toEqual([

@@ -54,7 +54,7 @@ A propose call has no approved API, findings or feedback yet: its prompt carries
 
 It may read other files of the repository to stay consistent with existing components.
 
-The prompt starts with the instructions of the generation skill, `plugin/skills/generate/SKILL.md` in the framework, without its front matter, and the component's files, the patterns the agent may write and the self-check commands. What stays the same for the run (the skill, the files, the spec, the approved API, the role tokens and the conventions doc) comes first, then the feedback, the findings and the iteration. Details:
+The prompt starts with the instructions of the generation skill, `plugin/skills/generate/SKILL.md` in the framework (which `@fazon/core` carries as `dist/skills/generate/SKILL.md`, so it is found wherever the package is installed), without its front matter, and the component's files, the patterns the agent may write and the self-check commands. What stays the same for the run (the skill, the files, the spec, the approved API, the role tokens and the conventions doc) comes first, then the feedback, the findings and the iteration. Details:
 
 - **The approved API** is the adapter's data files in `generated/` after the refresh at the run's start (`api.json` for Vue): the API with the mapping applied, as the contract tests compare it.
 - **The role tokens** are each role token's custom property, path and type; never a resolved value.
