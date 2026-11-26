@@ -16,6 +16,8 @@ export interface SpecFile {
   readonly spec?: Spec;
   /** The Markdown after the front matter. */
   readonly body: string;
+  /** The 1-based line in the file where `body` starts. */
+  readonly bodyLine: number;
   /** The 1-based line in the file of the value at a path in the front matter, or of `key` in it. */
   readonly lineOf: (segments: readonly PathSegment[], key?: string) => number | undefined;
   /** SPEC-001's findings: the front matter is missing, isn't YAML, or breaks the schema. */
@@ -33,15 +35,23 @@ export function parseSpecFile(file: string, text: string): SpecFile {
 
   if (!isFence(lines[0])) {
     const message = "the file doesn't start with front matter: a '---' line, the YAML fields, and another '---' line";
-    return { file, component, body: text, lineOf: noLines, findings: [{ rule, file, line: 1, message }] };
+    return { file, component, body: text, bodyLine: 1, lineOf: noLines, findings: [{ rule, file, line: 1, message }] };
   }
   const end = lines.findIndex((line, index) => index > 0 && isFence(line));
   if (end === -1) {
     const message = "the front matter has no closing '---' line";
-    return { file, component, body: "", lineOf: noLines, findings: [{ rule, file, line: 1, message }] };
+    return {
+      file,
+      component,
+      body: "",
+      bodyLine: lines.length + 1,
+      lineOf: noLines,
+      findings: [{ rule, file, line: 1, message }],
+    };
   }
 
   const body = lines.slice(end + 1).join("\n");
+  const bodyLine = end + 2;
   // The front matter starts on the file's second line.
   const yaml = parseYaml(lines.slice(1, end).join("\n"));
   const lineOf = (segments: readonly PathSegment[], key?: string) => {
@@ -55,7 +65,7 @@ export function parseSpecFile(file: string, text: string): SpecFile {
       ...(error.line === undefined ? {} : { line: error.line + 1 }),
       message: `the front matter isn't valid YAML: ${error.message}`,
     }));
-    return { file, component, body, lineOf, findings };
+    return { file, component, body, bodyLine, lineOf, findings };
   }
 
   const findings = validateWithSchema("spec", yaml.data).map((finding): Finding => {
@@ -63,9 +73,9 @@ export function parseSpecFile(file: string, text: string): SpecFile {
     return { rule, file, path: finding.path, ...(line === undefined ? {} : { line }), message: finding.message };
   });
   if (findings.length > 0) {
-    return { file, component, body, lineOf, findings };
+    return { file, component, body, bodyLine, lineOf, findings };
   }
-  return { file, component, spec: yaml.data as Spec, body, lineOf, findings };
+  return { file, component, spec: yaml.data as Spec, body, bodyLine, lineOf, findings };
 }
 
 /**

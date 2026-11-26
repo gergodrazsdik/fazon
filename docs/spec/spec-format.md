@@ -307,8 +307,9 @@ Other second-level headings are allowed. Write anything measurable as a field ra
 | SPEC-016 | Every `produce` key is a listed state of its component or part; a recipe's props exist there; every input target exists; `instance` is used only on a part's state, and is below the number of instances in every fixture the stories render. |
 | SPEC-017 | Every `include` entry names an existing fixture, axes in `props` with values of their type, and a listed state of the component or of `part`; its story isn't one a grid already makes, and no `exclude` condition drops it. |
 | SPEC-018 | Judge questions: every `id` is unique and isn't a derived question's name (`story`, `axis-…`, `state-…`, `appearance-…`, `reference`, `family`, `change-…`); every `select` picks at least one story, with an existing fixture, part and condition (SPEC-014). |
+| SPEC-019 | No placeholder from the spec template is left: no string in the front matter, and no line of the body outside fenced code blocks, starts with `TODO:`, after any spaces and a list item's marker. |
 
-The command works without an agent, and the spec skill never writes a spec the check would reject.
+The command works without an agent. The spec skill never writes a spec the check would reject, except for the placeholders the developer hasn't answered yet (SPEC-019), which it lists for them. `fazon propose` and `fazon approve` refuse a spec with any finding, so a spec fresh from `fazon spec new` can't be approved.
 
 ## Examples
 

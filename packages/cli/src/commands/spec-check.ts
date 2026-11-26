@@ -76,7 +76,7 @@ export async function specCheck(invocation: Invocation, context: Context): Promi
         },
     {
       level: "info",
-      text: `Checked ${checkedSpecRules.join(" and ")}; the other SPEC rules arrive in M2.`,
+      text: `Checked ${listed(checkedSpecRules)}; the other SPEC rules arrive in M2.`,
     },
   ];
 
@@ -98,4 +98,9 @@ export async function specCheck(invocation: Invocation, context: Context): Promi
     },
     text,
   };
+}
+
+/** `a`, `a and b`, `a, b and c`. */
+function listed(items: readonly string[]): string {
+  return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items.at(-1) ?? ""}`;
 }

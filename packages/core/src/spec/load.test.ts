@@ -104,8 +104,8 @@ describe("kebabCase", () => {
 });
 
 describe("checkSpec", () => {
-  it("checks SPEC-001 and SPEC-002 so far", () => {
-    expect(checkedSpecRules).toEqual(["SPEC-001", "SPEC-002"]);
+  it("checks SPEC-001, SPEC-002 and SPEC-019 so far", () => {
+    expect(checkedSpecRules).toEqual(["SPEC-001", "SPEC-002", "SPEC-019"]);
   });
 
   it("passes a spec whose file name is the kebab-case name", () => {
@@ -137,6 +137,66 @@ describe("checkSpec", () => {
   it("returns SPEC-001's findings alone when the schema fails", () => {
     const file = parseSpecFile("specs/other.md", specText("chip"));
     expect(checkSpec(file, [file]).map((finding) => finding.rule)).toEqual(["SPEC-001"]);
+  });
+});
+
+describe("SPEC-019", () => {
+  const placeholders = [
+    "---",
+    "fazon: 0",
+    "name: Chip",
+    "tier: primitive",
+    'summary: "TODO: one sentence on what Chip is for."',
+    "props:",
+    "  tone:",
+    "    type: string",
+    '    description: "  TODO: what it sets"',
+    "---",
+    "",
+    "## Purpose",
+    "",
+    "TODO: what Chip is for, and when to use it.",
+    "",
+    "## Behaviour",
+    "",
+    "- TODO: how Chip responds to input.",
+    "1. TODO: numbered",
+    "- Says TODO: in the middle, which is content.",
+    "",
+    "```text",
+    "TODO: inside a code block is content",
+    "```",
+    "",
+    "## Never",
+    "",
+    "- Never a button.",
+    "",
+  ].join("\n");
+
+  it("finds each placeholder left from the template, in the front matter and the body", () => {
+    const file = parseSpecFile("specs/chip.md", placeholders);
+    expect(file.bodyLine).toBe(11);
+    const findings = checkSpec(file, [file]);
+    expect(findings.map(({ rule, path: at, line }) => ({ rule, path: at, line }))).toEqual([
+      { rule: "SPEC-019", path: "$.summary", line: 5 },
+      { rule: "SPEC-019", path: "$.props.tone.description", line: 9 },
+      { rule: "SPEC-019", path: undefined, line: 14 },
+      { rule: "SPEC-019", path: undefined, line: 18 },
+      { rule: "SPEC-019", path: undefined, line: 19 },
+    ]);
+    expect(findings[0]).toEqual({
+      rule: "SPEC-019",
+      file: "specs/chip.md",
+      path: "$.summary",
+      line: 5,
+      message: "a placeholder from the spec template is left: 'TODO: one sentence on what Chip is for.'",
+      hint: "Replace it with the component's content, or remove it; the spec skill drafts the content with you.",
+    });
+  });
+
+  it("passes a spec whose placeholders are replaced", () => {
+    const file = parseSpecFile("specs/chip.md", specText("Chip"));
+    expect(checkSpec(file, [file])).toEqual([]);
   });
 });
 
