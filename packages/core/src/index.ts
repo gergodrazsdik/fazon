@@ -235,3 +235,6 @@ export {
   type RoleToken,
 } from "./prompt/common.js";
 export { proposePrompt, type ProposePromptInput } from "./prompt/propose.js";
+
+// `fazon accept` (T-0050 step 6): whether a run holds a component's lock, without taking it.
+export { heldRunLock } from "./records/run-lock.js";
