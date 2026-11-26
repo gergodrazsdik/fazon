@@ -162,3 +162,6 @@ export {
   type JudgeInput,
   type LoopDependencies,
 } from "./loop/types.js";
+
+// The HTML report of a run (T-0050 step 7).
+export * from "./report/index.js";

@@ -59,7 +59,8 @@ fazon verify                        after a token change: what moved
 |---|---|---|
 | `ANTHROPIC_API_KEY` | `propose`, `generate`, `feedback`, `verify` and `judge` (for the judge), `measure`, `calibrate` | The API key; Claude Code may use the developer's own login instead for local generation ([brief](../design/brief.md#authentication)). Never printed or written anywhere. |
 | `FAZON_CONTAINER_RUNTIME` | every command that runs the verifier | `docker` or `podman`; detected when unset, Docker first. |
-| `CI` | every command | When set, a `fazon.local.yaml` makes commands refuse. |
+| `CI` | every command | When set, a `fazon.local.yaml` makes commands refuse, and `report` opens no browser. |
+| `FAZON_STORYBOOK_URL` | `report` | The local Storybook the report's screenshots link to, an http or https URL; `http://localhost:6006` when unset. |
 | `NO_COLOR` | every command | No colours in text output. |
 
 ## Setup
@@ -155,7 +156,13 @@ Starts a [feedback run](loop-and-caps.md#feedback) linked to the component's lat
 fazon report [<component> | <run-id>] [--no-open] [--summary]
 ```
 
-Builds the HTML report of a run (the component's latest by default) and opens it in the browser. The report shows the gallery, check results, judge verdicts, cost, and the commands for the next step: `feedback`, `accept`, `baseline update`. `--no-open` only prints its path. `--summary` prints a short Markdown summary instead, as the [reusable workflow](workflow.md#what-it-reports) posts it. Result: the report's path, or the summary.
+Builds the HTML report of a run (the component's latest by default) and opens it in the browser. The report shows the gallery, check results, judge verdicts, cost, and the commands for the next step: `feedback`, `accept`, `baseline update`. `--no-open` only prints its path. `--summary` prints a short Markdown summary instead, as the [reusable workflow](workflow.md#what-it-reports) posts it. Result: the run, its kind and status, the report's path relative to the repository root, the number of images copied and whether a browser opened it; or the summary.
+
+- **Which run:** a run ID names that run. A component names its latest run: an agent run of it, or a verify run that checked it; with `--summary`, only a verify run. Without either, the latest run.
+- **Where:** `report/index.html` in the run's directory ([`.fazon/`](records.md#the-fazon-directory)), rebuilt each time. The captures, diff images and the baselines of changed stories that it shows are copied into `report/images/`, so the `report/` directory opens without a server and works as a CI artifact. The page is self-contained: inline CSS, no script and no external fetch; every text from the record is escaped.
+- **What it shows:** the run's end and reason; the commands for the next step that fit the run; cost, tokens and duration; for an agent run, each iteration with its model, effort, call and checks; check results with their findings as blocking, advisory or exempt; the judge's verdicts when the record has them; visual diffs (baseline, capture and diff image); and the gallery of the verify run, or of the agent run's last iteration with captures.
+- **Storybook links:** each screenshot links to its story in the local Storybook, in its theme: `FAZON_STORYBOOK_URL` when set, otherwise `http://localhost:6006`, the port `storybook dev` uses by default. The story's ID comes from the component's story manifest.
+- **Opening:** with the platform's opener: `open` on macOS, the shell's file handler on Windows, `wslview` or `wsl-open` in WSL, `xdg-open` elsewhere. When none is installed or each fails, it warns and prints the path; it never fails for that. In CI (`CI` set) it doesn't try.
 
 ### `fazon accept`
 
