@@ -142,13 +142,16 @@ export async function runRenderedChecks(input: RenderedChecksInput): Promise<Ren
   const captures: { component: VerifyComponent; story: Story; theme: string; png: Uint8Array; path: string }[] = [];
 
   const renderable = input.components.filter((component) => {
+    // A component with a spec but no root file yet has no story files: sync writes only its
+    // manifest and API, so it has nothing to render.
+    if (!component.generated) return false;
     if (component.manifest === undefined) {
-      if (component.generated) errors.push(`${component.spec.name} has no valid story manifest; run \`fazon sync\`.`);
+      errors.push(`${component.spec.name} has no valid story manifest; run \`fazon sync\`.`);
       return false;
     }
     const problems = storybookIndexProblems(component, input.storybookIndex);
     errors.push(...problems);
-    return problems.length === 0 && component.generated;
+    return problems.length === 0;
   });
   const total = renderable.reduce(
     (n, c) => n + (c.manifest?.stories.length ?? 0) * (c.manifest?.themes.length ?? 0),
