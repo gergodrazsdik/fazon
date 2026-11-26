@@ -51,12 +51,16 @@ describe("comparing captures", () => {
     expect(comparePng(png(4, 4), png(4, 4, { x: 0, y: 0, rgb: [254, 254, 254] })).equal).toBe(true);
   });
 
-  it("fails captures of another size", () => {
-    expect(comparePng(png(4, 4), png(4, 5))).toEqual({
+  it("fails captures of another size, with a diff image of the larger size", () => {
+    const result = comparePng(png(4, 4), png(4, 5));
+    expect(result).toMatchObject({
       equal: false,
       baselineSize: { width: 4, height: 4 },
       captureSize: { width: 4, height: 5 },
     });
+    expect(result.differentPixels).toBeUndefined();
+    const diff = decodePng(result.diff ?? new Uint8Array());
+    expect([diff.width, diff.height]).toEqual([4, 5]);
   });
 
   it("reports new, unchanged and changed stories", () => {

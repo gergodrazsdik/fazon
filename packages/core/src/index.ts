@@ -10,6 +10,10 @@ export {
   type GeneratedFile,
   type GenerateInput,
   type JsonSchema,
+  type SourceCommand,
+  type SourceCommands,
+  type SourceCommandsInput,
+  type TestRule,
   type SetupFile,
   type ThemesInput,
 } from "./adapter.js";
@@ -90,3 +94,5 @@ export {
 } from "./sync/sync.js";
 
 export * from "./checks/index.js";
+
+export * from "./verify/index.js";

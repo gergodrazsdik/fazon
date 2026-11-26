@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { Adapter } from "@fazon/core";
 import { adapterId, mapComponent, mapValueSchema } from "./api.js";
+import { sourceCommands, testRule } from "./commands.js";
 import { themesFile } from "./config-files.js";
 import { entryFileText, generateFiles } from "./generate.js";
 
@@ -23,8 +24,11 @@ export const vueAdapter: Adapter = {
   generate: generateFiles,
   entryFile: entryFileText,
   themesFile,
+  sourceCommands,
+  testRule,
 };
 
+export { sourceCommands, testRule } from "./commands.js";
 export {
   apiFile,
   mapComponent,

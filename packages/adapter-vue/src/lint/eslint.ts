@@ -84,7 +84,8 @@ function vueLayoutRulesOff(): Linter.RulesRecord {
  * `fazon/inline-suppression` rule reports it. eslint-plugin-vue's `comment-directive` rule is off
  * too: it would honour `<!-- eslint-disable -->` in a template even under `noInlineConfig`.
  * typescript-eslint's `ban-ts-comment` is off, as `fazon/inline-suppression` reports the same
- * comments. eslint-plugin-vue's layout rules are off: formatting is the formatter's.
+ * comments. eslint-plugin-vue's layout rules are off: formatting is the formatter's. So is
+ * `vue/multi-word-component-names`: a component is named by its spec, often with one word.
  */
 export function fazonVueEslint(): Linter.Config[] {
   return defineConfig(
@@ -100,7 +101,12 @@ export function fazonVueEslint(): Linter.Config[] {
         parserOptions: { parser: tseslint.parser, extraFileExtensions: [".vue"], sourceType: "module" },
       },
       // typescript-eslint's adjustments of ESLint's rules for TypeScript, which it applies to .ts files only.
-      rules: { ...tseslint.configs.eslintRecommended.rules, ...vueLayoutRulesOff() },
+      // Component names come from the spec, and many are one word (Button, Tabs, Dialog).
+      rules: {
+        ...tseslint.configs.eslintRecommended.rules,
+        ...vueLayoutRulesOff(),
+        "vue/multi-word-component-names": "off",
+      },
     },
     {
       name: "fazon/inline-suppression",

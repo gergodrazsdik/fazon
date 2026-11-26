@@ -57,7 +57,7 @@ export interface PngComparison {
   readonly captureSize: { readonly width: number; readonly height: number };
   /** Pixels that differ; undefined when the sizes differ. */
   readonly differentPixels?: number;
-  /** pixelmatch's diff image, as PNG; undefined when the sizes differ. */
+  /** pixelmatch's diff image, as PNG; for two sizes, on a canvas of the larger one. */
   readonly diff?: Uint8Array;
 }
 
@@ -67,7 +67,17 @@ export function comparePng(baseline: Uint8Array, capture: Uint8Array): PngCompar
   const b = decodePng(capture);
   const baselineSize = { width: a.width, height: a.height };
   const captureSize = { width: b.width, height: b.height };
-  if (a.width !== b.width || a.height !== b.height) return { equal: false, baselineSize, captureSize };
+  if (a.width !== b.width || a.height !== b.height) {
+    // The diff image of two sizes: both on a canvas of the larger size, the rest transparent.
+    const width = Math.max(a.width, b.width);
+    const height = Math.max(a.height, b.height);
+    const output = new Uint8Array(width * height * 4);
+    pixelmatch(pad(a, width, height), pad(b, width, height), output, width, height, {
+      threshold: visualTolerance.threshold,
+      includeAA: visualTolerance.includeAA,
+    });
+    return { equal: false, baselineSize, captureSize, diff: encodePng({ width, height, data: output }) };
+  }
   const output = new Uint8Array(a.width * a.height * 4);
   const differentPixels = pixelmatch(a.data, b.data, output, a.width, a.height, {
     threshold: visualTolerance.threshold,
@@ -80,6 +90,15 @@ export function comparePng(baseline: Uint8Array, capture: Uint8Array): PngCompar
     differentPixels,
     diff: encodePng({ width: a.width, height: a.height, data: output }),
   };
+}
+
+/** Pixels on a larger transparent canvas, at its top-left corner. */
+function pad(pixels: Pixels, width: number, height: number): Uint8Array {
+  const data = new Uint8Array(width * height * 4);
+  for (let row = 0; row < pixels.height; row++) {
+    data.set(pixels.data.subarray(row * pixels.width * 4, (row + 1) * pixels.width * 4), row * width * 4);
+  }
+  return data;
 }
 
 /** A story's result against its baseline. */

@@ -88,6 +88,51 @@ export interface SetupFile {
   readonly content: string;
 }
 
+/**
+ * A program a source check runs in the verifier image, in the working copy of the repository:
+ * an executable of one of the repository's dependencies, run with Node.js (`package`, and `bin`
+ * when the package has more than one), or a program the image carries (`program`, such as `npm`).
+ */
+export type SourceCommand =
+  | { readonly package: string; readonly bin?: string; readonly args: readonly string[] }
+  | { readonly program: string; readonly args: readonly string[] };
+
+/** Where the source checks' commands write what the core reads. Paths are absolute. */
+export interface SourceCommandsInput {
+  /** The components' directories, relative to the repository root, with `/` separators. */
+  readonly components: readonly string[];
+  /** The directory the static Storybook build goes into. */
+  readonly storybookDir: string;
+  /** The directory the packed tarball goes into. */
+  readonly packDir: string;
+  /** The report files: ESLint's and Stylelint's JSON reports, and Vitest's JSON report. */
+  readonly reports: { readonly eslint: string; readonly stylelint: string; readonly test: string };
+}
+
+/**
+ * The **source-check commands** (docs/spec/adapter-boundary.md#commands): what the `build`, `lint`,
+ * `test` and `package` checks run. Each command's output has the form the core reads.
+ */
+export interface SourceCommands {
+  /** `build` / `compile`: the library build, in order; its output is what `pack` packs. */
+  readonly compile: readonly SourceCommand[];
+  /** `build` / `types`: the type-check, printing TypeScript's diagnostics (`file(line,col): error TS…`). */
+  readonly types: SourceCommand;
+  /** `build` / `storybook`: the static Storybook build, into `storybookDir`. */
+  readonly storybook: SourceCommand;
+  /** `lint`: ESLint, writing its JSON report to `reports.eslint`. */
+  readonly eslint: SourceCommand;
+  /** `lint`: Stylelint, writing its JSON report to `reports.stylelint`. */
+  readonly stylelint: SourceCommand;
+  /** `test`: the components' tests and contract tests, writing a Vitest JSON report to `reports.test`. */
+  readonly test: SourceCommand;
+  /** `package`: packs the package as it would be published, leaving one `.tgz` file in `packDir`. */
+  readonly pack: SourceCommand;
+}
+
+/** The `test` check's rule a test belongs to, when it fails. */
+export type TestRule = "contract-api" | "contract-render" | "behaviour";
+
 /** A JSON Schema fragment, as plain data. */
 export type JsonSchema = Readonly<Record<string, unknown>>;
 
@@ -130,6 +175,14 @@ export interface Adapter {
    * input always gives the same file, byte for byte.
    */
   themesFile(input: ThemesInput): Promise<SetupFile>;
+  /** **Source-check commands:** what `fazon verify` runs in the verifier image for the source checks. */
+  sourceCommands(input: SourceCommandsInput): SourceCommands;
+  /**
+   * The `test` rule of one test, by its file (relative to the repository root) and its full name:
+   * the contract tests the adapter generates are `contract-api` or `contract-render`, every other
+   * test is a behaviour test.
+   */
+  testRule(file: string, name: string): TestRule;
 }
 
 /** The adapter can't write a file from its input: a person has to change the spec or a file. */
