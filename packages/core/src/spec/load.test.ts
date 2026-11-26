@@ -104,8 +104,10 @@ describe("kebabCase", () => {
 });
 
 describe("checkSpec", () => {
-  it("checks SPEC-001, SPEC-002 and SPEC-019 so far", () => {
-    expect(checkedSpecRules).toEqual(["SPEC-001", "SPEC-002", "SPEC-019"]);
+  it("checks every SPEC rule, in order", () => {
+    expect(checkedSpecRules).toHaveLength(19);
+    expect(checkedSpecRules[0]).toBe("SPEC-001");
+    expect(checkedSpecRules.at(-1)).toBe("SPEC-019");
   });
 
   it("passes a spec whose file name is the kebab-case name", () => {

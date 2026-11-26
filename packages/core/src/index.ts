@@ -238,3 +238,20 @@ export { proposePrompt, type ProposePromptInput } from "./prompt/propose.js";
 
 // `fazon accept` (T-0050 step 6): whether a run holds a component's lock, without taking it.
 export { heldRunLock } from "./records/run-lock.js";
+
+// The SPEC rules SPEC-003 to SPEC-018 (T-0050, `spec check`): what they need besides the specs
+// (the token set, the icon set, the adapter's extension schema), the notes `spec check` reports
+// without failing, and the check catalogue as data.
+export {
+  iconDirectory,
+  readIconNames,
+  readSpecCheckInputs,
+  specTokens,
+  type SpecCheckInputs,
+  type SpecCheckSetup,
+  type SpecTokens,
+} from "./spec/inputs.js";
+export { specNotes } from "./spec/rules.js";
+export type { SpecNote } from "./spec/rules-extensions.js";
+export { axeRuleIds, catalogueRule, checkCatalogue, type CatalogueCheck, type CheckKind } from "./spec/catalogue.js";
+export { validateWithJsonSchema } from "./validation/validate.js";

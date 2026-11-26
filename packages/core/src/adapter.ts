@@ -163,7 +163,7 @@ export type JsonSchema = Readonly<Record<string, unknown>>;
 
 /**
  * The **extension schema** capability: what the adapter's `extensions` block may hold beyond what
- * the core checks. `spec check` applies it with SPEC-013 (M2).
+ * the core checks. `spec check` applies it with SPEC-013 to the block of the adapter fazon.yaml names.
  */
 export interface ExtensionSchema {
   /** The schema of `options`; absent when the adapter takes no options. */

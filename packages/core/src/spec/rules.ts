@@ -1,12 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { Finding } from "../findings.js";
 import { jsonPath, type PathSegment } from "../validation/validate.js";
+import { proseLines } from "./body.js";
+import type { SpecCheckInputs } from "./inputs.js";
 import type { SpecFile } from "./load.js";
 import { kebabCase } from "./names.js";
-import type { Spec } from "./types.js";
+import { spec003, spec004, spec005, spec006, spec007, spec008 } from "./rules-api.js";
+import { spec011, spec012, spec014, spec018 } from "./rules-checks.js";
+import { extensionNotes, spec013, type SpecNote } from "./rules-extensions.js";
+import { spec009 } from "./rules-fixtures.js";
+import { spec010, spec015, spec016, spec017 } from "./rules-matrix.js";
+import type { ValidSpecFile } from "./scope.js";
 
-/** A spec file whose front matter passes SPEC-001. */
-export type ValidSpecFile = SpecFile & { readonly spec: Spec };
+export type { ValidSpecFile } from "./scope.js";
 
 /** One SPEC rule beyond the schema (docs/spec/spec-format.md#validation). */
 export interface SpecRule {
@@ -15,8 +21,9 @@ export interface SpecRule {
    * The rule's findings for one spec.
    * @param spec a spec that passes SPEC-001
    * @param all every spec in the repository, for the rules that compare specs
+   * @param inputs the token set, icon set and adapter, for the rules that need them
    */
-  readonly check: (spec: ValidSpecFile, all: readonly SpecFile[]) => readonly Finding[];
+  readonly check: (spec: ValidSpecFile, all: readonly SpecFile[], inputs: SpecCheckInputs) => readonly Finding[];
 }
 
 const spec002: SpecRule = {
@@ -68,22 +75,6 @@ function strings(value: unknown, segments: PathSegment[] = []): { segments: Path
   return [];
 }
 
-/** The body's lines outside fenced code blocks, with their line in the file. */
-function proseLines(body: string, firstLine: number): { line: number; text: string }[] {
-  const lines: { line: number; text: string }[] = [];
-  let fence: string | undefined;
-  body.split("\n").forEach((text, index) => {
-    const trimmed = text.trimStart();
-    const marker = trimmed.startsWith("```") ? "```" : trimmed.startsWith("~~~") ? "~~~" : undefined;
-    if (marker !== undefined && (fence === undefined || fence === marker)) {
-      fence = fence === undefined ? marker : undefined;
-      return;
-    }
-    if (fence === undefined) lines.push({ line: firstLine + index, text });
-  });
-  return lines;
-}
-
 const spec019: SpecRule = {
   id: "SPEC-019",
   check: ({ file, spec, body, bodyLine, lineOf }) => {
@@ -109,17 +100,46 @@ const spec019: SpecRule = {
   },
 };
 
-/** The SPEC rules after SPEC-001, in order. The rest of SPEC-003 to SPEC-018 arrive in M2. */
-export const specRules: readonly SpecRule[] = [spec002, spec019];
+/** The SPEC rules after SPEC-001, in order. */
+export const specRules: readonly SpecRule[] = [
+  spec002,
+  spec003,
+  spec004,
+  spec005,
+  spec006,
+  spec007,
+  spec008,
+  spec009,
+  spec010,
+  spec011,
+  spec012,
+  spec013,
+  spec014,
+  spec015,
+  spec016,
+  spec017,
+  spec018,
+  spec019,
+];
 
-/** The IDs of every rule `checkSpec` checks. */
+/** The IDs of every rule `checkSpec` checks, in order. */
 export const checkedSpecRules: readonly string[] = ["SPEC-001", ...specRules.map((rule) => rule.id)];
 
-/** Every finding for one spec: SPEC-001's, then, when the schema holds, the other rules'. */
-export function checkSpec(file: SpecFile, all: readonly SpecFile[]): readonly Finding[] {
+/**
+ * Every finding for one spec: SPEC-001's, then, when the schema holds, the other rules'.
+ * @param all every spec in the repository, the spec itself included
+ * @param inputs the token set, icon set and adapter; the parts of SPEC-009, SPEC-011 and SPEC-013
+ *   that need an input left out are skipped
+ */
+export function checkSpec(file: SpecFile, all: readonly SpecFile[], inputs: SpecCheckInputs = {}): readonly Finding[] {
   if (file.spec === undefined) {
     return file.findings;
   }
   const valid: ValidSpecFile = { ...file, spec: file.spec };
-  return specRules.flatMap((rule) => rule.check(valid, all));
+  return specRules.flatMap((rule) => rule.check(valid, all, inputs));
+}
+
+/** What `spec check` reports about a spec without failing it: extension blocks no adapter's schema checked (SPEC-013). */
+export function specNotes(file: SpecFile, inputs: SpecCheckInputs = {}): readonly SpecNote[] {
+  return file.spec === undefined ? [] : extensionNotes({ ...file, spec: file.spec }, inputs);
 }

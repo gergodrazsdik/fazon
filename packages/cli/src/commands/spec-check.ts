@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import path from "node:path";
-import { checkedSpecRules, checkSpec, isKebabCase, kebabCase, readSpecFiles, type SpecFile } from "@fazon/core";
+import {
+  checkedSpecRules,
+  checkSpec,
+  isKebabCase,
+  kebabCase,
+  readSpecCheckInputs,
+  readSpecFiles,
+  specNotes,
+  type SpecFile,
+} from "@fazon/core";
+import { findAdapter } from "../adapters.js";
 import { refused, type Message, type Outcome, type TextLine } from "../outcome.js";
 import { describeFinding, requireConfig, type Context, type Invocation } from "./context.js";
 
@@ -49,12 +59,21 @@ export async function specCheck(invocation: Invocation, context: Context): Promi
     invocation.positionals.length === 0
       ? all
       : [...new Set(invocation.positionals)].flatMap((name) => byComponent.get(name) ?? []);
-  const checked = selected.map((file) => ({ file, findings: checkSpec(file, all) }));
+  const { inputs, skipped } = await readSpecCheckInputs(
+    context.environment.cwd,
+    loaded.config,
+    findAdapter(loaded.config.adapter),
+  );
+  const checked = selected.map((file) => ({
+    file,
+    findings: checkSpec(file, all, inputs),
+    notes: specNotes(file, inputs),
+  }));
   const findingCount = checked.reduce((sum, spec) => sum + spec.findings.length, 0);
   const failing = checked.filter((spec) => spec.findings.length > 0).length;
 
   const text: TextLine[] = [];
-  for (const { file, findings } of checked) {
+  for (const { file, findings, notes } of checked) {
     if (context.global.verbose && findings.length === 0) {
       text.push({ stream: "stdout", text: `ok   ${file.file}` });
     }
@@ -62,6 +81,12 @@ export async function specCheck(invocation: Invocation, context: Context): Promi
       text.push({ stream: "stderr", text: describeFinding(finding, true) });
       if (finding.hint !== undefined) {
         text.push({ stream: "stderr", text: `     ${finding.hint}` });
+      }
+    }
+    if (context.global.verbose) {
+      for (const note of notes) {
+        const location = note.line === undefined ? note.file : `${note.file}:${String(note.line)}`;
+        text.push({ stream: "stdout", text: `note ${location}: ${note.message}` });
       }
     }
   }
@@ -74,10 +99,13 @@ export async function specCheck(invocation: Invocation, context: Context): Promi
           level: "error",
           text: `${specs}: ${String(findingCount)} ${findingCount === 1 ? "finding" : "findings"} in ${String(failing)} ${failing === 1 ? "spec" : "specs"}.`,
         },
-    {
-      level: "info",
-      text: `Checked ${listed(checkedSpecRules)}; the other SPEC rules arrive in M2.`,
-    },
+    { level: "info", text: `Checked ${ruleRange(checkedSpecRules)}.` },
+    // An input that couldn't be read matters only to specs that name tokens or have fixtures.
+    ...skipped
+      .filter(({ input }) =>
+        selected.some(({ spec }) => (input === "tokens" ? spec?.tokens : spec?.fixtures) !== undefined),
+      )
+      .map(({ message }): Message => ({ level: "warning", text: message })),
   ];
 
   return {
@@ -85,7 +113,7 @@ export async function specCheck(invocation: Invocation, context: Context): Promi
     messages,
     result: {
       rules: checkedSpecRules,
-      specs: checked.map(({ file, findings }) => ({
+      specs: checked.map(({ file, findings, notes }) => ({
         spec: file.file,
         findings: findings.map(({ rule, path: at, line, message, hint }) => ({
           rule,
@@ -94,13 +122,25 @@ export async function specCheck(invocation: Invocation, context: Context): Promi
           message,
           ...(hint === undefined ? {} : { hint }),
         })),
+        ...(notes.length === 0
+          ? {}
+          : {
+              notes: notes.map(({ path: at, line, message }) => ({
+                ...(at === undefined ? {} : { path: at }),
+                ...(line === undefined ? {} : { line }),
+                message,
+              })),
+            }),
       })),
     },
     text,
   };
 }
 
-/** `a`, `a and b`, `a, b and c`. */
-function listed(items: readonly string[]): string {
-  return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items.at(-1) ?? ""}`;
+/** `SPEC-001 to SPEC-019` for rules that follow each other; `a, b and c` otherwise. */
+function ruleRange(rules: readonly string[]): string {
+  const numbers = rules.map((rule) => Number(rule.slice("SPEC-".length)));
+  const consecutive = numbers.every((n, index) => index === 0 || n === (numbers[index - 1] ?? 0) + 1);
+  if (consecutive && rules.length > 2) return `${rules[0] ?? ""} to ${rules.at(-1) ?? ""}`;
+  return rules.length <= 1 ? (rules[0] ?? "") : `${rules.slice(0, -1).join(", ")} and ${rules.at(-1) ?? ""}`;
 }

@@ -67,7 +67,7 @@ export const commands: readonly Command[] = [
     name: "spec check",
     group: "Specs",
     usage: "fazon spec check [<component>...]",
-    summary: "Validate specs (SPEC-001, SPEC-002 and SPEC-019 so far; the rest in M2).",
+    summary: "Validate specs by every SPEC rule.",
     run: specCheck,
   },
   {
