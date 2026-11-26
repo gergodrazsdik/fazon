@@ -10,6 +10,8 @@ export {
   type GeneratedFile,
   type GenerateInput,
   type JsonSchema,
+  type SetupFile,
+  type ThemesInput,
 } from "./adapter.js";
 export { formatVersions } from "./versions.js";
 

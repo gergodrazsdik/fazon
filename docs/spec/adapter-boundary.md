@@ -41,7 +41,7 @@ An adapter supplies everything that depends on the framework:
 | **Entry exports** | the components and their parts → the package entry file's exports | `fazon sync` |
 | **Source-check commands** | → the commands for `build`, `lint`, `test` and `package`, run in the verifier | the source checks |
 | **Self-check commands** | a component → the type-check, lint and test commands the agent may run on the host | the agent's permissions |
-| **Storybook setup** | → the framework's Storybook configuration, with the theme switch that sets `data-theme`, and the icon set's license notice in the static build (the story files render the story frame) ([license terms](licensing.md#lucide)) | `fazon init`, the Storybook build |
+| **Storybook setup** | → the framework's Storybook configuration, with the theme switch that sets `data-theme`, and the icon set's license notice in the static build (the story files render the story frame) ([license terms](licensing.md#lucide)); the token set's themes and default theme → a generated module the configuration imports them from | `fazon init`, `fazon sync`, the Storybook build |
 | **Scaffold** | → the library build, type declarations, exports map, lint and test configuration | `fazon init` |
 | **Conventions template** | → a conventions doc to start from | `fazon init` |
 | **Generation skill** | → the skill with the framework's idioms, in the Claude Code plugin | the agent |
@@ -108,7 +108,7 @@ Dialog, Menu, Popover, Select, Tabs and Tooltip are built on Reka UI. Each part 
 - **Title:** the component's name.
 - **One export per manifest story:** its name in PascalCase, without the component.
 - **Rendering:** each story renders the fixture with the story's `set` values. A decorator renders the story frame (with `frame.width`).
-- **Themes:** the theme is a Storybook global the verifier sets.
+- **Themes:** the theme is a Storybook global the verifier sets. Its values are the token set's themes, the default first, which `fazon sync` writes to `.storybook/generated/themes.ts` as `themes` and `defaultTheme`; `.storybook/preview.ts` imports them.
 
 ### Fixtures in stories
 

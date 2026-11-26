@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import type { Adapter } from "@fazon/core";
 import { adapterId, mapComponent, mapValueSchema } from "./api.js";
+import { themesFile } from "./config-files.js";
 import { entryFileText, generateFiles } from "./generate.js";
 
 /** The Vue 3 adapter (docs/spec/adapter-boundary.md#the-vue-adapter). */
@@ -21,6 +22,7 @@ export const vueAdapter: Adapter = {
   },
   generate: generateFiles,
   entryFile: entryFileText,
+  themesFile,
 };
 
 export {
@@ -38,5 +40,12 @@ export {
 } from "./api.js";
 export { apiFileName, entryFileText, formatTypeScript, generateFiles } from "./generate.js";
 export { storyFileName } from "./stories.js";
-export { configFiles, storybookDirectory, type ConfigFile, type ConfigFilesInput } from "./config-files.js";
+export {
+  configFiles,
+  storybookDirectory,
+  themesFile,
+  themesFilePath,
+  type ConfigFile,
+  type ConfigFilesInput,
+} from "./config-files.js";
 export { lintConfigFiles } from "./lint/config-files.js";

@@ -107,6 +107,7 @@ The exact keys and flags follow the Claude Code version the harness requires; M2
 - **Generated files:** at the start of each run, the harness regenerates the component's `generated/` directory from the spec: the story files and contract tests (written by the adapter) and the story manifest. Until the component's root file exists, only the story manifest and API (see the entry file below). They are committed with the component.
 - **The package entry file:** `fazon sync` exports a component and its parts once the component's root file exists, such as `Button.vue`. Until then, sync writes only the component's story manifest and API, with no story files, contract tests or export, so the library and its checks build before the component is generated.
 - **The token CSS:** `fazon sync` builds it from the token set ([the build](tokens.md#the-build)); the agent reads the role tokens, never this file's raw values.
+- **The Storybook themes:** `fazon sync` writes the token set's themes and default theme into the module the Storybook preview imports them from (for Vue, `.storybook/generated/themes.ts`), so a theme added to the token set reaches the theme switch.
 - **[Provenance and run records](records.md).**
 
 CI regenerates the generated files from the committed specs and fails when they differ from the committed ones (the `build` check's rule `generated`).
