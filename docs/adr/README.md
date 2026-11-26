@@ -28,6 +28,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0020](0020-component-list-and-npm-names.md) | Seventeen example components, with Menu and Popover; npm names `fazon` and `@fazon/*` | accepted |
 | [0021](0021-settled-questions.md) | Token CSS in the package, no headers in the example repository, a minimum Claude Code version, a measurement budget, paragraph nodes, generated themes | accepted |
 | [0022](0022-build-from-source-and-component-names.md) | The example repository builds the framework from source until M5; components carry a prefixed name | accepted |
+| [0023](0023-m2-skills-and-claude-code-version.md) | Skills from the pinned framework commit, Claude Code 2.1.332 as the minimum | accepted |
 
 ## Numbering and status
 
