@@ -197,13 +197,14 @@ jobs:
           link() {
             if [ -n "$2" ]; then echo "- [$1]($2): $3"; fi
           }
+          notes=()
+          if [ "$DOCTOR" != success ]; then notes+=("- Installing the dependencies or \`fazon doctor\` failed: see the [job's log]($RUN_PAGE)."); fi
+          if [ "$SPEC" = failure ]; then notes+=("- \`fazon spec check\` failed: see the [job's log]($RUN_PAGE)."); fi
+          if [ "$SYNC" = failure ]; then notes+=("- \`fazon sync --check\` failed: the generated files aren't current; run \`fazon sync\`."); fi
           {
             echo "## Fazon: ${STATUS:-error}"
             echo
-            if [ "$DOCTOR" != success ]; then echo "- Installing the dependencies or \`fazon doctor\` failed: see the [job's log]($RUN_PAGE)."; fi
-            if [ "$SPEC" = failure ]; then echo "- \`fazon spec check\` failed: see the [job's log]($RUN_PAGE)."; fi
-            if [ "$SYNC" = failure ]; then echo "- \`fazon sync --check\` failed: the generated files aren't current; run \`fazon sync\`."; fi
-            echo
+            if [ "${#notes[@]}" -gt 0 ]; then printf '%s\n' "${notes[@]}" ""; fi
             while IFS= read -r line; do
               if [ "$line" = "$placeholder" ]; then
                 echo "#### Artifacts"
