@@ -97,7 +97,7 @@ export const commands: readonly Command[] = [
     name: "report",
     group: "The loop",
     usage: "fazon report [<component> | <run-id>] [--no-open] [--summary]",
-    summary: "Build and open a run's report (M2); --summary prints a verify run's Markdown summary.",
+    summary: "Build and open a run's HTML report; --summary prints a verify run's Markdown summary.",
     options: { summary: { type: "boolean" }, "no-open": { type: "boolean" } },
     maxPositionals: 1,
     run: report,
