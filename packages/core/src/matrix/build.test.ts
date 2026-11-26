@@ -263,6 +263,27 @@ describe("the fixtures grid", () => {
     });
   });
 
+  it("carries paragraph nodes through extends unchanged, in order", () => {
+    const paragraphs = [{ p: "First." }, { p: "Second, with <em>no</em> markup." }];
+    const spec = chip({
+      fixtures: {
+        text: { slots: { default: "Draft" } },
+        notes: {
+          extends: "text",
+          slots: { default: paragraphs },
+          parts: { Option: [{ slots: { default: { p: "One." } } }] },
+        },
+      },
+      matrix: { fixtures: ["text", "notes"] },
+    });
+    const { fixtures } = build(spec);
+    expect(fixtures.notes).toStrictEqual({
+      slots: { default: paragraphs },
+      parts: { Option: [{ slots: { default: { p: "One." } } }] },
+    });
+    expect(fixtures.notes?.slots?.default).not.toBe(paragraphs);
+  });
+
   it("renders only the spec's first fixture without matrix.fixtures", () => {
     const manifest = build(chip({ matrix: { axes: ["tone"] } }));
     expect(Object.keys(manifest.fixtures)).toEqual(["text"]);

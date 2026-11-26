@@ -686,10 +686,22 @@ export const LongContentContentSizeMdDefault: StoryObj = {
                       default: () => "This can't be undone.",
                     }),
                     h(DialogClose),
-                    "Every component in the project is removed, together with its spec, stories, tests and screenshot baselines.",
-                    "Pull requests that are still open keep their branches, but their checks will fail until the project is restored from a backup.",
-                    "Members keep access to other projects. Their roles in this project are removed, and the audit log keeps a record of the deletion.",
-                    "Integrations that publish this project's package stop at their next run.",
+                    h(
+                      "p",
+                      "Every component in the project is removed, together with its spec, stories, tests and screenshot baselines.",
+                    ),
+                    h(
+                      "p",
+                      "Pull requests that are still open keep their branches, but their checks will fail until the project is restored from a backup.",
+                    ),
+                    h(
+                      "p",
+                      "Members keep access to other projects. Their roles in this project are removed, and the audit log keeps a record of the deletion.",
+                    ),
+                    h(
+                      "p",
+                      "Integrations that publish this project's package stop at their next run.",
+                    ),
                   ],
                   footer: () => [
                     h(

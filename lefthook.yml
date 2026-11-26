@@ -42,7 +42,8 @@ pre-commit:
       glob: "*.{ts,mts,cts,js,mjs,cjs}"
       run: scripts/with-deps.sh pnpm exec eslint --no-warn-ignored {staged_files}
     - name: prettier
-      glob: "{packages/**/*,*.json,*.js,*.ts,pnpm-workspace.yaml}"
+      # The paths `pnpm format:check` (CI) covers, no more: generated JSON elsewhere keeps the layout `fazon sync` writes.
+      glob: "{packages/**/*,eslint.config.js,vitest.config.ts,vitest.rendered.config.ts,package.json,pnpm-workspace.yaml,tsconfig.json,tsconfig.base.json,.prettierrc.json}"
       run: scripts/with-deps.sh pnpm exec prettier --check --ignore-unknown {staged_files}
     - name: gitleaks
       run: scripts/with-tool.sh gitleaks git --pre-commit --staged --redact --no-banner

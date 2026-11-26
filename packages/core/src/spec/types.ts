@@ -150,7 +150,22 @@ export interface Form {
 }
 
 /** One node of slot content. A plain string is text. */
-export type ContentNode = string | { readonly text: string } | { readonly icon: KebabName } | ComponentNode;
+export type ContentNode = string | TextNode | ParagraphNode | IconNode | ComponentNode;
+
+/** Inline text, with nothing around it. */
+export interface TextNode {
+  readonly text: string;
+}
+
+/** A paragraph of plain text: `<p>` on the web. */
+export interface ParagraphNode {
+  readonly p: string;
+}
+
+/** An icon of the fixture icon set. */
+export interface IconNode {
+  readonly icon: KebabName;
+}
 
 export interface ComponentNode {
   /** Another component, listed in `uses`. */

@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- A paragraph content node for spec fixtures, `{ p: "text" }`, which renders as a `<p>`; plain strings stay inline text.
+- `fazon sync` writes the token set's themes into `.storybook/generated/themes.ts`, which the Storybook preview imports, so a new theme reaches the theme switch and `sync --check` catches drift.
 - Fazon's lint rules: a Stylelint plugin (`@fazon/core/stylelint`) for `raw-value`, `raw-token` and `unknown-token`, the `inline-suppression` rule for ESLint, Stylelint and TypeScript directives, the Vue adapter's ESLint and Stylelint configuration (`@fazon/adapter-vue/lint`), and lint output as findings.
 - The Vue adapter's API reader (vue-component-meta, in `api.json`'s form) and the setup a consumer imports: `fazonVitest()` (browser mode in Chromium with the `fazonVueApi` command), `fazonStorybook()` and `fazonPreview()` (the theme switch); `just test-browser` runs the generated contract tests and Storybook build.
 - The rendered checks in `@fazon/core`: a page runner on the verifier's Chromium, and the `a11y` (axe-core and the spec's roles, names and ARIA), `tokens` (the winning declaration, followed to its token), `layout` and `visual` (PNG comparison, `fazon.json`, orphans) checks; `just test-rendered` and the `rendered` workflow run every M0 fixture in the verifier image.

@@ -167,7 +167,8 @@ Contrast isn't a spec field: the accessibility check measures it.
 
 Slot content is one node or a list of nodes, rendered in order. A node is:
 
-- text, written as a string or as `{ text: … }`;
+- text, written as a string or as `{ text: … }`, such as a button's label. It renders inline, with nothing around it: adjacent text nodes run together;
+- a paragraph: `{ p: … }`, which renders its text in a paragraph element (`<p>` on the web), such as each paragraph of a dialog's body. Its text is plain text: markup in it shows as written. The object has no other fields;
 - an icon: `{ icon: <name> }`, from the icon set the story matrix rules define;
 - another component: `{ component: <Name>, props: …, slots: … }`, which must be listed in `uses`.
 

@@ -285,10 +285,11 @@ class StoryWriter {
     });
   }
 
-  /** One node of slot content: text, an icon or another component. */
+  /** One node of slot content: text, a paragraph, an icon or another component. */
   node(node: ContentNode): string {
     if (typeof node === "string") return JSON.stringify(node);
     if ("text" in node) return JSON.stringify(node.text);
+    if ("p" in node) return stories.fill("paragraph", { text: JSON.stringify(node.p) });
     if ("icon" in node) return stories.fill("icon", { name: this.imports.icon(node.icon) });
     const other = this.used.get(node.component);
     const scope = other?.scopes[0];
