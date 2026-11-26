@@ -25,6 +25,10 @@ export interface Environment {
   readonly nodeVersion: string;
   /** The user and group IDs the CLI runs as, where the platform has them; a container's files get them. */
   readonly user?: { readonly uid: number; readonly gid: number };
+  /** The Claude Code executable the agent commands run; `claude` on the PATH when absent. */
+  readonly claudeCode?: string;
+  /** Aborted when the developer interrupts a run; the agent commands listen for SIGINT when absent. */
+  readonly interrupt?: AbortSignal;
   /** Runs a program; `undefined` when it can't be started, as when it isn't installed. */
   exec(program: string, args: readonly string[], options?: ExecOptions): Promise<ExecResult | undefined>;
 }

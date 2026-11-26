@@ -105,7 +105,7 @@ In the local review, the developer can send feedback in plain words. That starts
 
 Every end keeps the run record and the report. "Needs a person" lists its reason and the findings.
 
-The agent says that the component needs a dependency or a change to shared code with a line of its final message: `FAZON-NEEDS dependency: <what>` or `FAZON-NEEDS shared-code: <what>`. The run then ends after the call, without checks. A propose run passes when its call completes without a violation; a call that doesn't complete ends it as needs a person, with the reason `budget` when the call was stopped at its budget limit, and `iterations` otherwise, as its one call is spent.
+The agent says that the component needs a dependency or a change to shared code with a line of its final message: `FAZON-NEEDS dependency: <what>` or `FAZON-NEEDS shared-code: <what>`. The run then ends after the call, without checks. A propose run passes when its call completes without a violation, with an answer the harness can use; a call that doesn't complete ends it as needs a person, with the reason `budget` when the call was stopped at its budget limit, and `iterations` otherwise, as its one call is spent. An answer the harness can't use, with no API or one that would make the spec break a SPEC rule ([`fazon propose`](cli.md#fazon-propose)), ends the call in error, so the run needs a person with the reason `iterations`.
 
 ## Example
 

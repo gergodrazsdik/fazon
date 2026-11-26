@@ -50,6 +50,8 @@ Each call's prompt carries:
 - the developer's review feedback, if any;
 - the iteration number and the caps left.
 
+A propose call has no approved API, findings or feedback yet: its prompt carries the spec, the adapter's API mapping, the role tokens, the conventions doc and the caps left ([a propose call](#a-propose-call)).
+
 It may read other files of the repository to stay consistent with existing components.
 
 ## What the agent may run
@@ -117,6 +119,20 @@ The exact keys and flags follow the Claude Code version the harness requires, an
 | Prompt | on standard input, which is then closed |
 
 The harness checks Claude Code's first event: a call that lists a denied tool or an MCP server, or doesn't run in `dontAsk` mode, is stopped and ends in error (PERM-001). Read-only shell commands that Claude Code runs without asking still run, inside the sandbox.
+
+### A propose call
+
+The one call of a [propose run](loop-and-caps.md#runs) may change no file and run no command: the harness, not the agent, writes the proposed API into the spec. Its settings differ from a generate call's:
+
+| What | How |
+|---|---|
+| Tools | `--tools Read,Glob,Grep`: no Edit, Write or Bash |
+| Permissions | `permissions.allow` only `Read`, `Glob` and `Grep`; `permissions.deny` adds `Edit` and `Bash` to the rules above |
+| Sandbox | as above, with an empty `filesystem.allowWrite` |
+| Answer | `--json-schema` with the schema of a proposed API: the spec schema's API fields, with no `states`, `produce` or `a11y` on a part. Claude Code returns the answer as the result's structured output; without one, the harness reads the JSON object in the final message |
+| Allowed paths | none: any file that changes during the call is a violation (PERM-002) |
+
+Its prompt carries the spec, the adapter's API mapping, the role tokens, the conventions doc and the caps left, and says how to answer.
 
 ## Files the harness maintains
 
