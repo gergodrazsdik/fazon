@@ -26,6 +26,7 @@ justfile  local.just.example  lefthook.yml  .editorconfig  lint configs
 package.json  pnpm-workspace.yaml  pnpm-lock.yaml  .node-version  tsconfig*.json  eslint.config.js  vitest.config.ts  .prettierrc.json
 LICENSES/                MIT-0.txt: the license of template text Fazon writes into other repositories
 packages/                cli/ (the `fazon` package), core/ (`@fazon/core`), adapter-vue/ (`@fazon/adapter-vue`)
+plugin/                  the Claude Code plugin: .claude-plugin/plugin.json, skills/ (spec)
 verifier/                the verifier image: Containerfile, fonts, smoke test (verifier/README.md)
 .claude/settings.json    committed Claude Code sandbox and deny rules
 .github/                 workflows/ (lint.yml, ci.yml, verifier.yml, rendered.yml, verify-e2e.yml, verify.yml, verify-selftest.yml, cla-gist.yml), rulesets/, issue and PR templates, CODEOWNERS, dependabot.yml
