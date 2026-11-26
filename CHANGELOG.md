@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `fazon generate` and `fazon feedback` refuse a spec without fixtures whose component has a required prop or slot, and SPEC-016 checks a state recipe's prop values against their types.
 - `fazon spec check` checks every SPEC rule, SPEC-001 to SPEC-019, with the token set, the icon set and the adapter's extension schema; `propose`, `approve`, `generate` and `feedback` run the same check. Extension blocks for adapters the repository doesn't use are reported as notes.
 - `fazon feedback <component> (-m <text> | --file <path>)` starts a feedback run that answers the component's latest generate or feedback run: its first prompt carries the developer's feedback and that run's last blocking findings, with fresh caps on the generator model, and its record and result name the run it answers.
 - `fazon generate <component> [--clean]` runs a generate run until every check passes in the verifier image or a cap is reached; it refuses while the API isn't the approved one, a run is in progress, or generated files outside the component are stale, and ends with the run's HTML report.
