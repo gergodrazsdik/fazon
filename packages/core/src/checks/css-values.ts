@@ -144,10 +144,16 @@ export function parseValue(value: string): ValueComponent[] {
   return splitValue(value).map(classifyComponent);
 }
 
+/**
+ * How Chromium's DevTools protocol reports `transparent` in a matched rule: it serialises the
+ * keyword as this colour, which is the same colour, so it counts as the keyword.
+ */
+const serializedTransparent = "rgba(0, 0, 0, 0)";
+
 /** `0` with any unit, `100%`, or one of the allowed keywords. */
 export function isAllowedValue(text: string): boolean {
   const lower = text.trim().toLowerCase();
-  return zero.test(lower) || lower === "100%" || allowedKeywords.includes(lower);
+  return zero.test(lower) || lower === "100%" || allowedKeywords.includes(lower) || lower === serializedTransparent;
 }
 
 const colorFunctions = new Set([

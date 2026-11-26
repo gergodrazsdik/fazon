@@ -23,12 +23,18 @@ describe("the allowed values", () => {
       expect(isAllowedValue(value)).toBe(true);
     },
   );
-  it.each(["currentColor", "currentcolor", "transparent", "100%", "TRANSPARENT"])("allow %s", (value) => {
-    expect(isAllowedValue(value)).toBe(true);
-  });
-  it.each(["1px", "0.5rem", "50%", "red", "#000", "bold", "ease", "1"])("don't allow %s", (value) => {
-    expect(isAllowedValue(value)).toBe(false);
-  });
+  it.each(["currentColor", "currentcolor", "transparent", "100%", "TRANSPARENT", "rgba(0, 0, 0, 0)"])(
+    "allow %s",
+    (value) => {
+      expect(isAllowedValue(value)).toBe(true);
+    },
+  );
+  it.each(["1px", "0.5rem", "50%", "red", "#000", "bold", "ease", "1", "rgba(0, 0, 0, 0.5)"])(
+    "don't allow %s",
+    (value) => {
+      expect(isAllowedValue(value)).toBe(false);
+    },
+  );
 });
 
 describe("the number patterns", () => {

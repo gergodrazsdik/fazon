@@ -43,6 +43,11 @@ export interface RenderOptions {
   /** `prefers-reduced-motion: reduce`; true by default. */
   readonly reducedMotion?: boolean;
   readonly timeoutMs?: number;
+  /**
+   * Waits until the page has rendered what is to be checked, after it has loaded and before the
+   * theme is set; for pages that render asynchronously, such as a Storybook story.
+   */
+  readonly ready?: (page: Page) => Promise<void>;
 }
 
 export interface LaunchRendererOptions {
@@ -102,6 +107,7 @@ export class Renderer {
       const page = await context.newPage();
       const url = "url" in source ? source.url : pathToFileURL(source.file).href;
       await page.goto(url, { waitUntil: "load" });
+      await options.ready?.(page);
       await page.evaluate(setTheme, options.theme ?? null);
       const rendered = new RenderedPage(page, context, {
         frameSelector: options.frameSelector ?? renderDefaults.frameSelector,

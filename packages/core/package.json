@@ -18,7 +18,8 @@
   "files": [
     "dist",
     "!dist/**/*.test.*",
-    "!dist/checks/test-support.*"
+    "!dist/checks/test-support.*",
+    "!dist/verify/test-support.*"
   ],
   "exports": {
     ".": {
@@ -31,6 +32,7 @@
     }
   },
   "dependencies": {
+    "@arethetypeswrong/core": "0.18.5",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
     "axe-core": "4.14.1",
@@ -38,6 +40,7 @@
     "playwright-core": "1.65.1",
     "pngjs": "7.0.0",
     "postcss-value-parser": "4.2.0",
+    "publint": "0.3.25",
     "style-dictionary": "5.8.0",
     "yaml": "2.9.1"
   },
