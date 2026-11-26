@@ -2,7 +2,10 @@
   "fazon": 0,
   "component": "Dialog",
   "spec": "specs/dialog.md",
-  "themes": ["light", "dark"],
+  "themes": [
+    "light",
+    "dark"
+  ],
   "viewport": {
     "width": 1024,
     "height": 768,
@@ -29,7 +32,9 @@
             }
           }
         ],
-        "Overlay": [{}],
+        "Overlay": [
+          {}
+        ],
         "Content": [
           {
             "slots": {
@@ -71,7 +76,9 @@
             }
           }
         ],
-        "Close": [{}]
+        "Close": [
+          {}
+        ]
       }
     },
     "long-content": {
@@ -94,7 +101,9 @@
             }
           }
         ],
-        "Overlay": [{}],
+        "Overlay": [
+          {}
+        ],
         "Content": [
           {
             "slots": {
@@ -149,7 +158,9 @@
             }
           }
         ],
-        "Close": [{}]
+        "Close": [
+          {}
+        ]
       }
     }
   },
@@ -173,7 +184,10 @@
           }
         }
       ],
-      "judge": ["light", "dark"]
+      "judge": [
+        "light",
+        "dark"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-md--default",
@@ -194,7 +208,10 @@
           }
         }
       ],
-      "judge": ["light", "dark"]
+      "judge": [
+        "light",
+        "dark"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-lg--default",
@@ -215,7 +232,10 @@
           }
         }
       ],
-      "judge": ["light", "dark"]
+      "judge": [
+        "light",
+        "dark"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-md--closed",
@@ -242,7 +262,9 @@
           }
         }
       ],
-      "judge": ["light"]
+      "judge": [
+        "light"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-sm--close-hover",
@@ -270,7 +292,9 @@
           "target": "Close[default]"
         }
       ],
-      "judge": ["light"]
+      "judge": [
+        "light"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-md--close-hover",
@@ -298,7 +322,9 @@
           "target": "Close[default]"
         }
       ],
-      "judge": ["light"]
+      "judge": [
+        "light"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-lg--close-hover",
@@ -326,7 +352,9 @@
           "target": "Close[default]"
         }
       ],
-      "judge": ["light"]
+      "judge": [
+        "light"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-sm--close-focus-visible",
@@ -354,7 +382,9 @@
           "target": "Close[default]"
         }
       ],
-      "judge": ["light"]
+      "judge": [
+        "light"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-md--close-focus-visible",
@@ -382,7 +412,9 @@
           "target": "Close[default]"
         }
       ],
-      "judge": ["light"]
+      "judge": [
+        "light"
+      ]
     },
     {
       "name": "dialog--confirm--content-size-lg--close-focus-visible",
@@ -410,7 +442,9 @@
           "target": "Close[default]"
         }
       ],
-      "judge": ["light"]
+      "judge": [
+        "light"
+      ]
     },
     {
       "name": "dialog--long-content--content-size-md--default",
@@ -431,7 +465,9 @@
           }
         }
       ],
-      "judge": ["light"]
+      "judge": [
+        "light"
+      ]
     }
   ]
 }
