@@ -135,7 +135,7 @@ export const commands: readonly Command[] = [
     name: "baseline update",
     group: "The loop",
     usage: "fazon baseline update (<component>... [--story <name>]... | --all)",
-    summary: "Write baselines from the latest qualifying run, and remove orphans.",
+    summary: "Write baselines from each component's latest run when it qualifies, and remove orphans.",
     options: { story: { type: "string", multiple: true }, all: { type: "boolean" } },
     run: baselineUpdate,
   },
