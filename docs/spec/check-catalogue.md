@@ -35,7 +35,7 @@ The deterministic checks that verify a component, with one rule sheet per check:
 
 ### Where checks run
 
-Every check runs inside the verifier image, with dependencies installed in the image, never taken from the host. Before any check, the verifier confirms that the Playwright version in the consumer's lockfile is the one the image carries; a mismatch is an error, and no check runs. Checks use no network.
+Every check runs inside the verifier image, with no network. The image installs nothing: `fazon verify` mounts the repository, with the dependencies its lockfile installed on the host, read-only into it, so it runs only on a linux/amd64 host and refuses (3) on any other. Before any check, the verifier confirms that the Playwright version in the consumer's lockfile is the one the image carries; a mismatch is an error, and no check runs.
 
 ### Order and results
 
@@ -224,7 +224,7 @@ An interactive element has a role of `button`, `link`, `tab`, `checkbox`, `radio
 
 A story without a baseline is reported as **new**, and doesn't fail. None of these rules can be exempted. In `fazon generate`, the component being generated has its `changed` and `orphan` findings shown to the person but not to the agent. The [baseline lifecycle](baseline-lifecycle.md) says how baselines are made, changed and removed.
 
-**Platform:** captures are made only on linux/amd64, the platform of CI's runners, in headless Chromium with software rendering, the browser and fonts the verifier image pins. On another architecture the image runs emulated.
+**Platform:** captures are made only on linux/amd64, the platform of CI's runners, in headless Chromium with software rendering, the browser and fonts the verifier image pins. `fazon verify` refuses to run on another platform ([where checks run](#where-checks-run)).
 
 **Tolerance:** two pixels differ when their colour distance exceeds 0.1 (pixelmatch 8's threshold: the HyAB distance in OKLab, on a scale of 0 to 1; version 7 measured in YIQ, so the version is pinned with the image); anti-aliased pixels are not excluded. No differing pixel is allowed. M1 renders every example story repeatedly to measure whether this holds; any change to the tolerance is recorded in an ADR.
 
