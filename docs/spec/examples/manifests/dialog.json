@@ -2,10 +2,7 @@
   "fazon": 0,
   "component": "Dialog",
   "spec": "specs/dialog.md",
-  "themes": [
-    "light",
-    "dark"
-  ],
+  "themes": ["light", "dark"],
   "viewport": {
     "width": 1024,
     "height": 768,
@@ -32,9 +29,7 @@
             }
           }
         ],
-        "Overlay": [
-          {}
-        ],
+        "Overlay": [{}],
         "Content": [
           {
             "slots": {
@@ -76,9 +71,7 @@
             }
           }
         ],
-        "Close": [
-          {}
-        ]
+        "Close": [{}]
       }
     },
     "long-content": {
@@ -101,17 +94,23 @@
             }
           }
         ],
-        "Overlay": [
-          {}
-        ],
+        "Overlay": [{}],
         "Content": [
           {
             "slots": {
               "default": [
-                "Every component in the project is removed, together with its spec, stories, tests and screenshot baselines.",
-                "Pull requests that are still open keep their branches, but their checks will fail until the project is restored from a backup.",
-                "Members keep access to other projects. Their roles in this project are removed, and the audit log keeps a record of the deletion.",
-                "Integrations that publish this project's package stop at their next run."
+                {
+                  "p": "Every component in the project is removed, together with its spec, stories, tests and screenshot baselines."
+                },
+                {
+                  "p": "Pull requests that are still open keep their branches, but their checks will fail until the project is restored from a backup."
+                },
+                {
+                  "p": "Members keep access to other projects. Their roles in this project are removed, and the audit log keeps a record of the deletion."
+                },
+                {
+                  "p": "Integrations that publish this project's package stop at their next run."
+                }
               ],
               "footer": [
                 {
@@ -150,9 +149,7 @@
             }
           }
         ],
-        "Close": [
-          {}
-        ]
+        "Close": [{}]
       }
     }
   },
@@ -176,10 +173,7 @@
           }
         }
       ],
-      "judge": [
-        "light",
-        "dark"
-      ]
+      "judge": ["light", "dark"]
     },
     {
       "name": "dialog--confirm--content-size-md--default",
@@ -200,10 +194,7 @@
           }
         }
       ],
-      "judge": [
-        "light",
-        "dark"
-      ]
+      "judge": ["light", "dark"]
     },
     {
       "name": "dialog--confirm--content-size-lg--default",
@@ -224,10 +215,7 @@
           }
         }
       ],
-      "judge": [
-        "light",
-        "dark"
-      ]
+      "judge": ["light", "dark"]
     },
     {
       "name": "dialog--confirm--content-size-md--closed",
@@ -254,9 +242,7 @@
           }
         }
       ],
-      "judge": [
-        "light"
-      ]
+      "judge": ["light"]
     },
     {
       "name": "dialog--confirm--content-size-sm--close-hover",
@@ -284,9 +270,7 @@
           "target": "Close[default]"
         }
       ],
-      "judge": [
-        "light"
-      ]
+      "judge": ["light"]
     },
     {
       "name": "dialog--confirm--content-size-md--close-hover",
@@ -314,9 +298,7 @@
           "target": "Close[default]"
         }
       ],
-      "judge": [
-        "light"
-      ]
+      "judge": ["light"]
     },
     {
       "name": "dialog--confirm--content-size-lg--close-hover",
@@ -344,9 +326,7 @@
           "target": "Close[default]"
         }
       ],
-      "judge": [
-        "light"
-      ]
+      "judge": ["light"]
     },
     {
       "name": "dialog--confirm--content-size-sm--close-focus-visible",
@@ -374,9 +354,7 @@
           "target": "Close[default]"
         }
       ],
-      "judge": [
-        "light"
-      ]
+      "judge": ["light"]
     },
     {
       "name": "dialog--confirm--content-size-md--close-focus-visible",
@@ -404,9 +382,7 @@
           "target": "Close[default]"
         }
       ],
-      "judge": [
-        "light"
-      ]
+      "judge": ["light"]
     },
     {
       "name": "dialog--confirm--content-size-lg--close-focus-visible",
@@ -434,9 +410,7 @@
           "target": "Close[default]"
         }
       ],
-      "judge": [
-        "light"
-      ]
+      "judge": ["light"]
     },
     {
       "name": "dialog--long-content--content-size-md--default",
@@ -457,9 +431,7 @@
           }
         }
       ],
-      "judge": [
-        "light"
-      ]
+      "judge": ["light"]
     }
   ]
 }

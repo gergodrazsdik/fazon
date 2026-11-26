@@ -446,6 +446,12 @@
         },
         {
           "type": "object",
+          "required": ["p"],
+          "properties": { "p": { "$ref": "#/$defs/text" } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
           "required": ["icon"],
           "properties": { "icon": { "$ref": "#/$defs/kebabName" } },
           "additionalProperties": false

@@ -83,6 +83,30 @@ describe("the story file", () => {
     expect(text).toContain('["Paste", " all"]');
   });
 
+  it("renders a paragraph node as a <p> holding its text as plain text", async () => {
+    const spec: Spec = {
+      ...menu,
+      fixtures: {
+        two: {
+          parts: {
+            Group: [{}, {}],
+            Item: [
+              { props: { checked: true }, slots: { default: [{ p: "First." }, { p: 'A "quoted" <b>tag</b>.' }] } },
+              { props: { checked: false }, slots: { default: { p: "Alone." } } },
+            ],
+          },
+        },
+      },
+    };
+    const text = (await storyFile(spec)).replace(/\s+/g, " ");
+    // The text is a string argument, never innerHTML, so markup in it shows as written.
+    expect(text).toContain(`[ h("p", "First."), h("p", 'A "quoted" <b>tag</b>.'), ]`);
+    expect(text).toContain('{ default: () => h("p", "Alone.") }');
+    expect(text).not.toContain("innerHTML: 'A");
+    const dialog = await storyFile(exampleInput("dialog").spec, { uses: exampleInput("dialog").uses });
+    expect(dialog.match(/h\(\s*"p",/g)).toHaveLength(4);
+  });
+
   it("imports icons from the icon directory fazon.yaml names", async () => {
     const text = await storyFile(menu, { icons: { path: "assets/icons" } });
     expect(text).toContain('import iconCopy from "../../../../assets/icons/copy.svg?raw";');

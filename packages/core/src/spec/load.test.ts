@@ -59,6 +59,26 @@ describe("parseSpecFile", () => {
     ]);
   });
 
+  it("takes paragraph nodes in slot content, alone or in a list, with plain text only", () => {
+    const slots = "slots:\n  default:\n    required: true\nfixtures:\n  notes:\n    slots:\n      default:";
+    const list = parseSpecFile(
+      "specs/chip.md",
+      specText("Chip", `${slots}\n        - { p: "First <b>one</b>." }\n        - { p: Second. }\n`),
+    );
+    expect(list.findings).toEqual([]);
+    expect(list.spec?.fixtures?.notes?.slots?.default).toEqual([{ p: "First <b>one</b>." }, { p: "Second." }]);
+    expect(parseSpecFile("specs/chip.md", specText("Chip", `${slots} { p: Only. }\n`)).findings).toEqual([]);
+
+    for (const node of ["{ p: Second., tag: h2 }", '{ p: "" }', "{ p: [Second.] }", "{ p: Second., text: x }"]) {
+      const file = parseSpecFile(
+        "specs/chip.md",
+        specText("Chip", `${slots}\n        - { p: First. }\n        - ${node}\n`),
+      );
+      expect(file.spec).toBeUndefined();
+      expect(file.findings.map((finding) => finding.path)).toEqual(["$.fixtures.notes.slots.default"]);
+    }
+  });
+
   it("reads YAML 1.2: a date-like value stays a string", () => {
     const file = parseSpecFile("specs/chip.md", specText("Chip", "summary2: 2026-11-25\n"));
     expect(file.findings[0]?.message).toBe("unknown key 'summary2'");
