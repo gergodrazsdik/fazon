@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0101, F-0019, Q-0023.
+Next free IDs: T-0101, F-0021, Q-0024.
 
 ## Now
 
@@ -107,7 +107,7 @@ Complete 2026-11-26: the CLI (`doctor`, `spec check`, `sync`, `verify`, `baselin
 - [ ] T-0050 `spec new`, `spec check`, the spec skill, `propose`, `generate`, caps, run records, the HTML report; Badge, Link and Dialog generated from specs with no hand edits, and Button regenerated the same way; the generation skill declares `defineOptions({ name })` from `api.json` and writes behaviour tests with `vitest-browser-vue` (T-0095) (broken down with the maintainer 2026-11-26, [ADR 0023](../adr/0023-m2-skills-and-claude-code-version.md))
   - [ ] Step 1: `fazon spec new` with the spec template, and `plugin/` with the spec skill
   - [ ] Step 2: the headless agent call: the generated `claude -p` settings, the snapshots around each call, PERM-002 and hand edits, cost and tokens from Claude Code's output; tested against a fake `claude` (T-0094)
-  - [ ] Step 3: caps, escalation, how an agent run ends, and the run record and provenance of agent runs
+  - [x] Step 3: caps, escalation, how an agent run ends, and the run record and provenance of agent runs — 2026-11-26, [#67](https://github.com/gergodrazsdik/fazon/pull/67): `runAgent` with the agent call, checks, refresh, judge hook, clock and interrupt injected; the `FAZON-NEEDS` line for a needed dependency or shared-code change, which the generation skill teaches (step 5); run records shared with verify in `records/`; provenance with the approved API's hash
   - [ ] Step 4: `fazon propose` and `fazon approve` (steps 2, 3)
   - [ ] Step 5: `fazon generate [--clean]` and the generation skill (steps 2, 3)
   - [ ] Step 6: `fazon feedback` and `fazon accept` (step 5)
@@ -218,3 +218,4 @@ From the bootstrap:
 - [x] Q-0020 Do the example repo's own hand-written files (components, configuration) carry an `SPDX-License-Identifier: MIT-0` line? The license terms cover only what Fazon writes (no header) and the framework's source; the bootstrap gave its copied scripts `MIT-0` lines. Settle with step 11 (T-0040) — answered 2026-11-26: no headers; the LICENSE covers the repository, and the copied scripts lose their `MIT-0` lines ([ADR 0021](../adr/0021-settled-questions.md))
 - [x] Q-0021 `fazon verify` mounts the host's installed dependencies into the verifier image, while check-catalogue.md says they are "installed in the image, never taken from the host". Keep the mount (fast, linux/amd64 hosts only, T-0096) or install inside the image from the lockfile (slower, any host)? ([#57](https://github.com/gergodrazsdik/fazon/pull/57)) — answered 2026-11-26: keep the mount; the image installs nothing and stays offline, and other hosts refuse (check-catalogue.md, [#57](https://github.com/gergodrazsdik/fazon/pull/57); T-0096)
 - [x] Q-0022 The run record doesn't fit a verify run: `claudeCode` and `judge` are required (written as "none" and 1), and there's no `failed` status, so a verify run with blocking findings ends as `needs-a-person`; records.md doesn't list `verify.json` and a verify run's other files. Change the schema how? ([#57](https://github.com/gergodrazsdik/fazon/pull/57)) — answered 2026-11-26: a `failed` status for verify runs (reason `check-error` when a check errs or the image can't run), `claudeCode` and the judge version absent when unused, and a verify run's files listed in records.md ([#57](https://github.com/gergodrazsdik/fazon/pull/57))
+- [ ] Q-0023 Hand edits made between runs, such as during the local review before `fazon feedback`, aren't recorded: `handEdits[].after` must be at least 1, and the parent run's record has already ended. Should a feedback run record them, for example as `after: 0`? That changes the run record's schema ([#67](https://github.com/gergodrazsdik/fazon/pull/67)) (2026-11-26)

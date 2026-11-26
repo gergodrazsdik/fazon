@@ -21,7 +21,7 @@ export interface AgentNeed {
 }
 
 /** What the loop gives one agent call. */
-export interface AgentCallInput {
+export interface LoopCallInput {
   readonly runId: string;
   /** The run's directory, absolute. */
   readonly runDir: string;
@@ -54,7 +54,7 @@ export interface AgentCallInput {
 }
 
 /** How one agent call went, as the run record stores it (`$defs.call` and the iteration's `violations`). */
-export interface AgentCallResult {
+export interface LoopCallResult {
   readonly end: CallEnd;
   readonly tokens: TokenUsage;
   readonly costUsd: number;
@@ -82,7 +82,7 @@ export interface AgentCallResult {
  * cap itself (LOOP-002) and returns, rather than throws, when the agent or Claude Code fails; a
  * throw is a harness failure that leaves the run record at its last step.
  */
-export type AgentCall = (input: AgentCallInput) => Promise<AgentCallResult>;
+export type LoopCall = (input: LoopCallInput) => Promise<LoopCallResult>;
 
 export interface ChecksInput {
   readonly runDir: string;
@@ -125,7 +125,7 @@ export const noJudge: JudgeHook = () => Promise.resolve(undefined);
 
 /** Everything the loop calls out to; tests pass fakes. */
 export interface LoopDependencies {
-  readonly call: AgentCall;
+  readonly call: LoopCall;
   /** Required for generate and feedback runs; a propose run runs no checks. */
   readonly checks?: ChecksPhase;
   /** Regenerates the component's `generated/` directory from the spec, at the start of a generate or feedback run. */

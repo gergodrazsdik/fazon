@@ -148,9 +148,9 @@ export { loopSettings, modelFor, runConfig, type LoopSettings } from "./loop/set
 export { lastFindings, runAgent, type AgentRunOptions, type AgentRunOutcome, type FeedbackInput } from "./loop/run.js";
 export {
   noJudge,
-  type AgentCall,
-  type AgentCallInput,
-  type AgentCallResult,
+  type LoopCall,
+  type LoopCallInput,
+  type LoopCallResult,
   type AgentNeed,
   type ChecksInput,
   type ChecksOutcome,

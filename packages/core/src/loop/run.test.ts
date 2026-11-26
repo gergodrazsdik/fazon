@@ -15,7 +15,7 @@ import {
 } from "../records/run-record.js";
 import { lastFindings, runAgent, type AgentRunOptions } from "./run.js";
 import { loopSettings, type LoopSettings } from "./settings.js";
-import type { AgentCallInput, AgentCallResult, ChecksInput, JudgeInput, LoopDependencies } from "./types.js";
+import type { LoopCallInput, LoopCallResult, ChecksInput, JudgeInput, LoopDependencies } from "./types.js";
 
 const image = "ghcr.io/gergodrazsdik/fazon-verifier@sha256:" + "4f1c2a9e".repeat(8);
 const checkIds: readonly CheckId[] = ["build", "lint", "test", "package", "a11y", "tokens", "layout", "visual"];
@@ -44,7 +44,7 @@ function errored(check: CheckId): CheckResult {
   return { check, status: "error", durationSeconds: 1, message: `${check} couldn't run.`, findings: [] };
 }
 
-type ScriptedCall = Partial<AgentCallResult> & {
+type ScriptedCall = Partial<LoopCallResult> & {
   /** Minutes the call takes on the fake clock; 5 by default. */
   readonly minutes?: number;
   /** Aborts the run's signal during the call. */
@@ -53,7 +53,7 @@ type ScriptedCall = Partial<AgentCallResult> & {
 
 interface Harness {
   readonly dependencies: LoopDependencies;
-  readonly calls: AgentCallInput[];
+  readonly calls: LoopCallInput[];
   readonly checkPhases: ChecksInput[];
   readonly judged: JudgeInput[];
   readonly written: RunRecord[];
@@ -78,7 +78,7 @@ function harness(
 ): Harness {
   const start = Date.parse("2026-11-26T10:00:00Z");
   let time = start;
-  const calls: AgentCallInput[] = [];
+  const calls: LoopCallInput[] = [];
   const checkPhases: ChecksInput[] = [];
   const judged: JudgeInput[] = [];
   const written: RunRecord[] = [];

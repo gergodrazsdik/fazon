@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The loop in `@fazon/core`: the iteration, budget and run-time caps, escalation to the escalation model, how an agent run ends, and run records for propose, generate and feedback runs; reading and writing a component's provenance file, with the approved API's hash.
 - The `ci` workflow runs the Vue adapter's browser tests (`just test-browser`) on pull requests.
 - The reusable `verify.yml` workflow (`verify`, `judge` skipped until M3, `comment`) and `fazon report --summary`, with a self-test that calls it on the end-to-end fixture.
 - `fazon verify` runs the source checks (build, lint, test, package) and the rendered checks (a11y, tokens, layout, visual) in the pinned verifier image, with a run record, exemptions, renamed baselines and `--base` marks; `fazon baseline update` writes baselines, `fazon.json` and `NOTICE.md` from a qualifying run; `just test-verify` runs them end to end.
