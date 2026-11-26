@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The loop in `@fazon/core`: the iteration, budget and run-time caps, escalation to the escalation model, how an agent run ends, and run records for propose, generate and feedback runs; reading and writing a component's provenance file, with the approved API's hash.
 - `fazon spec new` writes a spec from the MIT-0 template, and the Claude Code plugin in `plugin/` has its first skill, `spec`, which drafts a spec with the developer and runs `fazon spec check` until it's clean.
 - The headless agent call in `@fazon/core`: the Claude Code settings of each call, `claude -p` with the call-time cap, cost and tokens from its stream-json output, and the snapshots that find violations (PERM-002) and hand edits; the adapter's self-check commands, which for Vue run vue-tsc, ESLint, Stylelint and Vitest on the component.
 - The minimum Claude Code version, 2.1.332: `fazon doctor` warns when Claude Code is older or missing.
