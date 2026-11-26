@@ -75,6 +75,8 @@ The judge's plan and every call's result are in the run's `judge/` directory. Th
 - `api`: the hash of the approved API and the date it was approved. `fazon generate` refuses to run while the spec's API no longer has this hash ([spec format](spec-format.md#approval));
 - `generation`: the framework version, the date the result was accepted, the accepted run and the runs linked to it (kind, status, iterations, models, cost), the number of hand edits, and the total cost.
 
+`fazon accept` writes `generation`, and the spec's hash the accepted run started from; the run record isn't changed, so the provenance file is the only record of which run was accepted. `handEdits` counts the hand-edit entries of the runs, one per gap between calls with changes, not the files.
+
 It's overwritten when the component is regenerated; git keeps its history. It names no person: the approval and acceptance carry dates, and git records who committed them.
 
 ## Hashes

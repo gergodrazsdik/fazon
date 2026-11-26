@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { acquireRunLock, readRunLock, runLockFile } from "./run-lock.js";
+import { acquireRunLock, heldRunLock, readRunLock, runLockFile } from "./run-lock.js";
 
 let root: string;
 beforeEach(async () => {
@@ -61,5 +61,14 @@ describe("the run lock", () => {
     await acquireRunLock(root, "badge", "run-2", { pid: 4343, isRunning: () => false });
     if (first.acquired) await first.release();
     expect((await readRunLock(root, "badge"))?.run).toBe("run-2");
+  });
+
+  it("reports a held lock's run while its process runs, and leaves the lock as it is", async () => {
+    expect(await heldRunLock(root, "badge")).toBeUndefined();
+    await acquireRunLock(root, "badge", "run-1", { pid: 4242, isRunning: () => true, now });
+    const holder = { run: "run-1", pid: 4242, started: "2026-11-26T12:00:00.000Z" };
+    expect(await heldRunLock(root, "badge", { isRunning: () => true })).toEqual(holder);
+    expect(await heldRunLock(root, "badge", { isRunning: () => false })).toBeUndefined();
+    expect(await readRunLock(root, "badge")).toEqual(holder);
   });
 });
