@@ -105,7 +105,7 @@ After the developer upgrades the CLI package, this sets `image` in `fazon.yaml` 
 fazon spec new <component> [--tier primitive|form-control|composite]
 ```
 
-Writes `specs/<component>.md` from the template, with every required field. It refuses (2) when the file exists. The spec skill drafts the content with the developer. Result: the path written.
+Writes `specs/<component>.md` from the template, with every required field and heading, and `TODO:` placeholders where the developer's content goes; it writes no API. `--tier` defaults to `primitive`. It creates the specs directory when it doesn't exist, and refuses (2) when the file exists, or when the component's PascalCase name wouldn't give back the file name (SPEC-002), as for `heading-2`. The spec skill drafts the content with the developer. Result: the path written, the component's name and its tier.
 
 ### `fazon spec check`
 

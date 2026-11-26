@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0101, F-0019, Q-0023.
+Next free IDs: T-0101, F-0020, Q-0023.
 
 ## Now
 
@@ -105,7 +105,7 @@ Complete 2026-11-26: the CLI (`doctor`, `spec check`, `sync`, `verify`, `baselin
 ### M2 The loop
 
 - [ ] T-0050 `spec new`, `spec check`, the spec skill, `propose`, `generate`, caps, run records, the HTML report; Badge, Link and Dialog generated from specs with no hand edits, and Button regenerated the same way; the generation skill declares `defineOptions({ name })` from `api.json` and writes behaviour tests with `vitest-browser-vue` (T-0095) (broken down with the maintainer 2026-11-26, [ADR 0023](../adr/0023-m2-skills-and-claude-code-version.md))
-  - [ ] Step 1: `fazon spec new` with the spec template, and `plugin/` with the spec skill
+  - [x] Step 1: `fazon spec new` with the spec template, and `plugin/` with the spec skill — 2026-11-26, [#65](https://github.com/gergodrazsdik/fazon/pull/65): a fresh spec passes `spec check`; `check-spdx.sh` covers templates and the plugin's Markdown
   - [ ] Step 2: the headless agent call: the generated `claude -p` settings, the snapshots around each call, PERM-002 and hand edits, cost and tokens from Claude Code's output; tested against a fake `claude` (T-0094)
   - [ ] Step 3: caps, escalation, how an agent run ends, and the run record and provenance of agent runs
   - [ ] Step 4: `fazon propose` and `fazon approve` (steps 2, 3)
@@ -185,6 +185,7 @@ From the brief's [Deferred](../design/brief.md#deferred) table:
 - [ ] F-0016 Nothing catches a font fallback: `@fontsource-variable/inter` registers `Inter Variable`, so a token naming only `Inter` rendered Button in DejaVu Sans and every check passed ([fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4) names `Inter Variable` first). The M0 draft token set, which the end-to-end fixture copies, still names `Inter`. A check that each font family token's first family is loaded (`document.fonts`) would be a new rule: the maintainer decides (2026-11-26)
 - [ ] F-0017 The Vue adapter's `build/compile` runs `vite build` alone, so a library's Vite config must emit its type declarations itself (the example repo runs vue-tsc in a Vite plugin after the bundle, with Node's types for the config); adapter-boundary.md and the `fazon init` scaffold (T-0065) should say so ([fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4)) (2026-11-26)
 - [ ] F-0018 pinact needs a version comment beside every pinned SHA, and the framework has no release tag before M5, so a consumer that runs pinact can't pin `verify.yml` by SHA without an exemption: the example repo's `.pinact.yaml` exempts only that workflow at a full SHA, which its ADAPTER-003 check verifies ([fazon-vue-example#5](https://github.com/gergodrazsdik/fazon-vue-example/pull/5)). The stub `fazon init` writes and workflow.md should say so until M5 (T-0065) (2026-11-26)
+- [ ] F-0019 `spec check` doesn't flag the template's `TODO:` placeholders, so a fresh spec passes and `approve` would accept one: a SPEC rule or a warning for leftover placeholders, with the other M2 SPEC work ([#65](https://github.com/gergodrazsdik/fazon/pull/65)) (2026-11-26)
 - [x] F-0013 The example token set's dark theme gives `color.text.action` on `color.surface.active` 3.28:1, below WCAG's 4.5:1: a ghost Button's active state fails `a11y`. The contrast table didn't pair those roles ([#57](https://github.com/gergodrazsdik/fazon/pull/57)'s end-to-end test waives it with an exemption; the example repo's Button will fail) (2026-11-26) — 2026-11-26: the dark theme's `color.text.action` is blue 200, 6.03:1 on the active surface ([fazon-vue-example#3](https://github.com/gergodrazsdik/fazon-vue-example/pull/3)); the contrast table pairs action text with every surface, and the end-to-end Button passes unwaived ([#57](https://github.com/gergodrazsdik/fazon/pull/57))
 
 ## Open questions

@@ -17,6 +17,7 @@
   },
   "files": [
     "dist",
+    "templates",
     "!dist/**/*.test.*",
     "!dist/test-support.*"
   ],
