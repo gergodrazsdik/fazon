@@ -98,6 +98,9 @@ export * from "./checks/index.js";
 
 export * from "./verify/index.js";
 
+// The headless agent call and the minimum Claude Code version (T-0050 step 2, T-0094).
+export type { SelfChecks } from "./adapter.js";
+export * from "./agent/index.js";
 // Agent runs: the loop, its caps and run ends, and the records it writes (T-0050, step 3). The run
 // record's base names (writeRunRecord, RunRecord, …) are exported with verify above.
 export {

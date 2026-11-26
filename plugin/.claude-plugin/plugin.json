@@ -1,0 +1,13 @@
+{
+  "name": "fazon",
+  "version": "0.0.0",
+  "description": "Fazon's skills for building UI components from written specs: the spec skill drafts a component spec with the developer.",
+  "author": {
+    "name": "Gergő Drazsdik",
+    "url": "https://github.com/gergodrazsdik"
+  },
+  "homepage": "https://github.com/gergodrazsdik/fazon#readme",
+  "repository": "https://github.com/gergodrazsdik/fazon",
+  "license": "GPL-3.0-or-later",
+  "keywords": ["fazon", "components", "specs", "ui"]
+}

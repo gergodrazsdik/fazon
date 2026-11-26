@@ -13,7 +13,7 @@ const secret = "sk-ant-test-0123456789-do-not-print";
 const programs = {
   docker: "Docker version 28.1.0, build 1234",
   podman: "podman version 5.6.1",
-  claude: "2.1.0 (Claude Code)",
+  claude: "2.1.332 (Claude Code)",
 };
 
 let root: string;
@@ -43,7 +43,7 @@ describe("fazon doctor", () => {
       ["config", "ok"],
     ]);
     expect(check(json, "container-runtime")).toMatchObject({ detail: "Docker version 28.1.0, build 1234 (detected)" });
-    expect(check(json, "claude-code")).toMatchObject({ detail: "Claude Code 2.1.0" });
+    expect(check(json, "claude-code")).toMatchObject({ detail: "Claude Code 2.1.332 (2.1.332 or later needed)" });
   });
 
   it("never prints the API key, in text or JSON (CLI-003)", async () => {
@@ -103,6 +103,28 @@ describe("fazon doctor", () => {
     expect(result.code).toBe(0);
     expect(result.stderr).toContain("warning: Claude Code: not found");
     expect(result.stderr).toContain("warning: ANTHROPIC_API_KEY is not set");
+  });
+
+  it("only warns when Claude Code is older than the minimum, or its version can't be read (T-0094)", async () => {
+    const old = await captureJson(["doctor"], {
+      ...machine,
+      programs: { ...programs, claude: "2.1.331 (Claude Code)" },
+    });
+    expect(old.code).toBe(0);
+    expect(old.json.status).toBe("ok");
+    expect(check(old.json, "claude-code")).toMatchObject({ state: "outdated", required: false });
+    expect(old.json.messages).toContainEqual({
+      level: "warning",
+      text: "Claude Code 2.1.331 is older than 2.1.332, the minimum this version of Fazon needs; propose, generate and feedback refuse to start with it. Update it with 'claude update' to 2.1.332 or later.",
+    });
+    const newer = await captureJson(["doctor"], {
+      ...machine,
+      programs: { ...programs, claude: "2.2.0 (Claude Code)" },
+    });
+    expect(check(newer.json, "claude-code")).toMatchObject({ state: "ok" });
+    const odd = await captureJson(["doctor"], { ...machine, programs: { ...programs, claude: "Claude Code nightly" } });
+    expect(odd.code).toBe(0);
+    expect(check(odd.json, "claude-code")).toMatchObject({ state: "invalid" });
   });
 
   it("warns, without failing, when there is no fazon.yaml", async () => {

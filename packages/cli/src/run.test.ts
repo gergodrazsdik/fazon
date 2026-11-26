@@ -85,7 +85,7 @@ describe("commands not implemented yet", () => {
       expect(json).toMatchObject({ command: name, status: "refused", exitCode: 2 });
       const [message] = json.messages as { text: string }[];
       expect(message?.text).toContain(`fazon ${name} is not implemented yet; it arrives in ${arrives}.`);
-      expect(message?.text).toContain("doctor, spec check");
+      expect(message?.text).toContain("doctor, spec new, spec check");
     },
   );
 });
