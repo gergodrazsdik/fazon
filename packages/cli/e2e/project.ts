@@ -146,11 +146,16 @@ async function applyTokenFixes(tokens: string): Promise<void> {
 export interface ProjectOptions {
   /** The verifier image, by digest, for fazon.yaml. */
   readonly image: string;
+  /**
+   * The directory to write the project into, inside the workspace; a new temporary directory in
+   * the parent when it isn't given.
+   */
+  readonly directory?: string;
 }
 
-/** Writes the project into a new temporary directory and returns its path. */
+/** Writes the project and returns its path. */
 export async function createProject(options: ProjectOptions, parent = tmpdir()): Promise<string> {
-  const root = await mkdtemp(path.join(parent, "fazon-e2e-"));
+  const root = options.directory ?? (await mkdtemp(path.join(parent, "fazon-e2e-")));
   const write = async (file: string, text: string) => {
     await mkdir(path.dirname(path.join(root, file)), { recursive: true });
     await writeFile(path.join(root, file), text);
@@ -212,11 +217,56 @@ async function linkModules(root: string): Promise<void> {
   }
   await link(adapterRoot, path.join(modules, "@fazon/adapter-vue"));
   await link(path.join(workspace, "packages/cli"), path.join(modules, "fazon"));
+  // The command a package manager would install for the CLI's `bin`.
+  await mkdir(path.join(modules, ".bin"), { recursive: true });
+  await writeFile(
+    path.join(modules, ".bin/fazon"),
+    '#!/bin/sh\nexec node "$(dirname "$0")/../fazon/dist/bin.js" "$@"\n',
+    { mode: 0o755 },
+  );
   const lucide = path.join(modules, "lucide-static");
   await mkdir(path.join(lucide, "icons"), { recursive: true });
   await writeFile(path.join(lucide, "package.json"), '{ "name": "lucide-static", "version": "0.0.0" }\n');
   await writeFile(path.join(lucide, "LICENSE"), lucideLicense);
   await writeFile(path.join(lucide, "icons/check.svg"), checkIcon);
+}
+
+/**
+ * Seeds one defect per check into the project's Button, its entry file and a new source file;
+ * returns the `<check>/<rule>` each one breaks, besides `visual/changed` once it has baselines.
+ */
+export async function seedDefects(root: string): Promise<string[]> {
+  const vue = path.join(root, "src/components/button/Button.vue");
+  const original = await readFile(vue, "utf8");
+  const seeded = original
+    // test: contract-api, a default that differs from the approved API
+    .replace('size: "md"', 'size: "lg"')
+    // a11y: spec-aria, an attribute the spec lists that no story shows any more
+    .replace(`:aria-disabled="props.loading ? 'true' : undefined"`, "")
+    // lint and tokens: raw-value
+    .replace("</style>", '.button[data-variant="ghost"] {\n  border-color: #2050d0;\n}\n</style>')
+    // layout: clipped-text
+    .replace(
+      "</style>",
+      '.button[data-size="sm"] {\n  max-inline-size: 4ch;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n</style>',
+    );
+  if (seeded === original) throw new Error("The Button changed: none of the seeded defects applies.");
+  await writeFile(vue, seeded);
+  // build: types
+  await writeFile(path.join(root, "src/components/button/seed.ts"), 'export const size: number = "md";\n');
+  // package: export, an entry that leaves the component out (and build: generated, as sync wrote it)
+  const entry = path.join(root, "src/index.ts");
+  await writeFile(entry, (await readFile(entry, "utf8")).replace(/^export \{ default as Button \}.*\n/m, ""));
+  return [
+    "build/types",
+    "build/generated",
+    "lint/raw-value",
+    "test/contract-api",
+    "package/export",
+    "a11y/spec-aria",
+    "tokens/raw-value",
+    "layout/clipped-text",
+  ];
 }
 
 async function sync(root: string): Promise<void> {

@@ -1,0 +1,64 @@
+---
+# Calls the reusable verify.yml from this commit, as a consumer repository calls it, on the
+# end-to-end test's consumer project: packages/cli/e2e/selftest/setup.sh, its install command,
+# builds the framework and the verifier image from this checkout and writes the project with the
+# example Button. The project passes, so the workflow's status must be `ok`; on a pull request from
+# this repository its comment job posts the summary. Run it by hand with `seed` to check that a
+# defect per check fails it with the status `failed`.
+name: verify-selftest
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/verify.yml"
+      - ".github/workflows/verify-selftest.yml"
+      - "packages/**"
+      - "verifier/**"
+      - "docs/spec/schemas/**"
+      - "docs/spec/examples/specs/**"
+      - "docs/spec/example-library/tokens/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "tsconfig*.json"
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: Seed one defect per check; the workflow must then fail.
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fazon:
+    # The workflow at this commit, as a consumer pins one commit; actionlint checks the call against it.
+    uses: ./.github/workflows/verify.yml # zizmor: ignore[self-repository]
+    permissions:
+      contents: read
+      pull-requests: write # only the comment job uses it
+    with:
+      working-directory: packages/cli/e2e/selftest
+      install-command: ./setup.sh${{ inputs.seed && ' --seed' || '' }}
+      artifact-retention-days: 3
+      timeout-minutes: 45
+
+  expect:
+    name: expect
+    needs: fazon
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions: {}
+    steps:
+      - name: The workflow ends with the status expected
+        env:
+          STATUS: ${{ needs.fazon.outputs.status }}
+          RESULT: ${{ needs.fazon.result }}
+          EXPECTED: ${{ inputs.seed && 'failed' || 'ok' }}
+        run: |
+          echo "verify.yml ended $RESULT with the status '$STATUS'; expected '$EXPECTED'."
+          [ "$STATUS" = "$EXPECTED" ]

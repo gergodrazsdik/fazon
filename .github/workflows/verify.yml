@@ -1,0 +1,299 @@
+---
+# The reusable workflow a consumer repository calls on every pull request (docs/spec/workflow.md,
+# ADR 0017). `verify` is the required check: it runs `fazon verify` on the runner, which starts the
+# pinned verifier image as on a laptop, writes the summary and uploads the artifacts. `judge` runs
+# the judge from M3 and is skipped until then. `comment` posts the summary on pull requests from
+# the same repository. Nothing here writes code, baselines or commits (WF-001).
+name: fazon
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Where fazon.yaml and package.json are, from the repository's root.
+        type: string
+        default: "."
+      node-version-file:
+        description: The file that names the Node.js version to install, from the repository's root.
+        type: string
+        default: .node-version
+      install-command:
+        description: >-
+          The command that installs the dependencies, run with bash in the working directory after
+          pnpm is installed at the version package.json's packageManager names.
+        type: string
+        default: pnpm install --frozen-lockfile
+      artifact-retention-days:
+        description: How long the artifacts are kept, in days.
+        type: number
+        default: 14
+      timeout-minutes:
+        description: The verify job's limit; the judge job has half of it.
+        type: number
+        default: 30
+    secrets:
+      anthropic-api-key:
+        description: >-
+          The judge's API key, for the judge job only (from M3). Without it the judge is skipped.
+        required: false
+    outputs:
+      status:
+        description: "The verify job's status: ok, failed or error."
+        value: ${{ jobs.verify.outputs.status }}
+
+permissions: {}
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: ${{ inputs.timeout-minutes }}
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    env:
+      FAZON: node_modules/.bin/fazon
+    outputs:
+      status: ${{ steps.status.outputs.status }}
+      judge: ${{ steps.verify.outputs.judge }}
+      judge-timeout: ${{ steps.status.outputs.judge-timeout }}
+    steps:
+      # With its history, so `fazon verify --base` can compare the baselines with the base branch.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: ${{ inputs.node-version-file }}
+      # The exact pnpm version package.json's packageManager names; no third-party setup action.
+      - name: Install pnpm
+        run: |  # zizmor: ignore[adhoc-packages]
+          manager=""
+          if [ -f package.json ]; then manager=$(jq -r '.packageManager // ""' package.json); fi
+          case "$manager" in
+            pnpm@*)
+              version=${manager#pnpm@}
+              npm install -g "pnpm@${version%%+*}"
+              ;;
+            *) echo "package.json names no pnpm version; the install command brings its own tools." ;;
+          esac
+      - name: Install the dependencies
+        env:
+          INSTALL_COMMAND: ${{ inputs.install-command }}
+        run: bash -euo pipefail -c "$INSTALL_COMMAND"
+      - name: fazon doctor
+        id: doctor
+        run: '"$FAZON" doctor'
+      - name: fazon spec check
+        id: spec
+        if: ${{ !cancelled() && steps.doctor.outcome == 'success' }}
+        run: '"$FAZON" spec check'
+      - name: fazon sync --check
+        id: sync
+        if: ${{ !cancelled() && steps.doctor.outcome == 'success' }}
+        run: '"$FAZON" sync --check'
+      - name: fazon verify
+        id: verify
+        if: ${{ !cancelled() && steps.doctor.outcome == 'success' }}
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          result="$RUNNER_TEMP/fazon-verify.json"
+          args=(verify --no-judge --json --verbose)
+          if [ -n "$BASE_REF" ]; then args+=(--base "origin/$BASE_REF"); fi
+          code=0
+          "$FAZON" "${args[@]}" >"$result" || code=$?
+          jq -r '.messages[] | "\(.level): \(.text)"' "$result" || true
+          run=$(jq -r '.result.run // ""' "$result" || true)
+          if ! [[ "$run" =~ ^[0-9]{8}T[0-9]{6}Z-[a-z][a-z0-9-]*-[0-9a-f]{4}$ ]]; then run=""; fi
+          judge=$(jq -r 'if .result.judge.available == true then "run" else "skip" end' "$result" || echo skip)
+          {
+            echo "status=$(jq -r '.status // "error"' "$result" || echo error)"
+            echo "run=$run"
+            echo "judge=$judge"
+          } >>"$GITHUB_OUTPUT"
+          exit "$code"
+      # ok, failed (a check or validation failed) or error (the environment or the tool failed).
+      - name: Status
+        id: status
+        if: ${{ !cancelled() }}
+        env:
+          VERIFY: ${{ steps.verify.outputs.status }}
+          SPEC: ${{ steps.spec.outcome }}
+          SYNC: ${{ steps.sync.outcome }}
+          TIMEOUT: ${{ inputs.timeout-minutes }}
+        run: |
+          case "$VERIFY" in
+            ok | failed | error) status=$VERIFY ;;
+            refused) status=failed ;;
+            *) status=error ;;
+          esac
+          if [ "$status" = ok ] && { [ "$SPEC" = failure ] || [ "$SYNC" = failure ]; }; then status=failed; fi
+          {
+            echo "status=$status"
+            echo "judge-timeout=$(( TIMEOUT / 2 > 0 ? TIMEOUT / 2 : 1 ))"
+          } >>"$GITHUB_OUTPUT"
+      - name: Upload the Storybook build
+        id: storybook
+        if: ${{ !cancelled() && steps.verify.outputs.run != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fazon-storybook
+          path: ${{ inputs.working-directory }}/.fazon/runs/${{ steps.verify.outputs.run }}/storybook/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: ${{ inputs.artifact-retention-days }}
+      - name: Upload the packed library
+        id: package
+        if: ${{ !cancelled() && steps.verify.outputs.run != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fazon-package
+          path: ${{ inputs.working-directory }}/.fazon/runs/${{ steps.verify.outputs.run }}/package/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: ${{ inputs.artifact-retention-days }}
+      # The record, verify.json, captures and diff images, logs and tool reports; no transcript,
+      # prompt or credential (WF-006): a verify run makes no agent call.
+      - name: Upload the run
+        id: run
+        if: ${{ !cancelled() && steps.verify.outputs.run != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fazon-run
+          path: |
+            ${{ inputs.working-directory }}/.fazon/runs/${{ steps.verify.outputs.run }}/
+            !${{ inputs.working-directory }}/.fazon/runs/${{ steps.verify.outputs.run }}/storybook/
+            !${{ inputs.working-directory }}/.fazon/runs/${{ steps.verify.outputs.run }}/package/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: ${{ inputs.artifact-retention-days }}
+      # `fazon report --summary`, under a heading with the job's status and any step that failed
+      # outside `fazon verify`, with links to the artifacts in place of its placeholder.
+      - name: Summary
+        if: ${{ !cancelled() }}
+        env:
+          STATUS: ${{ steps.status.outputs.status }}
+          RUN_ID: ${{ steps.verify.outputs.run }}
+          DOCTOR: ${{ steps.doctor.outcome }}
+          SPEC: ${{ steps.spec.outcome }}
+          SYNC: ${{ steps.sync.outcome }}
+          STORYBOOK_URL: ${{ steps.storybook.outputs.artifact-url }}
+          PACKAGE_URL: ${{ steps.package.outputs.artifact-url }}
+          RUN_URL: ${{ steps.run.outputs.artifact-url }}
+          RUN_PAGE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          dir="$RUNNER_TEMP/fazon-report"
+          mkdir -p "$dir"
+          part="$RUNNER_TEMP/fazon-summary-part.md"
+          placeholder='<!-- fazon:artifacts -->'
+          if [ -z "$RUN_ID" ] || ! "$FAZON" report --summary "$RUN_ID" >"$part"; then
+            printf '%s\n' "### Fazon verify didn't run" "" "\`fazon verify\` made no run; the job's log says why." "" "$placeholder" >"$part"
+          fi
+          link() {
+            if [ -n "$2" ]; then echo "- [$1]($2): $3"; fi
+          }
+          {
+            echo "## Fazon: ${STATUS:-error}"
+            echo
+            if [ "$DOCTOR" != success ]; then echo "- Installing the dependencies or \`fazon doctor\` failed: see the [job's log]($RUN_PAGE)."; fi
+            if [ "$SPEC" = failure ]; then echo "- \`fazon spec check\` failed: see the [job's log]($RUN_PAGE)."; fi
+            if [ "$SYNC" = failure ]; then echo "- \`fazon sync --check\` failed: the generated files aren't current; run \`fazon sync\`."; fi
+            echo
+            while IFS= read -r line; do
+              if [ "$line" = "$placeholder" ]; then
+                echo "#### Artifacts"
+                echo
+                link fazon-storybook "$STORYBOOK_URL" "the static Storybook build"
+                link fazon-package "$PACKAGE_URL" "the packed library"
+                link fazon-run "$RUN_URL" "the run's record, captures, diff images and logs"
+                echo "- fazon-report: this summary; the HTML report arrives in M2. Every artifact is on the [workflow run's page]($RUN_PAGE)."
+              else
+                printf '%s\n' "$line"
+              fi
+            done <"$part"
+          } >"$dir/summary.md"
+          cat "$dir/summary.md" >>"$GITHUB_STEP_SUMMARY"
+      - name: Upload the report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fazon-report
+          path: ${{ runner.temp }}/fazon-report/
+          if-no-files-found: ignore
+          retention-days: ${{ inputs.artifact-retention-days }}
+
+  # The judge arrives in M3 (T-0056). Until then `fazon verify` reports it unavailable, so this job
+  # is skipped, and the summary says so. From M3 it runs after a passing verify when the judge's
+  # policy isn't off and the API key is set, with the key in this job's environment only (WF-002).
+  judge:
+    name: judge
+    needs: verify
+    if: ${{ needs.verify.outputs.status == 'ok' && needs.verify.outputs.judge == 'run' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: ${{ fromJSON(needs.verify.outputs.judge-timeout || '15') }}
+    permissions:
+      contents: read
+    steps:
+      - name: The judge arrives in M3
+        run: echo "fazon judge arrives in M3 (T-0056); nothing to judge yet."
+
+  # One comment, found by its marker, created or updated with the summary. Same-repository pull
+  # requests only: those from forks get a read-only token. It checks out nothing and runs no code
+  # from the pull request (WF-003); the summary is data.
+  comment:
+    name: comment
+    needs: [verify, judge]
+    if: >-
+      ${{ !cancelled() && github.event_name == 'pull_request'
+      && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download the summary
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: fazon-report
+          path: ${{ runner.temp }}/fazon-report
+      - name: Create or update the comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          RUN_PAGE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          marker='<!-- fazon:summary -->'
+          summary="$RUNNER_TEMP/fazon-report/summary.md"
+          body="$RUNNER_TEMP/comment.md"
+          # A comment holds at most 65,536 characters.
+          limit=60000
+          {
+            echo "$marker"
+            if [ ! -f "$summary" ]; then
+              printf '%s\n' "## Fazon: error" "" "The verify job ended without a summary: see the [workflow run]($RUN_PAGE)."
+            elif [ "$(wc -c <"$summary")" -gt "$limit" ]; then
+              head -c "$limit" "$summary"
+              printf '\n\n%s\n' "The summary is cut short here; the [job summary]($RUN_PAGE) has all of it."
+            else
+              cat "$summary"
+            fi
+          } >"$body"
+          jq -n --rawfile body "$body" '{body: $body}' >"$RUNNER_TEMP/comment.json"
+          id=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | startswith(\"$marker\"))) | .id" \
+            | awk 'NR == 1')
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$REPO/issues/comments/$id" --input "$RUNNER_TEMP/comment.json" >/dev/null
+            echo "Updated the summary comment $id."
+          else
+            gh api --method POST "repos/$REPO/issues/$PR/comments" --input "$RUNNER_TEMP/comment.json" >/dev/null
+            echo "Created the summary comment."
+          fi
