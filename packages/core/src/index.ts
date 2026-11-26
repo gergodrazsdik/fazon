@@ -98,4 +98,70 @@ export * from "./checks/index.js";
 
 export * from "./verify/index.js";
 
+// The headless agent call and the minimum Claude Code version (T-0050 step 2, T-0094).
+export type { SelfChecks } from "./adapter.js";
+export * from "./agent/index.js";
+// Agent runs: the loop, its caps and run ends, and the records it writes (T-0050, step 3). The run
+// record's base names (writeRunRecord, RunRecord, …) are exported with verify above.
+export {
+  linkedRuns,
+  roundUsd,
+  type AgentRunKind,
+  type CallEnd,
+  type CallRecord,
+  type HandEdit,
+  type InputName,
+  type IterationOutcome,
+  type IterationRecord,
+  type JudgeSummary,
+  type RunConfig,
+  type RunInputs,
+  type RunTotals,
+  type RunVersions,
+  type TokenUsage,
+  type Verification,
+} from "./records/run-record.js";
+export { recordDate, recordTimestamp, writeJsonAtomically } from "./records/json-file.js";
+export { approvedApi, canonicalJson, hashApi, hashFile } from "./records/hash.js";
+export {
+  acceptGeneration,
+  apiApproved,
+  approveApi,
+  provenanceFile,
+  provenancePath,
+  provenanceProblems,
+  readProvenance,
+  writeProvenance,
+  type Acceptance,
+  type Approval,
+  type Provenance,
+  type ProvenanceGeneration,
+  type ProvenanceRead,
+  type ProvenanceRun,
+} from "./records/provenance.js";
+export {
+  generateContext,
+  isOwnVisualDiff,
+  needMarker,
+  parseAgentNeed,
+  phaseVerdict,
+  type PhaseVerdict,
+} from "./loop/blocking.js";
+export { loopSettings, modelFor, runConfig, type LoopSettings } from "./loop/settings.js";
+export { lastFindings, runAgent, type AgentRunOptions, type AgentRunOutcome, type FeedbackInput } from "./loop/run.js";
+export {
+  noJudge,
+  type LoopCall,
+  type LoopCallInput,
+  type LoopCallResult,
+  type AgentNeed,
+  type ChecksInput,
+  type ChecksOutcome,
+  type ChecksPhase,
+  type JudgeHook,
+  type JudgeInput,
+  type LoopDependencies,
+} from "./loop/types.js";
+
+// The HTML report of a run (T-0050 step 7).
 export * from "./report/index.js";

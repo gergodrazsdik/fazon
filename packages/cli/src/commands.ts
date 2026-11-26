@@ -5,6 +5,7 @@ import { doctor } from "./commands/doctor.js";
 import { baselineUpdate } from "./commands/baseline-update.js";
 import { report } from "./commands/report.js";
 import { specCheck } from "./commands/spec-check.js";
+import { specNew } from "./commands/spec-new.js";
 import { sync } from "./commands/sync.js";
 import { verify } from "./commands/verify.js";
 import type { Outcome } from "./outcome.js";
@@ -53,7 +54,9 @@ export const commands: readonly Command[] = [
     group: "Specs",
     usage: "fazon spec new <component> [--tier primitive|form-control|composite]",
     summary: "Write a spec from the template.",
-    arrives: "M2",
+    options: { tier: { type: "string" } },
+    maxPositionals: 1,
+    run: specNew,
   },
   {
     name: "spec check",

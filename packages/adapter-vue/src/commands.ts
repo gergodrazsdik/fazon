@@ -1,7 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // The Vue adapter's source-check commands (docs/spec/adapter-boundary.md#commands), which
-// `fazon verify` runs in the verifier image, and the `test` rule of each test.
-import { generatedDirectory, type SourceCommands, type SourceCommandsInput, type TestRule } from "@fazon/core";
+// `fazon verify` runs in the verifier image, the self-check commands the agent may run on the
+// host, and the `test` rule of each test.
+import {
+  generatedDirectory,
+  type SelfChecks,
+  type SourceCommands,
+  type SourceCommandsInput,
+  type TestRule,
+} from "@fazon/core";
 
 /**
  * `vite build` in library mode, `vue-tsc --noEmit`, `storybook build`, ESLint and Stylelint on
@@ -44,4 +51,24 @@ export function testRule(file: string, name: string): TestRule {
   const contract = file.split("/").includes(generatedDirectory) && file.endsWith(".contract.test.ts");
   if (!contract) return "behaviour";
   return name.includes("contract-api") ? "contract-api" : "contract-render";
+}
+
+/** Where Vite and Vitest keep their caches, which the self-checks write to: Vite's bundled config, its dependency cache, and other tools' caches. */
+const selfCheckCaches = ["node_modules/.vite", "node_modules/.vite-temp", "node_modules/.cache"] as const;
+
+/**
+ * The self-check commands for the component in `directory` (docs/spec/adapter-boundary.md#commands),
+ * run on the host with the dependencies the developer installed: `vue-tsc`, ESLint and Stylelint
+ * on the component's files, and its tests.
+ */
+export function selfChecks(directory: string): SelfChecks {
+  return {
+    commands: [
+      "pnpm exec vue-tsc --noEmit",
+      `pnpm exec eslint ${directory}`,
+      `pnpm exec stylelint "${directory}/**/*.{vue,css}"`,
+      `pnpm exec vitest run ${directory}`,
+    ],
+    cacheDirectories: [...selfCheckCaches],
+  };
 }

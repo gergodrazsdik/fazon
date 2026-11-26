@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-import { configFileName, type Finding } from "@fazon/core";
+import {
+  claudeCodeCommand,
+  claudeCodeProblem,
+  claudeCodeStatus,
+  ClaudeCodeVersionError,
+  configFileName,
+  minimumClaudeCodeVersion,
+  type Finding,
+} from "@fazon/core";
 import { isSet, type Environment } from "../environment.js";
 import type { Message, Outcome, Status } from "../outcome.js";
 import { configMessages, describeFinding, loadRepositoryConfig, type Context } from "./context.js";
@@ -174,23 +182,46 @@ async function checkContainerRuntime(environment: Environment): Promise<DoctorCh
   };
 }
 
+/**
+ * Claude Code, against the minimum this framework version declares (ADR 0021, ADR 0023). Only a
+ * warning when it's missing or older: CI's verify job doesn't run the agent, while propose,
+ * generate and feedback refuse to start.
+ */
 async function checkClaudeCode(environment: Environment): Promise<DoctorCheck> {
-  const version = await versionOf(environment, "claude");
-  if (version === undefined) {
-    return {
-      check: "claude-code",
-      state: "missing",
-      required: false,
-      detail: "Claude Code: not found; propose, generate and feedback need it",
-      hint: "Install it: https://code.claude.com/docs/en/setup",
-    };
+  const status = claudeCodeStatus(await versionOf(environment, claudeCodeCommand));
+  switch (status.state) {
+    case "ok":
+      return {
+        check: "claude-code",
+        state: "ok",
+        required: false,
+        detail: `Claude Code ${status.version} (${minimumClaudeCodeVersion} or later needed)`,
+      };
+    case "missing":
+      return {
+        check: "claude-code",
+        state: "missing",
+        required: false,
+        detail: `Claude Code: not found; propose, generate and feedback need ${minimumClaudeCodeVersion} or later`,
+        hint: new ClaudeCodeVersionError(status).hint,
+      };
+    case "outdated":
+      return {
+        check: "claude-code",
+        state: "outdated",
+        required: false,
+        detail: `${claudeCodeProblem(status)}; propose, generate and feedback refuse to start with it`,
+        hint: new ClaudeCodeVersionError(status).hint,
+      };
+    case "unreadable":
+      return {
+        check: "claude-code",
+        state: "invalid",
+        required: false,
+        detail: `${claudeCodeProblem(status)}; propose, generate and feedback refuse to start with it`,
+        hint: new ClaudeCodeVersionError(status).hint,
+      };
   }
-  return {
-    check: "claude-code",
-    state: "ok",
-    required: false,
-    detail: `Claude Code ${version.replace(/ \(Claude Code\)$/, "")}`,
-  };
 }
 
 function checkApiKey(environment: Environment): DoctorCheck {

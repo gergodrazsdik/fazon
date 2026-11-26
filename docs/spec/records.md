@@ -45,7 +45,7 @@ Transcripts are local only. CI never uploads them, and published measurement rec
 
 ## The run record
 
-`run.json` ([schema](schemas/run-record.schema.json), [example](examples/records/run.json)) holds everything a run did. The harness rewrites it atomically after every step: each agent call, check phase and judge pass. A crash leaves the record of the last completed step, with the status `running`.
+`run.json` ([schema](schemas/run-record.schema.json), [example](examples/records/run.json)) holds everything a run did. The harness rewrites it atomically after every step: each agent call, check phase and judge pass. A crash leaves the record of the last completed step, with the status `running`. Until its outcome is known, the iteration in progress is recorded as `stopped`, so after a crash it shows as one that never finished.
 
 | Field | Content |
 |---|---|
@@ -55,11 +55,11 @@ Transcripts are local only. CI never uploads them, and published measurement rec
 | `measurement` | The round and repeat of a measured run. |
 | `versions` | The framework, adapter and Claude Code versions, the verifier image by digest, and the judge version. Claude Code's version is absent when the run made no agent call (a verify run), and the judge version when the run used no judge. |
 | `inputs` | Hashes of the spec, the approved API, the token set, the conventions doc and the config at the start. |
-| `config` | The caps, models, escalation threshold, judge policy and whether the judge was calibrated. |
+| `config` | The caps, models, escalation threshold, judge policy and whether the judge was calibrated. In a local run, `judge.localPolicy: off` records the policy as `off`. |
 | `iterations` | Each iteration: its agent call (model, effort, tokens, cost, duration, how it ended, transcript, files changed), any permission violations, its checks with their findings, the judge's summary, and its outcome. |
 | `verification` | A verify run's checks and judge, which have no agent call. |
 | `proposal` | A propose run's proposed API. |
-| `handEdits` | Files a person changed between calls, by iteration. |
+| `handEdits` | Files a person changed between calls, by the iteration they followed. Changes before a run's first call aren't between its calls, and aren't recorded. |
 | `totals` | Iterations; agent, judge and total cost; whether any cost was estimated; any overrun; tokens; duration; whether the run escalated. |
 
 The judge's plan and every call's result are in the run's `judge/` directory. The record keeps a summary: the number of calls, the cost, verdict counts, and the findings of `fail` and `unsure` verdicts.

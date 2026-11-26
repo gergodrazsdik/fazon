@@ -40,7 +40,7 @@ An adapter supplies everything that depends on the framework:
 | **API reader** | the component's files → its actual API, in the mapping's form | the contract tests (`contract-api`) |
 | **Entry exports** | the components and their parts → the package entry file's exports | `fazon sync` |
 | **Source-check commands** | → the commands for `build`, `lint`, `test` and `package`, run in the verifier | the source checks |
-| **Self-check commands** | a component → the type-check, lint and test commands the agent may run on the host | the agent's permissions |
+| **Self-check commands** | a component → the type-check, lint and test commands the agent may run on the host, and the cache directories they write to | the agent's permissions |
 | **Storybook setup** | → the framework's Storybook configuration, with the theme switch that sets `data-theme`, and the icon set's license notice in the static build (the story files render the story frame) ([license terms](licensing.md#lucide)); the token set's themes and default theme → a generated module the configuration imports them from | `fazon init`, `fazon sync`, the Storybook build |
 | **Scaffold** | → the library build, type declarations, exports map, lint and test configuration | `fazon init` |
 | **Conventions template** | → a conventions doc to start from | `fazon init` |
