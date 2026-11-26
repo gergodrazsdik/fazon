@@ -152,7 +152,7 @@ A value is valid when it is a role token's custom property (`var(--color-action-
 | Rule | Fails when |
 |---|---|
 | `export` | A component or one of its parts isn't exported from the package entry, or the export doesn't resolve from the packed tarball. |
-| `types` | An export's type declarations are missing or don't resolve (Are the Types Wrong). |
+| `types` | An export's type declarations are missing or don't resolve (Are the Types Wrong, with the resolution the adapter names: bundler resolution for Vue). |
 | `styles` | A component's styles aren't in the packed output, or don't load when the component is imported. |
 | `manifest` | The package's `package.json` isn't valid for publishing (publint). |
 

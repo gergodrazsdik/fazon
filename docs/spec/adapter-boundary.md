@@ -80,6 +80,7 @@ The agent may write files matching `*.vue`, `*.ts` and `*.css` outside `generate
 
 | Neutral | Vue |
 |---|---|
+| component | `defineOptions({ name })`: the token prefix in PascalCase before the component's name, such as `FzButton`, so the name never collides with an HTML element; consumers import `Button` ([ADR 0022](../adr/0022-build-from-source-and-component-names.md)) |
 | prop | `defineProps` with a TypeScript type; an enum is a union of string literals; defaults through `withDefaults` |
 | `model: true` | `defineModel`: the model named `value` is the default `v-model` (`modelValue`), any other is `v-model:<name>` |
 | event | `defineEmits` with a typed payload |
@@ -135,7 +136,7 @@ How a story file renders a fixture:
 | `build` / `storybook` | `storybook build` | verifier |
 | `lint` | `eslint` and `stylelint` on the component's files, with Fazon's rules | verifier |
 | `test` | `vitest run`, in browser mode, on the component's tests and contract tests | verifier |
-| `package` | `pnpm pack`, then publint and Are the Types Wrong on the tarball | verifier |
+| `package` | `pnpm pack`, then publint and Are the Types Wrong on the tarball, with its `esm-only` profile and bundler resolution, which reads the `.vue` files' declarations | verifier |
 | self-check: types | `pnpm exec vue-tsc --noEmit` | host, in the agent's sandbox |
 | self-check: lint | `pnpm exec eslint <dir>`; `pnpm exec stylelint "<dir>/**/*.{vue,css}"` | host |
 | self-check: tests | `pnpm exec vitest run <dir>` | host |
@@ -168,20 +169,22 @@ Until M5, the example repository pins **one framework commit**, and three refere
 
 | What | How it's referenced |
 |---|---|
-| The CLI and the Vue adapter | pnpm git dependencies on the framework repository at the commit's SHA, each with its package path; the packages build when installed |
+| The CLI and the Vue adapter | the commit built from source: a script fetches it into a gitignored `.fazon-framework/<sha>/` directory, installs it from its lockfile and builds it, and the packages are `file:` dependencies on that directory ([ADR 0022](../adr/0022-build-from-source-and-component-names.md)) |
 | The reusable workflow | `uses: gergodrazsdik/fazon/.github/workflows/<workflow>.yml@<sha>` |
 | The verifier image | `image` in `fazon.yaml`: the digest of the image the framework's CI built from that commit |
 
-For example (the exact git syntax is confirmed in M1):
+For example, with `@fazon/core` and `@fazon/adapter-vue` also overridden to the same directory in `pnpm-workspace.yaml`, so the packages' dependencies on each other resolve there:
 
 ```json
 {
   "devDependencies": {
-    "fazon": "github:gergodrazsdik/fazon#<sha>&path:packages/cli",
-    "@fazon/adapter-vue": "github:gergodrazsdik/fazon#<sha>&path:packages/adapter-vue"
+    "fazon": "file:.fazon-framework/<sha>/packages/cli",
+    "@fazon/adapter-vue": "file:.fazon-framework/<sha>/packages/adapter-vue"
   }
 }
 ```
+
+pnpm git dependencies don't work for this: a package path can't resolve the packages' `workspace:*` dependencies, and nothing builds `dist/`, which isn't in git.
 
 **Pre-release images:** on every push to `main`, the framework's CI builds the verifier image and pushes it to GHCR, tagged `sha-<sha>`. The example repository pins it by digest. This needs `packages: write` in that one job of the framework's CI from M1, earlier than the brief planned ([ADR 0016](../adr/0016-adapter-boundary.md)). Signing and provenance attestations still arrive with the releases in M5 (T-0066).
 
@@ -195,5 +198,5 @@ For example (the exact git syntax is confirmed in M1):
 |---|---|---|
 | ADAPTER-001 | No core package imports a framework package or an adapter. | a lint rule in the framework repository, from M1 |
 | ADAPTER-002 | An adapter writes only into a component's `generated/` directory, the entry file, and, during `init`, files that don't exist yet. | the harness |
-| ADAPTER-003 | Before M5, the example repository's package dependencies, workflow reference and image name the same framework commit. | the example repository's CI |
+| ADAPTER-003 | Before M5, the commit in the example repository's `.fazon-framework/<sha>/` dependencies, its workflow reference and its image tag are the same framework commit. | the example repository's CI |
 | ADAPTER-004 | The contract tests compare the component's API, as vue-component-meta reads it, with `generated/api.json`. | the `test` check |

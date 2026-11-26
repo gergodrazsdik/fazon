@@ -27,6 +27,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0019](0019-license-terms.md) | License terms: MIT-0 for Fazon's output and the example repository, no headers, notices with the baselines | accepted |
 | [0020](0020-component-list-and-npm-names.md) | Seventeen example components, with Menu and Popover; npm names `fazon` and `@fazon/*` | accepted |
 | [0021](0021-settled-questions.md) | Token CSS in the package, no headers in the example repository, a minimum Claude Code version, a measurement budget, paragraph nodes, generated themes | accepted |
+| [0022](0022-build-from-source-and-component-names.md) | The example repository builds the framework from source until M5; components carry a prefixed name | accepted |
 
 ## Numbering and status
 
