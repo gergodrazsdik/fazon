@@ -93,8 +93,12 @@ describe("fazon verify and fazon baseline update in the verifier image", () => {
     expect(statuses(json)).toEqual(allPass);
     const [button] = json.result.components as { stories: Record<string, number> }[];
     expect(button?.stories).toEqual({ unchanged: 0, changed: 0, new: 54 });
-    const { run } = await record(json);
+    const { run, findings } = await record(json);
     expect(run.status).toBe("passed");
+    // The spec's exemption waives the ghost variant's active contrast: kept, marked, not blocking.
+    const waived = findings.filter((f) => f.check === "a11y" && f.rule === "color-contrast");
+    expect(waived.length).toBeGreaterThan(0);
+    expect(waived.every((f) => !f.blocking && (f as { exempt?: number }).exempt === 0)).toBe(true);
   });
 
   it("write the baselines from that run, and nothing on a second update", async () => {

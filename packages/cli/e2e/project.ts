@@ -4,7 +4,7 @@
 // files, and node_modules linked to the framework's workspace (the built packages and the Vue
 // adapter's development dependencies), as `fazon init` and `fazon sync` would set it up.
 import { execFile } from "node:child_process";
-import { cp, mkdir, mkdtemp, readdir, symlink, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readdir, readFile, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -126,6 +126,18 @@ it("blocks activation while loading, and stays focusable", async () => {
 });
 `;
 
+/**
+ * The example token set's text colour for actions, on the active surface the spec gives the ghost
+ * variant, has a contrast of 3.28 in the dark theme, under axe's 4.5 for body text. The test's
+ * spec waives it, which also runs an exemption end to end.
+ */
+const exemption = `exemptions:
+  - check: a11y
+    rule: color-contrast
+    when: { props: { variant: ghost }, state: active }
+    reason: The example token set's ghost active surface is short of contrast in the dark theme; the test isn't about it.
+`;
+
 export interface ProjectOptions {
   /** The verifier image, by digest, for fazon.yaml. */
   readonly image: string;
@@ -139,14 +151,19 @@ export async function createProject(options: ProjectOptions, parent = tmpdir()):
     await writeFile(path.join(root, file), text);
   };
 
-  await write("fazon.yaml", `fazon: 0\nadapter: vue\nimage: ${options.image}\njudge:\n  policy: off\n`);
+  // The token prefix gives the components their prefixed names (FzButton, ADR 0022).
+  await write(
+    "fazon.yaml",
+    `fazon: 0\nadapter: vue\nimage: ${options.image}\ntokens:\n  prefix: fz\njudge:\n  policy: off\n`,
+  );
   await write("package.json", `${JSON.stringify(packageJson, null, 2)}\n`);
   await write("vite.config.ts", viteConfig);
   await write("tsconfig.json", `${JSON.stringify(tsconfig, null, 2)}\n`);
   await write("env.d.ts", env);
   await write("src/index.ts", 'import "./tokens.css";\n');
   await write(".gitignore", "node_modules/\ndist/\n.fazon/\nfazon.local.yaml\n");
-  await cp(path.join(examples, "examples/specs/valid/button.md"), path.join(root, "specs/button.md"));
+  const spec = await readFile(path.join(examples, "examples/specs/valid/button.md"), "utf8");
+  await write("specs/button.md", spec.replace("\nextensions:\n", `\n${exemption}extensions:\n`));
   await cp(path.join(examples, "example-library/tokens"), path.join(root, "tokens"), { recursive: true });
   await cp(new URL("library/Button.vue", import.meta.url), path.join(root, "src/components/button/Button.vue"));
   await write("src/components/button/Button.test.ts", behaviourTest);
