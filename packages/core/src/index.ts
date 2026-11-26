@@ -162,3 +162,32 @@ export {
   type JudgeInput,
   type LoopDependencies,
 } from "./loop/types.js";
+// The generate run's parts (T-0050, step 5): the checks phase in the verifier image, the
+// generated-files refresh, the generate prompt and the generation skill it carries.
+export {
+  checkIterationInImage,
+  checksPhaseFiles,
+  erroredChecks,
+  generateRunChecks,
+  imageChecksPhase,
+  readIterationChecks,
+  type ChecksPhaseFiles,
+  type ImageChecksPhaseOptions,
+  type ImageRunExit,
+  type ImageRunner,
+  type ImageRunRequest,
+  type IterationChecks,
+  type IterationInImageOptions,
+} from "./loop/checks.js";
+export { generatedRefresh, RefreshError, refreshGenerated, refreshScope, type RefreshOptions } from "./loop/refresh.js";
+export {
+  generatePrompt,
+  generationSkillFile,
+  loadGenerateContext,
+  readGenerationSkill,
+  type GenerateCall,
+  type GenerateContext,
+  type GenerateContextOptions,
+  type PromptFile,
+  type PromptRoleToken,
+} from "./prompt/generate.js";
