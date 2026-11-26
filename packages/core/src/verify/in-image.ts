@@ -108,8 +108,13 @@ export async function playwrightProblems(repo: string, browsersPath: string): Pr
 
 /**
  * A writable working copy of the repository: its files without node_modules, .git and .fazon,
- * and a node_modules directory of links to the repository's, so tools can write their caches.
+ * and a node_modules directory of links to the repository's packages, so tools can write their
+ * caches. Of node_modules' dot entries only pnpm's own are linked: the rest are tools' caches
+ * (`.vite`, `.vite-temp`, `.cache`, `.vitest-cache`), which would point into the read-only mount.
  */
+/** The dot entries of node_modules the working copy links: pnpm's store of packages, the executables and pnpm's state. */
+const linkedDotEntries = new Set([".bin", ".pnpm", ".modules.yaml"]);
+
 export async function makeWorkingCopy(repo: string, work: string, skip: readonly string[] = []): Promise<void> {
   await mkdir(work, { recursive: true });
   for (const entry of await readdir(repo, { withFileTypes: true })) {
@@ -120,6 +125,7 @@ export async function makeWorkingCopy(repo: string, work: string, skip: readonly
   const linked = path.join(work, "node_modules");
   await mkdir(linked, { recursive: true });
   for (const entry of await readdir(modules, { withFileTypes: true }).catch(() => [])) {
+    if (entry.name.startsWith(".") && !linkedDotEntries.has(entry.name)) continue;
     if (entry.name.startsWith("@") && entry.isDirectory()) {
       await mkdir(path.join(linked, entry.name), { recursive: true });
       for (const scoped of await readdir(path.join(modules, entry.name))) {
