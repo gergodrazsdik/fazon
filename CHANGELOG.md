@@ -8,6 +8,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- Fazon's lint rules: a Stylelint plugin (`@fazon/core/stylelint`) for `raw-value`, `raw-token` and `unknown-token`, the `inline-suppression` rule for ESLint, Stylelint and TypeScript directives, the Vue adapter's ESLint and Stylelint configuration (`@fazon/adapter-vue/lint`), and lint output as findings.
+- The Vue adapter's API reader (vue-component-meta, in `api.json`'s form) and the setup a consumer imports: `fazonVitest()` (browser mode in Chromium with the `fazonVueApi` command), `fazonStorybook()` and `fazonPreview()` (the theme switch); `just test-browser` runs the generated contract tests and Storybook build.
+- The rendered checks in `@fazon/core`: a page runner on the verifier's Chromium, and the `a11y` (axe-core and the spec's roles, names and ARIA), `tokens` (the winning declaration, followed to its token), `layout` and `visual` (PNG comparison, `fazon.json`, orphans) checks; `just test-rendered` and the `rendered` workflow run every M0 fixture in the verifier image.
 - `fazon sync [--check]` with the Vue adapter: the token CSS, each component's story file, contract test, API and story manifest, and the entry file's exports; a component without its root file gets only its manifest and API until it's generated.
 - The story matrix in `@fazon/core`: `buildManifest` writes a component's story manifest from its spec, and `checkManifest` checks MATRIX-001 and MATRIX-002.
 - The CLI skeleton: `--json` output, exit codes, `fazon doctor` and `fazon spec check` (SPEC-001, SPEC-002); the core loads and validates the config and specs against the M0 schemas.
