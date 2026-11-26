@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `fazon generate <component> [--clean]` runs a generate run until every check passes in the verifier image or a cap is reached; it refuses while the API isn't the approved one, a run is in progress, or generated files outside the component are stale, and ends with the run's HTML report.
 - `fazon accept <component>` accepts the component's latest generate or feedback run into its provenance file when it passed and its spec, approved API, token set and files are unchanged since, and prints the `fazon baseline update` command when stories are new or changed.
 - `fazon propose <component>`: one read-only agent call drafts the API from the spec, and the harness writes it into the spec's API fields for review as a diff.
 - `fazon approve <component>` records the approved API's hash and date in the component's provenance file.
