@@ -493,7 +493,7 @@ describe("SPEC-016: recipes", () => {
         `${list}fixtures:\n  one:\n    parts: { Item: [{}] }\n`,
     );
     expect(findings("SPEC-016", file)).toEqual([
-      ["$.produce.open.props.wide", "the recipe for open sets wide, which isn't a prop of Chip"],
+      ["$.produce.open.props.wide", "Chip has no prop wide"],
       ["$.produce.open.input[0].target", "the input target Nope names no part of Chip"],
       [
         "$.produce.open.input[1].target",
@@ -509,6 +509,20 @@ describe("SPEC-016: recipes", () => {
         "instance names Item[1], but the fixture one, which the stories of picked render, has 1 instance of Item",
       ],
     ]);
+  });
+
+  it("finds recipe values that don't fit their prop's type, as SPEC-009 does for fixtures", () => {
+    const file = chip(
+      `${tone}  busy:\n    type: boolean\nstates: [busy, loud]\nproduce:\n  busy:\n    props: { busy: "yes" }\n  loud:\n    props: { tone: loud }\n`,
+    );
+    expect(findings("SPEC-016", file)).toEqual([
+      ["$.produce.busy.props.busy", "the prop busy of Chip is set to 'yes', which isn't a boolean"],
+      [
+        "$.produce.loud.props.tone",
+        "the prop tone of Chip is set to 'loud', which isn't one of its values: neutral, positive",
+      ],
+    ]);
+    expect(findings("SPEC-009", file)).toEqual([]);
   });
 });
 

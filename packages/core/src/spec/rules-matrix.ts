@@ -5,6 +5,7 @@
 import { buildManifest, pseudoStates } from "../matrix/build.js";
 import { MatrixError } from "../matrix/error.js";
 import type { PathSegment } from "../validation/validate.js";
+import { checkProps } from "./rules-fixtures.js";
 import type { SpecRule } from "./rules.js";
 import {
   Findings,
@@ -111,14 +112,8 @@ export const spec016: SpecRule = {
             `Add ${state} to the states of ${scope.name}, or remove the recipe.`,
           );
         }
-        for (const prop of Object.keys(recipe.props ?? {})) {
-          if (own(scope.definition.props, prop) === undefined) {
-            findings.add(
-              [...at, "props", prop],
-              `the recipe for ${state} sets ${prop}, which isn't a prop of ${scope.name}`,
-            );
-          }
-        }
+        // A recipe's props exist and fit their types, as a fixture's do (SPEC-009).
+        checkProps(findings, scope.definition, scope.name, recipe.props, at);
         // The fixtures the state's stories render, merged; those that can't be merged fail SPEC-009.
         const fixtures = stateFixtures(spec, state, scope.part).flatMap((name) => {
           const fixture = mergedFixture(spec, name);

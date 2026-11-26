@@ -366,4 +366,21 @@ describe("fazon feedback", () => {
     expect(old.code).toBe(3);
     expect(await runs()).toEqual(before);
   });
+
+  it("refuses (2) as generate does a spec without fixtures whose API requires a slot", async () => {
+    await generate();
+    const before = await runs();
+    const spec = await read("specs/button.md");
+    const withoutFixtures = spec.slice(0, spec.indexOf("fixtures:\n")) + spec.slice(spec.indexOf("tokens:\n"));
+    await writeFile(path.join(root, "specs/button.md"), withoutFixtures);
+    const { code, json } = await captureJson(["feedback", "button", "-m", "Round it."], machine());
+    expect(code).toBe(2);
+    expect((json.messages as { text: string; hint?: string }[])[0]).toEqual({
+      level: "error",
+      text: "specs/button.md has no fixtures, so its stories would render the empty fixture, which doesn't set the slot default: Button requires it.",
+      hint: "Add fixtures to specs/button.md first, then run 'fazon spec check button'; fixtures need no new approval.",
+    });
+    expect(await runs()).toEqual(before);
+    expect(await readdir(path.join(root, ".fazon/locks"))).toEqual([]);
+  });
 });

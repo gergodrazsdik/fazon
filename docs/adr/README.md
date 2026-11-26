@@ -30,6 +30,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0022](0022-build-from-source-and-component-names.md) | The example repository builds the framework from source until M5; components carry a prefixed name | accepted |
 | [0023](0023-m2-skills-and-claude-code-version.md) | Skills from the pinned framework commit, Claude Code 2.1.332 as the minimum | accepted |
 | [0024](0024-feedback-in-every-prompt.md) | The developer's feedback in every prompt of a feedback run | accepted |
+| [0025](0025-empty-fixture-and-recipe-values.md) | The empty fixture refused by generate, recipe values type-checked | accepted |
 
 ## Numbering and status
 

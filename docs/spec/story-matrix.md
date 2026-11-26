@@ -45,7 +45,7 @@ The states are the component's `states`, then each part's `states` in the order 
 
 ### Fixtures
 
-The fixtures are those in `matrix.fixtures`; without it, the spec's first fixture. The **first fixture** is the first of them. A [forced story](#forced-stories) may also render another fixture of the spec. A spec with no fixtures renders an empty fixture named `empty`, which SPEC-009 allows only when no prop or slot is required.
+The fixtures are those in `matrix.fixtures`; without it, the spec's first fixture. The **first fixture** is the first of them. A [forced story](#forced-stories) may also render another fixture of the spec. A spec with no fixtures renders an empty fixture named `empty`. `spec check` allows a spec without fixtures, since fixtures are written after `fazon approve`; `fazon generate` and `fazon feedback` refuse one whose component has a required prop or slot ([ADR 0025](../adr/0025-empty-fixture-and-recipe-values.md)).
 
 ### Expansion: three grids
 

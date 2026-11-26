@@ -252,6 +252,7 @@ export {
   type SpecTokens,
 } from "./spec/inputs.js";
 export { specNotes } from "./spec/rules.js";
+export { emptyFixtureMissing } from "./spec/rules-fixtures.js";
 export type { SpecNote } from "./spec/rules-extensions.js";
 export { axeRuleIds, catalogueRule, checkCatalogue, type CatalogueCheck, type CheckKind } from "./spec/catalogue.js";
 export { validateWithJsonSchema } from "./validation/validate.js";

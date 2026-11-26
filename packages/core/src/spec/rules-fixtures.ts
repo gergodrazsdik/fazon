@@ -137,6 +137,39 @@ function requiredMissing(api: Api, props: PropValues | undefined, slots: SlotCon
   return missing;
 }
 
+/**
+ * Prop values something sets, at `<at>.props`: each must be a prop of `api` with a value of its
+ * type. Fixtures, their part instances and component nodes (SPEC-009) and recipes (SPEC-016) set them.
+ */
+export function checkProps(
+  findings: Findings,
+  api: Api,
+  owner: ComponentName,
+  props: PropValues | undefined,
+  at: readonly PathSegment[],
+): void {
+  for (const [name, value] of Object.entries(props ?? {})) {
+    const prop = own(api.props, name);
+    if (prop === undefined) {
+      findings.add([...at, "props", name], `${owner} has no prop ${name}`, `Set only props ${owner} declares.`);
+      continue;
+    }
+    const problem = typeProblem(prop, value);
+    if (problem !== undefined) {
+      findings.add([...at, "props", name], `the prop ${name} of ${owner} is set to ${show(value)}, which ${problem}`);
+    }
+  }
+}
+
+/**
+ * The required props and slots of the component that a spec without fixtures leaves unset: its
+ * stories would render the empty fixture (docs/spec/story-matrix.md#fixtures), so `fazon generate`
+ * and `fazon feedback` refuse it. Empty when the spec has fixtures.
+ */
+export function emptyFixtureMissing(spec: Spec): string[] {
+  return spec.fixtures === undefined ? requiredMissing(spec, undefined, undefined) : [];
+}
+
 /** Checks the props and slot content something sets: of the component, a part's instance, or a component node. */
 class Settings {
   constructor(
@@ -157,20 +190,7 @@ class Settings {
     at: readonly PathSegment[],
     required = false,
   ): void {
-    for (const [name, value] of Object.entries(props ?? {})) {
-      const prop = own(api.props, name);
-      if (prop === undefined) {
-        this.findings.add([...at, "props", name], `${owner} has no prop ${name}`, `Set only props ${owner} declares.`);
-        continue;
-      }
-      const problem = typeProblem(prop, value);
-      if (problem !== undefined) {
-        this.findings.add(
-          [...at, "props", name],
-          `the prop ${name} of ${owner} is set to ${show(value)}, which ${problem}`,
-        );
-      }
-    }
+    checkProps(this.findings, api, owner, props, at);
     for (const slot of Object.keys(slots ?? {})) {
       if (own(api.slots, slot) === undefined) {
         this.findings.add([...at, "slots", slot], `${owner} has no slot ${slot}`, `Fill only slots ${owner} declares.`);
@@ -207,24 +227,7 @@ class Settings {
     slots: SlotContent | undefined,
     at: readonly PathSegment[],
   ): void {
-    for (const [name, value] of Object.entries(props ?? {})) {
-      const prop = own(used.props, name);
-      if (prop === undefined) {
-        this.findings.add(
-          [...at, "props", name],
-          `${used.name} has no prop ${name}`,
-          `Set only props ${used.name} declares.`,
-        );
-        continue;
-      }
-      const problem = typeProblem(prop, value);
-      if (problem !== undefined) {
-        this.findings.add(
-          [...at, "props", name],
-          `the prop ${name} of ${used.name} is set to ${show(value)}, which ${problem}`,
-        );
-      }
-    }
+    checkProps(this.findings, used, used.name, props, at);
     for (const slot of Object.keys(slots ?? {})) {
       if (own(used.slots, slot) === undefined) {
         this.findings.add(
