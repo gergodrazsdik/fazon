@@ -91,7 +91,7 @@ Each model runs at its own default effort unless the config sets one. The run re
 In the local review, the developer can send feedback in plain words. That starts a feedback run:
 
 - it's linked to the run it answers, and starts with fresh iteration, budget and time caps;
-- its first prompt carries the feedback and the previous run's last findings;
+- every prompt of the run carries the feedback, as calls share no session; the first also carries the previous run's last findings ([ADR 0024](../adr/0024-feedback-in-every-prompt.md));
 - it counts as a human intervention, and its cost counts toward the component's total in the measurements.
 
 ## How a run ends

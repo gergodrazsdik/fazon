@@ -183,16 +183,16 @@ export async function runLoopCommand(
   };
 }
 
-/** Which run a feedback run answers, and what its first prompt carries from it. */
+/** Which run a feedback run answers, and what its prompts carry. */
 function feedbackMessage(feedback: FeedbackInput): Message {
   const count = feedback.findings.length;
   const findings =
     count === 0
-      ? "no findings, as that run left none that block"
-      : `the ${String(count)} blocking ${count === 1 ? "finding" : "findings"} of that run's last checks`;
+      ? "that run left no findings that block"
+      : `the first also carries the ${String(count)} blocking ${count === 1 ? "finding" : "findings"} of that run's last checks`;
   return {
     level: "info",
-    text: `This feedback run answers ${feedback.parent}: its first prompt carries your feedback and ${findings}.`,
+    text: `This feedback run answers ${feedback.parent}: every prompt carries your feedback, and ${findings}.`,
   };
 }
 
