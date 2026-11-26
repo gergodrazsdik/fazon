@@ -127,16 +127,21 @@ it("blocks activation while loading, and stays focusable", async () => {
 `;
 
 /**
- * The example token set's text colour for actions, on the active surface the spec gives the ghost
- * variant, has a contrast of 3.28 in the dark theme, under axe's 4.5 for body text. The test's
- * spec waives it, which also runs an exemption end to end.
+ * The example repository's fix to its token set (F-0013), which the M0 draft copied here predates:
+ * the dark theme's text colour for actions is blue 200, not blue 400, so a ghost button's text on
+ * the active surface has a contrast of 6.03 instead of 3.28, above axe's 4.5 for body text.
  */
-const exemption = `exemptions:
-  - check: a11y
-    rule: color-contrast
-    when: { props: { variant: ghost }, state: active }
-    reason: The example token set's ghost active surface is short of contrast in the dark theme; the test isn't about it.
-`;
+async function applyTokenFixes(tokens: string): Promise<void> {
+  const file = path.join(tokens, "themes/dark.json");
+  const dark = JSON.parse(await readFile(file, "utf8")) as {
+    color: { text: { action: { $value: string } } };
+  };
+  if (dark.color.text.action.$value !== "{color.blue.400}") {
+    throw new Error(`The draft's dark color.text.action changed to ${dark.color.text.action.$value}; review the fix.`);
+  }
+  dark.color.text.action.$value = "{color.blue.200}";
+  await writeFile(file, `${JSON.stringify(dark, null, 2)}\n`);
+}
 
 export interface ProjectOptions {
   /** The verifier image, by digest, for fazon.yaml. */
@@ -162,9 +167,9 @@ export async function createProject(options: ProjectOptions, parent = tmpdir()):
   await write("env.d.ts", env);
   await write("src/index.ts", 'import "./tokens.css";\n');
   await write(".gitignore", "node_modules/\ndist/\n.fazon/\nfazon.local.yaml\n");
-  const spec = await readFile(path.join(examples, "examples/specs/valid/button.md"), "utf8");
-  await write("specs/button.md", spec.replace("\nextensions:\n", `\n${exemption}extensions:\n`));
+  await write("specs/button.md", await readFile(path.join(examples, "examples/specs/valid/button.md"), "utf8"));
   await cp(path.join(examples, "example-library/tokens"), path.join(root, "tokens"), { recursive: true });
+  await applyTokenFixes(path.join(root, "tokens"));
   await cp(new URL("library/Button.vue", import.meta.url), path.join(root, "src/components/button/Button.vue"));
   await write("src/components/button/Button.test.ts", behaviourTest);
   for (const file of await configFiles({

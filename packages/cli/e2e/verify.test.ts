@@ -99,10 +99,8 @@ describe("fazon verify and fazon baseline update in the verifier image", () => {
     // No agent call and no judge: the record names neither version.
     expect(run.versions).not.toHaveProperty("claudeCode");
     expect(run.versions).not.toHaveProperty("judge");
-    // The spec's exemption waives the ghost variant's active contrast: kept, marked, not blocking.
-    const waived = findings.filter((f) => f.check === "a11y" && f.rule === "color-contrast");
-    expect(waived.length).toBeGreaterThan(0);
-    expect(waived.every((f) => !f.blocking && (f as { exempt?: number }).exempt === 0)).toBe(true);
+    // With the token set's fixed dark action text (F-0013), every contrast passes unwaived.
+    expect(findings).toEqual([]);
   });
 
   it("write the baselines from that run, and nothing on a second update", async () => {
