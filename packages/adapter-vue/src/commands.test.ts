@@ -38,6 +38,7 @@ describe("the Vue adapter's source-check commands", () => {
       program: "npm",
       args: ["pack", "--ignore-scripts", "--json", "--pack-destination", "/run/package"],
     });
+    expect(commands.typesResolutions).toEqual(["bundler"]);
   });
 
   it("name each test's rule: the generated contract tests, and behaviour tests", () => {

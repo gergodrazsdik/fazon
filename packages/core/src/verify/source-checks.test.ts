@@ -68,6 +68,7 @@ const commands: SourceCommands = {
   stylelint: { package: "stylelint", args: [] },
   test: { package: "vitest", args: ["run"] },
   pack: { program: "npm", args: ["pack"] },
+  typesResolutions: ["bundler"],
 };
 
 const adapter = {

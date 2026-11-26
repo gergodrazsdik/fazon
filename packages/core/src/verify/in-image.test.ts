@@ -69,13 +69,14 @@ describe("the working copy", () => {
     await write("repo/src/a.ts", "a");
     await write("repo/.git/HEAD", "ref");
     await write("repo/.fazon/runs/x/run.json", "{}");
+    await write("repo/.fazon-framework/abc/package.json", "{}");
     await write("repo/baselines/light/a.png", "png");
     await write("repo/node_modules/vite/package.json", "{}");
     await write("repo/node_modules/@scope/tool/package.json", "{}");
     const work = path.join(root, "work");
     await makeWorkingCopy(path.join(root, "repo"), work, ["baselines"]);
     expect(await readFile(path.join(work, "src/a.ts"), "utf8")).toBe("a");
-    for (const missing of [".git", ".fazon", "baselines"]) {
+    for (const missing of [".git", ".fazon", ".fazon-framework", "baselines"]) {
       await expect(lstat(path.join(work, missing))).rejects.toThrow();
     }
     expect((await lstat(path.join(work, "node_modules"))).isDirectory()).toBe(true);

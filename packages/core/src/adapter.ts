@@ -128,7 +128,12 @@ export interface SourceCommands {
   readonly test: SourceCommand;
   /** `package`: packs the package as it would be published, leaving one `.tgz` file in `packDir`. */
   readonly pack: SourceCommand;
+  /** `package` / `types`: the module resolutions Are the Types Wrong checks the packed exports in. */
+  readonly typesResolutions: readonly TypesResolution[];
 }
+
+/** A module resolution Are the Types Wrong checks in. */
+export type TypesResolution = "node10" | "node16-cjs" | "node16-esm" | "bundler";
 
 /** The `test` check's rule a test belongs to, when it fails. */
 export type TestRule = "contract-api" | "contract-render" | "behaviour";

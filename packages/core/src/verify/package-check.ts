@@ -3,9 +3,10 @@
 // (`manifest`), Are the Types Wrong (`types`), the stylesheet (`styles`), and every component and
 // part exported from the package entry when it's imported from the tarball (`export`).
 import { checkPackage as attwCheck, createPackageFromTarballData } from "@arethetypeswrong/core";
-import { problemKindInfo } from "@arethetypeswrong/core/problems";
+import { problemAffectsResolutionKind, problemKindInfo } from "@arethetypeswrong/core/problems";
 import { publint } from "publint";
 import { formatMessage } from "publint/utils";
+import type { TypesResolution } from "../adapter.js";
 import type { CheckFinding } from "../checks/types.js";
 
 /** A component's exports, as the adapter names them, and the file a finding about it names. */
@@ -106,13 +107,14 @@ export async function manifestFindings(pkg: PackedPackage): Promise<CheckFinding
 }
 
 /**
- * Resolution kinds an ESM-only library isn't checked in: a Vue component library is imported
- * through a bundler or Node's ESM loader, as Are the Types Wrong's `esm-only` profile assumes.
+ * `types`: Are the Types Wrong's problems for the package's entrypoints, other than its
+ * stylesheets, in the module resolutions the adapter names (bundler resolution for Vue, which reads
+ * the `.vue` files' declarations).
  */
-const ignoredResolutions = new Set(["node10", "node16-cjs"]);
-
-/** `types`: Are the Types Wrong's problems for the package's entrypoints, other than its stylesheets. */
-export async function typesFindings(pkg: PackedPackage): Promise<CheckFinding[]> {
+export async function typesFindings(
+  pkg: PackedPackage,
+  resolutions: readonly TypesResolution[] = ["bundler"],
+): Promise<CheckFinding[]> {
   const result = await attwCheck(createPackageFromTarballData(pkg.tarball));
   if (result.types === false) {
     return [finding("types", "The package has no type declarations: its exports need them.", { file: "package.json" })];
@@ -122,7 +124,7 @@ export async function typesFindings(pkg: PackedPackage): Promise<CheckFinding[]>
   for (const problem of result.problems) {
     const entrypoint = "entrypoint" in problem ? problem.entrypoint : undefined;
     const resolution = "resolutionKind" in problem ? problem.resolutionKind : undefined;
-    if (resolution !== undefined && ignoredResolutions.has(resolution)) continue;
+    if (!resolutions.some((kind) => problemAffectsResolutionKind(problem, kind, result))) continue;
     if (entrypoint !== undefined && /\.css$|package\.json$/.test(entrypoint)) continue;
     const info = problemKindInfo[problem.kind];
     const where =

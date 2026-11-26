@@ -14,6 +14,7 @@ export {
   type SourceCommands,
   type SourceCommandsInput,
   type TestRule,
+  type TypesResolution,
   type SetupFile,
   type ThemesInput,
 } from "./adapter.js";

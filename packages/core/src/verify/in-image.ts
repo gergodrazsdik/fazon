@@ -23,8 +23,12 @@ import { readStorybookIndex, serveDirectory, storybookRenderer } from "./storybo
 /** Where Playwright's browsers are in the verifier image. */
 export const defaultBrowsersPath = "/ms-playwright";
 
-/** What's in the repository besides the checked files: left out of the working copy. */
-const notCopied = new Set(["node_modules", ".git", ".fazon"]);
+/**
+ * What's in the repository besides the checked files: left out of the working copy.
+ * `.fazon-framework/` is where a consumer builds the framework from source until M5 (ADR 0022);
+ * its packages are reached through the links in node_modules.
+ */
+const notCopied = new Set(["node_modules", ".git", ".fazon", ".fazon-framework"]);
 
 export interface InImageOptions {
   /** The repository, read-only. */

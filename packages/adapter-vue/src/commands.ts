@@ -34,6 +34,8 @@ export function sourceCommands(input: SourceCommandsInput): SourceCommands {
       args: ["run", "--reporter=json", `--outputFile=${input.reports.test}`, ...input.components],
     },
     pack: { program: "npm", args: ["pack", "--ignore-scripts", "--json", "--pack-destination", input.packDir] },
+    // Are the Types Wrong's esm-only profile with bundler resolution, which reads the `.vue` files' declarations.
+    typesResolutions: ["bundler"],
   };
 }
 

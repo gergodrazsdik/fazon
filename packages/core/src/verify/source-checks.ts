@@ -381,7 +381,7 @@ async function packageCheck(input: SourceChecksInput, started: number, now: () =
 
   const findings = [
     ...exportFindings(entry, components),
-    ...(await typesFindings(unpacked)),
+    ...(await typesFindings(unpacked, input.commands.typesResolutions)),
     ...stylesFindings(unpacked),
     ...(await manifestFindings(unpacked)),
   ];
