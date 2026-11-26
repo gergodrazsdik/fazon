@@ -154,6 +154,8 @@ export interface RunInImage {
   readonly user?: { readonly uid: number; readonly gid: number };
   /** Variables passed through, by name, when the host has them. */
   readonly env: Readonly<Record<string, string>>;
+  /** The container's name, so the host can stop it (`<runtime> kill <name>`); the runtime picks one when absent. */
+  readonly name?: string;
 }
 
 /**
@@ -170,6 +172,7 @@ export function runArguments(run: RunInImage): string[] {
   return [
     "run",
     "--rm",
+    ...(run.name === undefined ? [] : ["--name", run.name]),
     "--platform",
     "linux/amd64",
     "--network",

@@ -149,6 +149,11 @@ fazon generate <component> [--clean]
 
 A [generate run](loop-and-caps.md#runs), until every check passes or a cap is reached. `--clean` first removes the component's own files, outside `generated/`, so the agent starts from nothing. It refuses (2) when the spec's API doesn't match the approved hash, or when the component has a run in progress. Exits 1 when the run ends as needs a person. Result: the run, its status and reason, iterations, cost, and the paths of its record and report.
 
+- **Before the run:** it refuses (2) when the spec has findings, as the checks need specs that pass `spec check`; when the component has no provenance file, or one that isn't valid; and when `fazon sync --check` finds stale generated files outside what the run's refresh writes (the component's `generated/` directory and the entry file), such as another component's story files or the token CSS: the `build` check's rule `generated` would block every iteration, and the agent may not fix them. It exits 3 with a Claude Code older than the minimum, and when the checks can't run: a host other than linux/amd64, no container runtime, or an image that can't be pulled, as for `verify`. None of these starts a run or a call.
+- **`--clean`:** once the run lock is held and the checks above pass, it removes everything in the component's directory except `generated/` (so the provenance file stays), and nothing outside the directory; a link is removed, not what it points to. It lists each file it removed, and the result has them as `removed`.
+- **The checks:** each check phase starts the verifier image as `verify` does, with the same mounts and pinned image and no network, on the iteration's checks; an interrupt stops the container (`<runtime> kill`) as well as the run.
+- **The report:** the run's HTML report is built when the run ends, however it ends, and its path is in the result; `fazon report <component>` opens it. The result also names the component.
+
 ### `fazon feedback`
 
 ```text

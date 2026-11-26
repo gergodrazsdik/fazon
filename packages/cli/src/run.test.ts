@@ -21,9 +21,9 @@ describe("help and version", () => {
     for (const command of commands) {
       expect(stdout).toContain(`  ${command.name} `);
     }
-    expect(stdout).toContain("generate");
-    expect(stdout).toMatch(/generate +.*\(not implemented yet: M2\)/);
-    expect(stdout).not.toMatch(/doctor +.*not implemented/);
+    expect(stdout).toContain("feedback");
+    expect(stdout).toMatch(/feedback +.*\(not implemented yet: M2\)/);
+    expect(stdout).not.toMatch(/(doctor|generate) +.*not implemented/);
   });
 
   it("prints the version", async () => {
