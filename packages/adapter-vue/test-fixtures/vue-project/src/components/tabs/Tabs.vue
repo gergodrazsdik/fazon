@@ -1,5 +1,6 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <script setup lang="ts">
+defineOptions({ name: "FzTabs" });
 const value = defineModel<string>();
 withDefaults(defineProps<{ orientation?: "horizontal" | "vertical"; activation?: "automatic" | "manual" }>(), {
   orientation: "horizontal",

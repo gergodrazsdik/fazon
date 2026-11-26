@@ -71,7 +71,7 @@ In `<components>/<name>/`:
 |---|---|
 | `<Component>.vue`, and `<Component><Part>.vue` for each part (`Tabs.vue`, `TabsTrigger.vue`) | the agent |
 | `*.ts` helpers, `*.css` | the agent |
-| `*.test.ts`: the behaviour tests | the agent |
+| `*.test.ts`: the behaviour tests, which render the component with `vitest-browser-vue` | the agent |
 | `generated/<Component>.stories.ts`, `generated/<name>.contract.test.ts`, `generated/api.json`, `generated/stories.json`, `generated/provenance.json` | the harness |
 
 The agent may write files matching `*.vue`, `*.ts` and `*.css` outside `generated/`.
@@ -80,7 +80,7 @@ The agent may write files matching `*.vue`, `*.ts` and `*.css` outside `generate
 
 | Neutral | Vue |
 |---|---|
-| component | `defineOptions({ name })`: the token prefix in PascalCase before the component's name, such as `FzButton`, so the name never collides with an HTML element; consumers import `Button` ([ADR 0022](../adr/0022-build-from-source-and-component-names.md)) |
+| component | `defineOptions({ name })`: the token prefix in PascalCase before the component's name, such as `FzButton`, so the name never collides with an HTML element; consumers import `Button` ([component names](#component-names), [ADR 0022](../adr/0022-build-from-source-and-component-names.md)) |
 | prop | `defineProps` with a TypeScript type; an enum is a union of string literals; defaults through `withDefaults` |
 | `model: true` | `defineModel`: the model named `value` is the default `v-model` (`modelValue`), any other is `v-model:<name>` |
 | event | `defineEmits` with a typed payload |
@@ -91,6 +91,15 @@ The agent may write files matching `*.vue`, `*.ts` and `*.css` outside `generate
 | `form` | the `name` prop on a native form element inside the component, bound to the `value` model |
 
 `generated/api.json` holds the approved API after this mapping, for the contract tests to compare with.
+
+#### Component names
+
+Each single-file component, the component's and each part's, declares its name with `defineOptions({ name })` ([ADR 0022](../adr/0022-build-from-source-and-component-names.md)):
+
+- **The name:** `tokens.prefix` from `fazon.yaml` in PascalCase (each hyphen-separated word capitalised: `fz` is `Fz`, `my-ui` is `MyUi`), then the file's base name. With the prefix `fz`, `Button.vue` declares `FzButton` and `TabsTrigger.vue` declares `FzTabsTrigger`. `defineOptions` may set other options beside it, such as `inheritAttrs: false`.
+- **Imports keep the spec's names:** the file, the entry file's export and the story file use `Button` and `TabsTrigger`; only the declared name carries the prefix.
+- **Without a prefix,** the name is the file's base name. A part's name always has two words, and so does a component's whose name has two, such as `IconButton`. A one-word component, such as `Button`, would declare a one-word name, which ESLint's `vue/multi-word-component-names` fails and an HTML element could clash with, so `fazon sync` refuses its spec and says to set `tokens.prefix`.
+- **Checked by `contract-api`:** api.json records each declared name as `name`, and the contract test fails a file that declares no name or another one, such as "Button: the component's name is "Button"; the approved API says "FzButton"."
 
 The Vue adapter's `extensions` block takes:
 
@@ -124,7 +133,7 @@ How a story file renders a fixture:
 
 `generated/<name>.contract.test.ts` runs in Vitest's browser mode:
 
-- **`contract-api`:** vue-component-meta reads the component's props, with their types and defaults, events, slots, exposed members and models from its TypeScript. The test compares them with `generated/api.json`.
+- **`contract-api`:** vue-component-meta reads the component's props, with their types and defaults, events, slots, exposed members and models from its TypeScript, and the reader takes the name `defineOptions` declares from the same code. The test compares them with `generated/api.json`.
 - **`contract-render`:** every story renders through Storybook's portable stories (`composeStories`), with any console error or warning failing the test.
 
 ### Commands
@@ -151,13 +160,13 @@ Files that don't exist yet:
 - the Vitest configuration with browser mode;
 - the Storybook configuration;
 - the package entry file;
-- the conventions template.
+- the conventions template, which states the [component names](#component-names) rule and that behaviour tests render components with `vitest-browser-vue`'s `render`.
 
 The consumer's `package.json` gets the scripts and dev dependencies, pinned. M1 pins their versions:
 
 - `vue`, `reka-ui`;
 - `storybook`, `@storybook/vue3-vite`;
-- `vitest`, `@vitest/browser-playwright`, `playwright`;
+- `vitest`, `@vitest/browser-playwright`, `playwright`, and `vitest-browser-vue` for the behaviour tests;
 - `vite`, `@vitejs/plugin-vue`;
 - `vue-tsc`, `vue-component-meta`;
 - `eslint`, `eslint-plugin-vue`, `stylelint`;

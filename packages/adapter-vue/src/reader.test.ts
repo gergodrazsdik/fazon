@@ -40,8 +40,12 @@ async function differences(
   }
 }
 
-/** A component the examples don't have: a slot with data, a method with a parameter and a result. */
+/**
+ * A component the examples don't have: a slot with data, a method with a parameter and a result,
+ * and its name declared with another option.
+ */
 const list = `<script setup lang="ts">
+defineOptions({ name: "FzList", inheritAttrs: false });
 defineProps<{ items: string[]; sizes?: ("sm" | "md")[] }>();
 defineEmits<{ select: [index: number] }>();
 defineSlots<{ item(props: { label: string; index: number }): unknown }>();
@@ -58,6 +62,7 @@ defineExpose({ scrollTo });
 
 const listApi: VueComponentApi = {
   file: "List.vue",
+  name: "FzList",
   props: {
     items: { type: "array", items: { type: "string" }, required: true },
     sizes: { type: "array", items: { type: "enum", values: ["sm", "md"] }, required: false },
@@ -111,6 +116,30 @@ describe("the API reader", () => {
 });
 
 describe("drift from the approved API", () => {
+  it("a name without the prefix", async () => {
+    const { components } = await approvedApi("button");
+    expect(
+      await differences("button", components, {
+        file: "Button.vue",
+        from: 'defineOptions({ name: "FzButton" });',
+        to: 'defineOptions({ name: "Button" });',
+      }),
+    ).toEqual(['Button: the component\'s name is "Button"; the approved API says "FzButton".']);
+  });
+
+  it("a part that declares no name", async () => {
+    const { components } = await approvedApi("tabs");
+    expect(
+      await differences("tabs", components, {
+        file: "TabsTrigger.vue",
+        from: 'defineOptions({ name: "FzTabsTrigger" });\n',
+        to: "",
+      }),
+    ).toEqual([
+      'TabsTrigger: the component declares no name; the approved API says "FzTabsTrigger", as defineOptions({ name: "FzTabsTrigger" }).',
+    ]);
+  });
+
   it("a missing prop", async () => {
     const { components } = await approvedApi("button");
     expect(await differences("button", components, { file: "Button.vue", from: "loading?: boolean;", to: "" })).toEqual(

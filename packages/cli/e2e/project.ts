@@ -88,41 +88,29 @@ const env = `declare module "*.svg?raw" {
 }
 `;
 
-/** The behaviour test the spec's Behaviour section asks for. */
-export const behaviourTest = `import { createApp, h, nextTick } from "vue";
-import { afterEach, expect, it } from "vitest";
+/** The behaviour test the spec's Behaviour section asks for, with the helper the scaffold pins (vitest-browser-vue). */
+export const behaviourTest = `import { expect, it } from "vitest";
+import { render } from "vitest-browser-vue";
 import Button from "./Button.vue";
 
-let host: HTMLElement | undefined;
-
-afterEach(() => {
-  host?.remove();
-});
-
-function mount(props: Record<string, unknown>, clicks: string[]) {
-  host = document.createElement("div");
-  document.body.append(host);
-  createApp({ render: () => h(Button, { ...props, onClick: () => clicks.push("click") }, () => "Save") }).mount(host);
-  const button = host.querySelector("button");
-  if (button === null) throw new Error("no button");
-  return button;
-}
-
 it("emits click when activated", async () => {
-  const clicks: string[] = [];
-  mount({}, clicks).click();
-  await nextTick();
-  expect(clicks).toEqual(["click"]);
+  const screen = await render(Button, { slots: { default: () => "Save" } });
+  await screen.getByRole("button", { name: "Save" }).click();
+  expect(screen.emitted("click")).toHaveLength(1);
 });
 
 it("blocks activation while loading, and stays focusable", async () => {
-  const clicks: string[] = [];
-  const button = mount({ loading: true }, clicks);
-  button.click();
-  await nextTick();
-  expect(clicks).toEqual([]);
-  expect(button.disabled).toBe(false);
-  expect(button.getAttribute("aria-busy")).toBe("true");
+  const screen = await render(Button, { props: { loading: true }, slots: { default: () => "Save" } });
+  const button = screen.getByRole("button");
+  // aria-disabled makes Playwright wait for the button to be enabled, so the click is forced.
+  await button.click({ force: true });
+  expect(screen.emitted("click")).toBeUndefined();
+  await expect.element(button).toHaveAttribute("aria-busy", "true");
+  // Not natively disabled, so it keeps focus (toBeEnabled counts aria-disabled as disabled).
+  const element = button.element() as HTMLButtonElement;
+  expect(element.disabled).toBe(false);
+  element.focus();
+  expect(document.activeElement).toBe(element);
 });
 `;
 

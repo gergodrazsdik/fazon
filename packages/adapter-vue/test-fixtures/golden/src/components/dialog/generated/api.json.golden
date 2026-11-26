@@ -7,6 +7,7 @@
   "components": {
     "Dialog": {
       "file": "Dialog.vue",
+      "name": "FzDialog",
       "props": {
         "open": {
           "type": "boolean",
@@ -31,6 +32,7 @@
     },
     "DialogTrigger": {
       "file": "DialogTrigger.vue",
+      "name": "FzDialogTrigger",
       "props": {},
       "events": {},
       "slots": {
@@ -43,6 +45,7 @@
     },
     "DialogOverlay": {
       "file": "DialogOverlay.vue",
+      "name": "FzDialogOverlay",
       "props": {},
       "events": {},
       "slots": {},
@@ -50,6 +53,7 @@
     },
     "DialogContent": {
       "file": "DialogContent.vue",
+      "name": "FzDialogContent",
       "props": {
         "size": {
           "type": "enum",
@@ -77,6 +81,7 @@
     },
     "DialogTitle": {
       "file": "DialogTitle.vue",
+      "name": "FzDialogTitle",
       "props": {},
       "events": {},
       "slots": {
@@ -89,6 +94,7 @@
     },
     "DialogDescription": {
       "file": "DialogDescription.vue",
+      "name": "FzDialogDescription",
       "props": {},
       "events": {},
       "slots": {
@@ -101,6 +107,7 @@
     },
     "DialogClose": {
       "file": "DialogClose.vue",
+      "name": "FzDialogClose",
       "props": {
         "label": {
           "type": "string",

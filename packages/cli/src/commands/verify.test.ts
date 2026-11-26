@@ -21,7 +21,7 @@ import {
   captureJson,
   copyExample,
   image,
-  minimalConfig,
+  libraryConfig,
   removeRepository,
   repository,
   type FakeMachine,
@@ -36,7 +36,7 @@ function png(shade: number): Uint8Array {
 }
 
 /** A repository with the example Button, its token set, and its generated files. */
-async function buttonRepository(config = minimalConfig): Promise<string> {
+async function buttonRepository(config = libraryConfig): Promise<string> {
   const root = await repository({
     "fazon.yaml": config,
     "src/components/button/Button.vue": "<template><button /></template>\n",

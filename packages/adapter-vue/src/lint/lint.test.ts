@@ -141,6 +141,24 @@ const tint = "red";
   });
 });
 
+describe("component names", () => {
+  const button = (script: string) => `<script setup lang="ts">
+${script}</script>
+<template><button type="button"><slot /></button></template>
+`;
+
+  it("fail a one-word component, named by its file", async () => {
+    const findings = await lint({ code: button(""), filePath: "Button.vue" });
+    expect(summary(findings)).toEqual([["eslint", 1]]);
+    expect(findings[0]?.message).toContain("vue/multi-word-component-names");
+  });
+
+  it("pass the prefixed name the component declares (ADR 0022)", async () => {
+    const code = button('defineOptions({ name: "FzButton" });\n');
+    expect(await lint({ code, filePath: "Button.vue" })).toEqual([]);
+  });
+});
+
 describe("the lint configuration files fazon init writes", () => {
   it("call the factories the package's lint subpath exports, without a licence header", async () => {
     const files = lintConfigFiles();

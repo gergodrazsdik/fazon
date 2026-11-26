@@ -42,6 +42,8 @@ export interface GenerateInput {
   readonly icons: IconSet;
   /** The story frame's base styles, with the token set's prefix applied (docs/spec/tokens.md#base-styles). */
   readonly baseStyles: readonly BaseStyle[];
+  /** `tokens.prefix` from fazon.yaml: lowercase kebab-case, or empty for none. */
+  readonly prefix: string;
 }
 
 /** A file the adapter writes in a component's `generated/` directory. */
