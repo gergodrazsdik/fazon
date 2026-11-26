@@ -34,7 +34,7 @@ docs/adr/                architecture decision records
 docs/plan/TRACKER.md     work tracker
 docs/spec/               the M0 documents and their index; schemas/ and examples/ beside them, example-library/ drafts
 docs/dev-setup.md        prerequisites and local setup
-scripts/                 with-tool.sh, with-deps.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh, check-spec-examples.sh, check-spdx.sh, test-rendered.sh
+scripts/                 with-tool.sh, with-deps.sh, check-commit-msg.sh, github-settings.sh, install-ci-tools.sh, tool-updates.sh, check-cla-gist.sh, check-spec-examples.sh, check-spdx.sh, test-rendered.sh, ci-changes.sh
 ```
 
 Directories arrive with the milestone that first needs them (`packages/`, `plugin/`, `verifier/` from M1; see the brief's "Framework repo layout"). Keep this tree current when you add top-level folders.
