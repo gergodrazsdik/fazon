@@ -15,7 +15,7 @@ Where the truth lives:
 
 If the brief conflicts with an ADR, a spec, these instructions or a request, stop and raise it with the maintainer; don't pick a side yourself.
 
-**Current phase: M1, the walking skeleton.** The M0 documents in [docs/spec/README.md](docs/spec/README.md) are the contract the code implements; a change to one is a pull request that updates the document with its schemas and examples. The steps are T-0046's subtasks in the [tracker](docs/plan/TRACKER.md).
+**Current phase: M2, the loop** (M1, the walking skeleton, is complete). The M0 documents in [docs/spec/README.md](docs/spec/README.md) are the contract the code implements; a change to one is a pull request that updates the document with its schemas and examples. M2's steps are T-0050's subtasks in the [tracker](docs/plan/TRACKER.md), broken down with the maintainer before work starts.
 
 ## Layout
 
@@ -81,7 +81,7 @@ Use `just` (`just --list`):
 | `just github-settings <repo>` / `just github-settings-check <repo>` | Maintainer only. Apply or check the repository settings and rulesets. |
 | `just cla-gist-check` | Check that the CLA assistant's Gist is identical to `CLA.md`. After a pull request changes `CLA.md`, the maintainer updates the Gist once it is merged. |
 
-Run `just check` before every commit (`just lint` alone when no code changed). The hooks run the linters, ESLint and Prettier on staged files, plus gitleaks and the Conventional Commits header. `verify` arrives with the verifier.
+Run `just check` before every commit (`just lint` alone when no code changed). The hooks run the linters, ESLint and Prettier on staged files, plus gitleaks and the Conventional Commits header.
 
 ## Design principles
 

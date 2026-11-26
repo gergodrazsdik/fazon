@@ -1,7 +1,7 @@
 # 0022: The example repository builds the framework from source until M5; components carry a prefixed name
 
 - Status: accepted
-- Date: 2026-11-27
+- Date: 2026-11-26
 - Tracker: T-0046 (step 11), T-0095
 - Supersedes: the pnpm git dependencies of [ADR 0016](0016-adapter-boundary.md)
 

@@ -1,6 +1,6 @@
 # Example library drafts
 
-**Moved:** these drafts now live in the example repository, which changes them through its own pull requests ([fazon-vue-example#2](https://github.com/gergodrazsdik/fazon-vue-example/pull/2), 2026-11-27). This copy stays as M0 left it, for the M0 documents and the tokens check's fixtures that refer to it.
+**Moved:** these drafts now live in the example repository, which changes them through its own pull requests ([fazon-vue-example#2](https://github.com/gergodrazsdik/fazon-vue-example/pull/2), 2026-11-26). This copy stays as M0 left it, for the M0 documents and the tokens check's fixtures that refer to it.
 
 The token set and the conventions doc of the example library, `fazon-vue-example`. They are drafts here in M0, and move to the example repository in M1 (T-0040). From then on they change only through a reviewed pull request there. The rules they follow are in the [token set](../tokens.md) spec. Decisions behind them: [ADR 0018](../../adr/0018-token-set.md).
 

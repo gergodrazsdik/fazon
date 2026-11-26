@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The `ci` workflow runs the Vue adapter's browser tests (`just test-browser`) on pull requests.
 - The reusable `verify.yml` workflow (`verify`, `judge` skipped until M3, `comment`) and `fazon report --summary`, with a self-test that calls it on the end-to-end fixture.
 - `fazon verify` runs the source checks (build, lint, test, package) and the rendered checks (a11y, tokens, layout, visual) in the pinned verifier image, with a run record, exemptions, renamed baselines and `--base` marks; `fazon baseline update` writes baselines, `fazon.json` and `NOTICE.md` from a qualifying run; `just test-verify` runs them end to end.
 - A paragraph content node for spec fixtures, `{ p: "text" }`, which renders as a `<p>`; plain strings stay inline text.
@@ -42,4 +43,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- `fazon verify` failed with `EROFS` on a laptop once Vite, Vitest or Storybook had left caches in `node_modules`; the working copy now links only the packages and pnpm's own entries. `fazonVueEslint()` ignores the run records in `.fazon/`.
 - `fazon verify --base` read the base's baselines from the checkout's root, so a project in a subdirectory saw every baseline as added.
