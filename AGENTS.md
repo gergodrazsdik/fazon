@@ -72,6 +72,7 @@ Use `just` (`just --list`):
 | `just build` / `just test` | Build the packages (`tsc --build`); run the framework's tests (Vitest). |
 | `just lint-ts` | ESLint and the Prettier check on the TypeScript code. |
 | `just check` | Everything CI checks: `lint`, `lint-ts`, `build` and `test`. |
+| `just test-browser` | The Vue adapter's browser tests: the generated contract tests and the Storybook build in Playwright's Chromium (install it once: `pnpm --filter @fazon/adapter-vue exec playwright install chromium`). |
 | `just test-rendered [image]` | The rendered checks' fixtures in the verifier image (podman or docker, `CONTAINER_CLI`); the `rendered` workflow runs them in CI. |
 | `just pin` | Pin workflow actions to full commit SHAs. |
 | `just tool-updates` | Which linter versions pinned outside Dependabot's reach have newer releases, and when each is due (7-day cooldown). Read-only. |
