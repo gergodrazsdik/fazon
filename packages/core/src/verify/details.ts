@@ -9,6 +9,7 @@ import path from "node:path";
 import { PNG } from "pngjs";
 import type { CheckFinding, CheckId } from "../checks/types.js";
 import { decodePng } from "../checks/visual.js";
+import { generatedDirectory, provenanceFileName } from "../sync/sync.js";
 import { hashText, hashTokenSet } from "../tokens/hash.js";
 import { resolveTokenSet } from "../tokens/resolve.js";
 import type { VerifyComponent } from "./components.js";
@@ -115,12 +116,17 @@ async function filesUnder(root: string, directory: string): Promise<string[]> {
 }
 
 /**
- * The hash of what a component's captures depend on in the repository: its spec, every file in its
- * directory and the token set, one line per file. A run is newer than the last change to them when
- * the hash is the same now as when the run started.
+ * The hash of what a component's captures depend on in the repository (docs/spec/records.md#hashes):
+ * its spec, every file in its directory but its provenance file, and the token set, one line per
+ * file. The provenance file changes when an API is approved or a run accepted, and no capture
+ * depends on it. A run is newer than the last change to them when the hash is the same now as when
+ * the run started.
  */
 export async function componentInputsHash(root: string, component: VerifyComponent, tokens: string): Promise<string> {
-  const files = [component.specFile, ...(await filesUnder(root, component.directory))];
+  const provenance = path.posix.join(component.directory, generatedDirectory, provenanceFileName);
+  const files = [component.specFile, ...(await filesUnder(root, component.directory))].filter(
+    (file) => file !== provenance,
+  );
   const lines: string[] = [];
   for (const file of files) {
     let text: string;

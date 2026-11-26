@@ -53,12 +53,12 @@ fazon baseline update --all
 - **With components:** for each component, it writes a baseline for every new and changed story, and removes the component's [orphans](#orphans). With `--story`, it writes only the named stories, and removes no orphans.
 - **With `--all`:** it does the same for every component, and removes baselines of components that no longer have a spec. It's the only form that may record a different image in `fazon.json` (see [image upgrades](#image-upgrades)).
 
-It takes the captures from the component's latest run, and refuses unless that run:
+It takes the captures from the component's latest finished run: a verify run that checked the component, or a generate or feedback run of it. Propose runs write no code and are passed over, as are agent runs of other components. A generate or feedback run gives the checks and captures of its passing iteration, its last (`checks/<n>/verify.json` and `captures/<n>/`, [run records](records.md#the-fazon-directory)), so one that didn't pass gives none, and the command refuses until a newer run passes. Whether the run was accepted doesn't matter. It refuses unless that run:
 
 1. ran in the verifier image recorded in `fazon.json`, or in any pinned image with `--all`, on linux/amd64;
 2. passed every check other than `visual`, with the exemptions in the spec;
 3. had the judge look at every story it would write: a verdict of any kind is enough, as the person decides. This doesn't apply when the judge's policy in the config is `off`, as it is before the judge exists (M1 and M2);
-4. is newer than the last change to the component's spec and files.
+4. is newer than the last change to the component's spec and files: the [hash of its inputs](records.md#hashes) is the same now as when the checks started. The provenance file isn't one of them, so approving the API or accepting the run doesn't count as a change.
 
 A baseline whose pixels equal the capture's isn't rewritten, so running the command twice changes nothing.
 

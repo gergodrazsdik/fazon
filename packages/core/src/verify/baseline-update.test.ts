@@ -8,8 +8,9 @@ import type { Config } from "../config/types.js";
 import { updateBaselines } from "./baseline-update.js";
 import type { VerifyComponent } from "./components.js";
 import { componentInputsHash, writeVerifyDetails, type VerifyDetails } from "./details.js";
-import { runDirectory, writeRunRecord } from "./run-record.js";
-import { exampleButton, exampleRepository, image, otherImage, png, runningRecord } from "./test-support.js";
+import type { StoryVisual } from "./rendered.js";
+import { runDirectory, writeRunRecord, type RunRecord } from "./run-record.js";
+import { docs, exampleButton, exampleRepository, image, otherImage, png, runningRecord } from "./test-support.js";
 
 let root: string;
 let button: VerifyComponent;
@@ -86,6 +87,74 @@ async function verifyRun(
     incomplete: [],
     unusedExemptions: [],
   });
+}
+
+const exampleRun = path.join(docs, "examples/records/run.json");
+
+/** Every story of the Button in both themes, as `verify.json` lists them. */
+function buttonStories(): StoryVisual[] {
+  return (button.manifest?.stories ?? []).flatMap((story) =>
+    ["light", "dark"].map((theme) => ({
+      component: "button",
+      story: story.name,
+      theme,
+      path: baselinePath(theme, "button", story.name),
+      status: "new" as const,
+    })),
+  );
+}
+
+/**
+ * A finished generate or feedback run of the Button from the spec's example record: iterations 1
+ * and 2 fail, 3 passes. Each iteration's captures have a black pixel at x = n - 1, and its
+ * `checks/<n>/verify.json` the hash of the component as it is now.
+ */
+async function agentRun(
+  id: string,
+  overrides: Partial<RunRecord> = {},
+  options: { details?: boolean } = {},
+): Promise<RunRecord> {
+  const example = JSON.parse(await readFile(exampleRun, "utf8")) as RunRecord;
+  const record: RunRecord = {
+    ...example,
+    id,
+    versions: { ...example.versions, image },
+    ...overrides,
+  };
+  const dir = runDirectory(root, id);
+  await writeRunRecord(dir, record);
+  const stories = buttonStories();
+  for (const iteration of record.iterations) {
+    for (const story of stories) {
+      const file = path.join(dir, "captures", String(iteration.n), story.path);
+      await mkdir(path.dirname(file), { recursive: true });
+      await writeFile(file, png(4, 4, { x: iteration.n - 1, y: 0, rgb: [0, 0, 0] }));
+    }
+    if (options.details === false) continue;
+    await mkdir(path.join(dir, "checks", String(iteration.n)), { recursive: true });
+    await writeVerifyDetails(path.join(dir, "checks", String(iteration.n)), {
+      fazon: 0,
+      platform: "linux/amd64",
+      components: [
+        {
+          name: "button",
+          inputs: await componentInputsHash(root, button, config.paths.tokens),
+          checks: iteration.outcome === "pass" ? allPass : { ...allPass, test: "fail" },
+        },
+      ],
+      stories,
+      orphans: [],
+      incomplete: [],
+      unusedExemptions: [],
+    });
+  }
+  return record;
+}
+
+/** The pixels of a baseline the Button's story has now. */
+async function baselinePixels(): Promise<ReturnType<typeof decodePng>> {
+  const file = baselinePath("light", "button", button.manifest?.stories[0]?.name ?? "");
+  return decodePng(new Uint8Array(await readFile(path.join(root, "baselines", file))));
 }
 
 const update = (targets: readonly string[] | "all", stories?: string[]) =>
@@ -182,5 +251,92 @@ describe("fazon baseline update", () => {
     config = { ...config, icons: { path: "icons" } };
     await update(["button"]);
     await expect(access(path.join(root, "baselines/NOTICE.md"))).rejects.toThrow();
+  });
+});
+
+describe("fazon baseline update from a generate or feedback run", () => {
+  const generateId = "20261126T110000Z-button-0a0a";
+  const feedbackId = "20261126T120000Z-button-0b0b";
+
+  it("writes the captures of a passed generate run's passing iteration, newer than a verify run", async () => {
+    await verifyRun("20261126T100000Z-verify-aaaa");
+    await agentRun(generateId);
+    const result = await update(["button"]);
+    expect(result).toMatchObject({
+      kind: "done",
+      qualifications: [{ component: "button", run: generateId, iteration: 3, failed: [] }],
+    });
+    expect(result.kind === "done" ? result.written : []).toHaveLength(54);
+    expect(await baselinePixels()).toEqual(decodePng(png(4, 4, { x: 2, y: 0, rgb: [0, 0, 0] })));
+  });
+
+  it("takes a feedback run, and passes over propose runs and agent runs of other components", async () => {
+    await agentRun(generateId, { status: "needs-a-person", reason: "iterations" });
+    await agentRun(feedbackId, { kind: "feedback", parent: generateId });
+    await agentRun("20261126T130000Z-button-0c0c", { kind: "propose", status: "needs-a-person", reason: "iterations" });
+    await agentRun("20261126T140000Z-badge-0d0d", {
+      component: "Badge",
+      status: "needs-a-person",
+      reason: "iterations",
+    });
+    expect(await update(["button"])).toMatchObject({
+      kind: "done",
+      qualifications: [{ run: feedbackId, iteration: 3, failed: [] }],
+    });
+  });
+
+  it("refuses when the latest run is an agent run that didn't pass, though an earlier one passed", async () => {
+    await agentRun(generateId);
+    await agentRun(feedbackId, { kind: "feedback", parent: generateId, status: "needs-a-person", reason: "budget" });
+    const result = await update(["button"]);
+    expect(result).toMatchObject({ kind: "refused", qualifications: [{ run: feedbackId }] });
+    expect(result.qualifications[0]?.failed).toEqual([
+      `Button's latest run ${feedbackId}: it didn't pass: it needs a person (budget). A feedback run gives baselines only when it passed. Read its report, then run \`fazon feedback button\` or \`fazon generate button\`, or \`fazon verify button\` once the component is as it should be.`,
+    ]);
+
+    await agentRun("20261126T130000Z-button-0c0c", { status: "stopped" });
+    expect(JSON.stringify(await update(["button"]))).toContain("it didn't pass: it was interrupted.");
+    expect(await listBaselineFiles(path.join(root, "baselines"))).toEqual([]);
+    // A verify run made after it qualifies.
+    await verifyRun("20261126T140000Z-verify-aaaa");
+    expect(await update(["button"])).toMatchObject({ kind: "done" });
+  });
+
+  it("refuses a passed run whose passing iteration left no verify.json", async () => {
+    await agentRun(generateId, {}, { details: false });
+    const result = await update(["button"]);
+    expect(result.qualifications[0]?.failed).toEqual([
+      `Button's latest run ${generateId} (iteration 3): it passed, but has no checks of button to take baselines from (checks/3/verify.json); run \`fazon verify button\`.`,
+    ]);
+  });
+
+  it("applies the conditions to the passing iteration's checks", async () => {
+    await agentRun(generateId);
+    await writeFile(path.join(root, "src/components/button/Button.vue"), "<template><a /></template>\n");
+    expect(JSON.stringify(await update(["button"]))).toContain(
+      `Button's latest run ${generateId} (iteration 3): its spec, its files or the token set changed since the run`,
+    );
+  });
+
+  it("writes baselines after the run was accepted or the API approved again, which write only the provenance file", async () => {
+    await agentRun(generateId);
+    const generated = path.join(root, "src/components/button/generated");
+    await mkdir(generated, { recursive: true });
+    await writeFile(path.join(generated, "provenance.json"), '{ "accepted": true }\n');
+    expect(await update(["button"])).toMatchObject({ kind: "done", qualifications: [{ failed: [] }] });
+    await writeFile(path.join(generated, "provenance.json"), '{ "approved": "again" }\n');
+    expect(await update(["button"])).toMatchObject({ kind: "done" });
+  });
+});
+
+describe("componentInputsHash", () => {
+  it("leaves out the provenance file, and covers every other file in the component's directory", async () => {
+    const before = await componentInputsHash(root, button, config.paths.tokens);
+    const generated = path.join(root, "src/components/button/generated");
+    await mkdir(generated, { recursive: true });
+    await writeFile(path.join(generated, "provenance.json"), "{}\n");
+    expect(await componentInputsHash(root, button, config.paths.tokens)).toBe(before);
+    await writeFile(path.join(generated, "stories.json"), "{}\n");
+    expect(await componentInputsHash(root, button, config.paths.tokens)).not.toBe(before);
   });
 });

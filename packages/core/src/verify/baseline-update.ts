@@ -1,9 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // `fazon baseline update` (docs/spec/baseline-lifecycle.md#writing-baselines): baselines from the
-// captures of a component's latest run, when that run qualifies; orphans removed; `fazon.json`
-// with the image; `NOTICE.md` for Lucide. It renders nothing itself.
+// captures of a component's latest run, a verify run or the passing iteration of a generate or
+// feedback run, when that run qualifies; orphans removed; `fazon.json` with the image; `NOTICE.md`
+// for Lucide. It renders nothing itself.
 import { mkdir, readdir, readFile, rm, rmdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { checksPhaseFiles } from "../loop/checks.js";
+import { kebabCase } from "../spec/names.js";
 import {
   baselinePath,
   baselinesNoticeFile,
@@ -21,7 +24,7 @@ import type { VerifyComponent } from "./components.js";
 import { capturesDirectory } from "./rendered.js";
 import { componentInputsHash, optimizePng, readVerifyDetails, type VerifyDetails } from "./details.js";
 import { findPackage } from "./in-image.js";
-import { listRunIds, readRunRecord, runDirectory, type RunRecord } from "./run-record.js";
+import { listRunIds, readRunRecord, runDirectory, type RunKind, type RunRecord } from "./run-record.js";
 
 /** The platform captures are made on (docs/spec/check-catalogue.md#visual). */
 export const capturePlatform = "linux/amd64";
@@ -49,6 +52,8 @@ export interface BaselineUpdateInput {
 export interface Qualification {
   readonly component: string;
   readonly run?: string;
+  /** For a generate or feedback run: the iteration whose checks and captures it gives. */
+  readonly iteration?: number;
   /** Each condition that failed, in plain words with how to meet it. */
   readonly failed: readonly string[];
 }
@@ -67,22 +72,62 @@ export type BaselineUpdateOutcome =
 
 interface LatestRun {
   readonly id: string;
-  readonly dir: string;
   readonly record: RunRecord;
-  readonly details: VerifyDetails;
+  /** For a generate or feedback run that passed: its passing iteration, the last. */
+  readonly iteration?: number;
+  /**
+   * Its `verify.json` and its captures' directory, absolute. Absent for an agent run that didn't
+   * pass, or whose passing iteration left no checks of the component.
+   */
+  readonly checked?: { readonly details: VerifyDetails; readonly captures: string };
 }
 
-/** The newest finished run that covered the component, with its record and details. */
+const agentRunKinds: ReadonlySet<RunKind> = new Set(["generate", "feedback"]);
+
+/**
+ * The component's newest finished run: a verify run that covered it, or a generate or feedback run
+ * of it, whose checks and captures are its passing iteration's, `checks/<n>/verify.json` and
+ * `captures/<n>/` (docs/spec/records.md#the-fazon-directory). Propose runs, agent runs of other
+ * components and runs still recorded as running are passed over.
+ */
 async function latestRun(root: string, component: string): Promise<LatestRun | undefined> {
   for (const id of await listRunIds(root)) {
     const dir = runDirectory(root, id);
     const record = await readRunRecord(dir);
     if (record === undefined || record.status === "running") continue;
+    if (agentRunKinds.has(record.kind)) {
+      if (record.component === undefined || kebabCase(record.component) !== component) continue;
+      const passing = record.status === "passed" ? record.iterations.findLast((i) => i.outcome === "pass") : undefined;
+      if (passing === undefined) return { id, record };
+      const files = checksPhaseFiles(passing.n);
+      const details = await readVerifyDetails(path.join(dir, files.directory));
+      if (details?.components.some((c) => c.name === component) !== true) return { id, record, iteration: passing.n };
+      const captures = path.join(dir, passing.verification?.captures ?? files.captures);
+      return { id, record, iteration: passing.n, checked: { details, captures } };
+    }
+    if (record.kind !== "verify") continue;
     const details = await readVerifyDetails(dir);
     if (details?.components.some((c) => c.name === component) !== true) continue;
-    return { id, dir, record, details };
+    return { id, record, checked: { details, captures: path.join(dir, capturesDirectory) } };
   }
   return undefined;
+}
+
+/** Why an agent run has no checks to qualify with: it didn't pass, or its passing iteration's are missing. */
+function agentRunProblem(run: LatestRun, component: VerifyComponent): string {
+  const { record } = run;
+  const verify = `fazon verify ${component.name}`;
+  if (record.status === "passed") {
+    const where = run.iteration === undefined ? "no iteration passed" : checksPhaseFiles(run.iteration).details;
+    return `it passed, but has no checks of ${component.name} to take baselines from (${where}); run \`${verify}\`.`;
+  }
+  const why =
+    record.status === "needs-a-person"
+      ? `it needs a person${record.reason === undefined ? "" : ` (${record.reason})`}`
+      : record.status === "stopped"
+        ? "it was interrupted"
+        : "it failed";
+  return `it didn't pass: ${why}. A ${record.kind} run gives baselines only when it passed. Read its report, then run \`fazon feedback ${component.name}\` or \`fazon generate ${component.name}\`, or \`${verify}\` once the component is as it should be.`;
 }
 
 /** The four conditions of docs/spec/baseline-lifecycle.md#writing-baselines, for one component. */
@@ -100,6 +145,17 @@ async function qualify(
       },
     };
   }
+  const iteration = run.iteration === undefined ? "" : ` (iteration ${String(run.iteration)})`;
+  const label = `${component.spec.name}'s latest run ${run.id}${iteration}`;
+  const at = {
+    component: component.name,
+    run: run.id,
+    ...(run.iteration === undefined ? {} : { iteration: run.iteration }),
+  };
+  if (run.checked === undefined) {
+    return { qualification: { ...at, failed: [`${label}: ${agentRunProblem(run, component)}`] }, run };
+  }
+  const { details } = run.checked;
   const failed: string[] = [];
   const all = input.targets === "all";
   const image = run.record.versions.image;
@@ -112,10 +168,10 @@ async function qualify(
       `it ran in ${image}, but the baselines were made with ${recorded}; only \`fazon baseline update --all\` records another image.`,
     );
   }
-  if (run.details.platform !== capturePlatform) {
-    failed.push(`it ran on ${run.details.platform}; baselines are made on ${capturePlatform} only.`);
+  if (details.platform !== capturePlatform) {
+    failed.push(`it ran on ${details.platform}; baselines are made on ${capturePlatform} only.`);
   }
-  const statuses = run.details.components.find((c) => c.name === component.name)?.checks ?? {};
+  const statuses = details.components.find((c) => c.name === component.name)?.checks ?? {};
   const failing = (Object.entries(statuses) as [CheckId, string][]).filter(
     ([check, status]) => check !== "visual" && status !== "pass",
   );
@@ -128,20 +184,13 @@ async function qualify(
     failed.push("the judge didn't look at its stories.");
   }
   const now = await componentInputsHash(input.root, component, input.config.paths.tokens);
-  const then = run.details.components.find((c) => c.name === component.name)?.inputs;
+  const then = details.components.find((c) => c.name === component.name)?.inputs;
   if (now !== then) {
     failed.push(
       `its spec, its files or the token set changed since the run; run \`fazon verify ${component.name}\` again.`,
     );
   }
-  return {
-    qualification: {
-      component: component.name,
-      run: run.id,
-      failed: failed.map((reason) => `${component.spec.name}'s latest run ${run.id}: ${reason}`),
-    },
-    run,
-  };
+  return { qualification: { ...at, failed: failed.map((reason) => `${label}: ${reason}`) }, run };
 }
 
 function samePixels(a: Uint8Array, b: Uint8Array): boolean {
@@ -170,12 +219,12 @@ export async function updateBaselines(input: BaselineUpdateInput): Promise<Basel
   const targets =
     input.targets === "all" ? input.components : input.components.filter((c) => input.targets.includes(c.name));
 
-  const qualified: { component: VerifyComponent; run: LatestRun }[] = [];
+  const qualified: { component: VerifyComponent; details: VerifyDetails; captures: string }[] = [];
   const qualifications: Qualification[] = [];
   for (const component of targets) {
     const { qualification, run } = await qualify(input, component, recorded);
     qualifications.push(qualification);
-    if (run !== undefined && qualification.failed.length === 0) qualified.push({ component, run });
+    if (run?.checked !== undefined && qualification.failed.length === 0) qualified.push({ component, ...run.checked });
   }
   if (qualifications.some((q) => q.failed.length > 0)) return { kind: "refused", qualifications };
 
@@ -203,12 +252,12 @@ export async function updateBaselines(input: BaselineUpdateInput): Promise<Basel
   const unchanged: string[] = [];
   const removed: string[] = [];
   const files = new Set(await listBaselineFiles(dir));
-  for (const { component, run } of qualified) {
-    const stories = run.details.stories.filter(
+  for (const { component, details, captures } of qualified) {
+    const stories = details.stories.filter(
       (s) => s.component === component.name && (input.stories === undefined || input.stories.includes(s.story)),
     );
     for (const story of stories) {
-      const capture = new Uint8Array(await readFile(path.join(run.dir, capturesDirectory, story.path)));
+      const capture = new Uint8Array(await readFile(path.join(captures, story.path)));
       const target = path.join(dir, story.path);
       if (files.has(story.path) && samePixels(new Uint8Array(await readFile(target)), capture)) {
         unchanged.push(story.path);

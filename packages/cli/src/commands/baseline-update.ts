@@ -100,7 +100,11 @@ export async function baselineUpdate(invocation: Invocation, context: Context): 
     text,
     result: {
       image: outcome.image,
-      runs: outcome.qualifications.map((q) => ({ component: q.component, run: q.run })),
+      runs: outcome.qualifications.map((q) => ({
+        component: q.component,
+        run: q.run,
+        ...(q.iteration === undefined ? {} : { iteration: q.iteration }),
+      })),
       written: outcome.written,
       unchanged: outcome.unchanged,
       removed: outcome.removed,
