@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   capture,
@@ -9,6 +12,25 @@ import {
   repository,
   type FakeMachine,
 } from "../test-support.js";
+
+const docs = fileURLToPath(new URL("../../../../docs/spec/", import.meta.url));
+
+/** The example library's draft token set, where fazon.yaml's default paths.tokens finds it. */
+function copyDraftTokens(to: string): Promise<void> {
+  return cp(path.join(docs, "example-library/tokens"), path.join(to, "tokens"), { recursive: true });
+}
+
+/** The warnings of a repository with no token set and no lucide-static, as the test repositories are. */
+const skippedInputs = [
+  {
+    level: "warning",
+    text: "The token set at tokens/tokens.resolver.json can't be resolved, so token names weren't checked (SPEC-011). Run 'fazon sync' to see why.",
+  },
+  {
+    level: "warning",
+    text: "The icon set can't be read (the lucide-static package isn't installed), so icon names weren't checked (SPEC-009).",
+  },
+];
 
 let root: string;
 let machine: FakeMachine;
@@ -30,7 +52,11 @@ describe("fazon spec check", () => {
       command: "spec check",
       status: "ok",
       exitCode: 0,
-      messages: [{ level: "info", text: "3 specs checked: no findings." }, expect.anything()],
+      messages: [
+        { level: "info", text: "3 specs checked: no findings." },
+        { level: "info", text: "Checked SPEC-001 to SPEC-019." },
+        ...skippedInputs,
+      ],
       result: {
         specs: [
           { spec: "specs/button.md", findings: [] },
@@ -48,7 +74,53 @@ describe("fazon spec check", () => {
 
   it("says which rules it checked", async () => {
     const { stdout } = await capture(["spec", "check"], machine);
-    expect(stdout).toContain("Checked SPEC-001, SPEC-002 and SPEC-019; the other SPEC rules arrive in M2.");
+    expect(stdout).toContain("Checked SPEC-001 to SPEC-019.");
+  });
+
+  it("checks token and icon names with the repository's token set and icon set", async () => {
+    await writeFile(
+      path.join(root, "specs/button.md"),
+      (await readFile(path.join(root, "specs/button.md"), "utf8"))
+        .replace("color: color.text.on-action", "color: color.text.nope")
+        .replace("{ icon: check }", "{ icon: nope }"),
+    );
+    await copyDraftTokens(root);
+    await mkdir(path.join(root, "node_modules/lucide-static/icons"), { recursive: true });
+    await writeFile(path.join(root, "node_modules/lucide-static/package.json"), '{ "name": "lucide-static" }\n');
+    await writeFile(path.join(root, "node_modules/lucide-static/icons/check.svg"), "<svg/>\n");
+    const { code, json } = await captureJson(["spec", "check", "button"], machine);
+    expect(code).toBe(1);
+    expect(json.messages).not.toContainEqual(expect.objectContaining({ level: "warning" }));
+    const [spec] = (json.result as { specs: { findings: { rule: string; message: string }[] }[] }).specs;
+    expect(spec?.findings.map(({ rule, message }) => `${rule} ${message}`)).toEqual([
+      "SPEC-009 the icon nope isn't in the icon set",
+      "SPEC-011 color uses color.text.nope, which isn't in the token set",
+    ]);
+  });
+
+  it("notes extension blocks for adapters the repository doesn't use, without failing", async () => {
+    const { code, json, stdout } = await (async () => {
+      const result = await captureJson(["spec", "check", "tabs"], machine);
+      const verbose = await capture(["--verbose", "spec", "check", "tabs"], machine);
+      return { ...result, stdout: verbose.stdout };
+    })();
+    expect(code).toBe(0);
+    const [spec] = (json.result as { specs: { notes?: { path: string }[] }[] }).specs;
+    expect(spec?.notes?.map((note) => note.path)).toEqual([
+      "$.extensions.react",
+      "$.extensions.angular",
+      "$.extensions.web-components",
+    ]);
+    expect(stdout).toContain("note specs/tabs.md:");
+  });
+
+  it("fails a semantic example with its rule", async () => {
+    await copyExample(root, "invalid/semantic/spec-012-rule-not-exemptable.md", "specs/chip.md");
+    const { code, stderr } = await capture(["spec", "check", "chip"], machine);
+    expect(code).toBe(1);
+    expect(stderr).toContain(
+      "specs/chip.md:13: SPEC-012 $.exemptions[0].rule: the visual rule changed can't be exempted",
+    );
   });
 
   it("fails (1) with each finding's rule, path, line and message", async () => {

@@ -327,7 +327,7 @@ describe("fazon accept", () => {
   it("refuses (2) after the spec's API changed, pointing to approve", async () => {
     await writeRun(generateId);
     const text = await read("specs/button.md");
-    await write("specs/button.md", text.replace("values: [sm, md, lg]", "values: [sm, md]"));
+    await write("specs/button.md", text.replace("values: [button, submit, reset]", "values: [button, submit]"));
     const { code, json } = await captureJson(["accept", "button"], machine);
     expect(code).toBe(2);
     expect(messagesOf(json)[0]).toMatchObject({ hint: "fazon approve button" });

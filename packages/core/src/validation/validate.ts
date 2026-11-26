@@ -65,6 +65,28 @@ export function validateWithSchema(name: SchemaName, data: unknown): readonly Sc
   return findingsFromErrors(validate.errors ?? [], data);
 }
 
+const fragmentValidators = new WeakMap<object, ValidateFunction>();
+
+/**
+ * Validates data against a JSON Schema given as data, such as an adapter's extension schema
+ * (`spec check`, SPEC-013); no findings means it's valid. Each schema object is compiled once.
+ */
+export function validateWithJsonSchema(
+  schema: Readonly<Record<string, unknown>>,
+  data: unknown,
+): readonly SchemaFinding[] {
+  let validate = fragmentValidators.get(schema);
+  if (validate === undefined) {
+    ajv ??= createAjv();
+    validate = ajv.compile(schema);
+    fragmentValidators.set(schema, validate);
+  }
+  if (validate(data)) {
+    return [];
+  }
+  return findingsFromErrors(validate.errors ?? [], data);
+}
+
 /** A schema finding in a named file. */
 export type FileSchemaFinding = SchemaFinding & { readonly file: string };
 

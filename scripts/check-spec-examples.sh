@@ -5,7 +5,7 @@
 # docs/spec/config.md, docs/spec/cli.md, docs/spec/tokens.md):
 #   - every schema is valid against its metaschema;
 #   - every spec under valid/ and invalid/semantic/ passes the schema (a semantic example breaks
-#     a rule only `fazon spec check` sees, from M2);
+#     a rule only `fazon spec check` sees);
 #   - every spec under invalid/schema/ fails it, at the path its `# expect-error-at:` line names;
 #   - every manifest under docs/spec/examples/manifests/ passes the story manifest schema;
 #   - the examples of the baselines record, the judge plan and result, the run record, provenance

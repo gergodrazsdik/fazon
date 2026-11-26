@@ -90,7 +90,10 @@ describe("fazon approve", () => {
     };
     await writeFile(path.join(root, provenanceFile), JSON.stringify({ ...first, generation }));
     const text = await read("specs/button.md");
-    await writeFile(path.join(root, "specs/button.md"), text.replace("values: [sm, md, lg]", "values: [sm, md]"));
+    await writeFile(
+      path.join(root, "specs/button.md"),
+      text.replace("values: [button, submit, reset]", "values: [button, submit]"),
+    );
 
     const outcome = await approve(invocation, context, day("2026-11-26T08:00:00Z"));
     const second = JSON.parse(await read(provenanceFile)) as Provenance;

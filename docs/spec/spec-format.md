@@ -304,10 +304,24 @@ Other second-level headings are allowed. Write anything measurable as a field ra
 | SPEC-013 | Extensions: every `map` and `omit` path exists in the neutral API, and no `add` path does; every `instead` names an existing or added member; a block for an adapter the consumer uses is valid against that adapter's schema. A block for another adapter is reported, not failed. |
 | SPEC-014 | A condition names props of its part (or the component), with values of their type, and a state listed in that part's (or the component's) `states`. |
 | SPEC-015 | Every state other than `default` can be produced: it has a recipe, a boolean prop of its name, or is `hover`, `focus-visible` or `active`. |
-| SPEC-016 | Every `produce` key is a listed state of its component or part; a recipe's props exist there; every input target exists; `instance` is used only on a part's state, and is below the number of instances in every fixture the stories render. |
+| SPEC-016 | Every `produce` key is a listed state of its component or part; a recipe's props exist there, with values of their type; every input target exists; `instance` is used only on a part's state, and is below the number of instances in every fixture the stories render. |
 | SPEC-017 | Every `include` entry names an existing fixture, axes in `props` with values of their type, and a listed state of the component or of `part`; its story isn't one a grid already makes, and no `exclude` condition drops it. |
 | SPEC-018 | Judge questions: every `id` is unique and isn't a derived question's name (`story`, `axis-…`, `state-…`, `appearance-…`, `reference`, `family`, `change-…`); every `select` picks at least one story, with an existing fixture, part and condition (SPEC-014). |
 | SPEC-019 | No placeholder from the spec template is left: no string in the front matter, and no line of the body outside fenced code blocks, starts with `TODO:`, after any spaces and a list item's marker. |
+
+How the rules read where the table leaves room:
+
+- **Conditions:** SPEC-014 reports every problem inside a condition (`when` in token rules, exemptions and judge questions, and each `matrix.exclude` entry). The rule that owns the condition reports the part it names, when that part doesn't exist. `default` counts as a listed state of the component and of every part, in conditions, `include` and `select`; a `produce` key must be in `states` itself.
+- **SPEC-003:** a heading is a second-level ATX heading (`## Purpose`) outside fenced code blocks, with exactly that text.
+- **SPEC-008:** a spec that fails SPEC-001 still exists, under its file name.
+- **SPEC-009:** each fixture's own `props`, `slots` and part instances are checked where they're written; required props and slots of the component, and the number of each part's instances, after merging. `one` means as many instances as the parent has (one for the component), `optional` at most that many, and `many` any number, none when the parent has none. A component node's props and slots are checked against the used component's spec, required ones included. A spec without fixtures isn't checked for the empty fixture, as its fixtures come after `fazon approve`: `fazon generate` and `fazon feedback` refuse a spec without fixtures whose component has a required prop or slot ([ADR 0025](../adr/0025-empty-fixture-and-recipe-values.md)). Icon names need the icon set; without it they aren't checked, and `spec check` says so.
+- **SPEC-011:** two rules have the same condition when they set the same props to the same values and name the same state. Token names need the token set; without it they aren't checked, and `spec check` says so.
+- **SPEC-012:** every rule of a check's sheet can be exempted except `lint`'s `eslint` and `stylelint` and every `visual` rule. For `a11y`, a rule is also the ID of any axe rule the check runs: one with the check's tags, and not one it turns off.
+- **SPEC-013:** an `add` path into a part the spec doesn't declare fails. The consumer's adapter's schema checks its block's `options` (an adapter without an options schema takes none) and each `map` value. A block for another adapter has its paths checked; that its values weren't is a note in `spec check`'s result, not a finding.
+- **SPEC-015:** a recipe produces a state when it has `props` or `input`; one with only `story: false` needs nothing, as the [story matrix rules](story-matrix.md#producing-states) say.
+- **SPEC-016:** the fixtures the stories render are those of the state's own stories: the first fixture for the states grid (none when the recipe says `story: false`), and each fixture an `include` entry forces the state in. An input target `<Part>[<n>]` must also be below the number of instances there.
+- **SPEC-017:** whether a grid already makes an entry's story, or an exclusion drops it, is checked by expanding the matrix, once the entries' own fields pass.
+- **SPEC-018:** `select` picks from all of the component's stories. A state whose recipe says `story: false` has no story of its own, so only an `include` entry lets a question select it. An `id` that starts with `axis-`, `state-`, `appearance-` or `change-` fails.
 
 The command works without an agent. The spec skill never writes a spec the check would reject, except for the placeholders the developer hasn't answered yet (SPEC-019), which it lists for them. `fazon propose` and `fazon approve` refuse a spec with any finding, so a spec fresh from `fazon spec new` can't be approved.
 
@@ -317,6 +331,6 @@ Under [examples/specs/](examples/specs/):
 
 - `valid/`: [Button](examples/specs/valid/button.md) (a primitive), [Tabs](examples/specs/valid/tabs.md) (named parts, extensions for four adapters) and [Dialog](examples/specs/valid/dialog.md) (parts in a portal, a composed Button, an exemption). Each is valid under every rule, given a token set and an icon set that hold the names they use.
 - `invalid/schema/`: each fails SPEC-001, at the path its `# expect-error-at:` comment names.
-- `invalid/semantic/`: each passes the schema and fails the rule its `# fails:` comment names. They become test fixtures for `fazon spec check` in M2.
+- `invalid/semantic/`: each passes the schema and fails the rule its `# fails:` comment names, and only that rule: there is one for each rule from SPEC-003. They are test fixtures for `fazon spec check`.
 
 `just lint` checks the schema and the examples (`scripts/check-spec-examples.sh`): the valid and semantic examples must pass the schema, and every schema example must fail it at the named path.

@@ -8,6 +8,7 @@ import { lstat, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import {
   buildReport,
+  emptyFixtureMissing,
   generatedDirectory,
   generatedRefresh,
   generatePrompt,
@@ -53,7 +54,8 @@ export async function generate(invocation: Invocation, context: Context): Promis
 /**
  * What `generate` and `feedback` check before their run, in order: the component and its spec,
  * the Claude Code version (3), then refusals (2): a spec with findings, as the checks need specs
- * that pass `spec check`, and a spec whose API isn't the approved one.
+ * that pass `spec check`; a spec without fixtures whose API requires a prop or slot; and a spec
+ * whose API isn't the approved one.
  */
 export async function prepareLoopCommand(
   command: "generate" | "feedback",
@@ -69,6 +71,18 @@ export async function prepareLoopCommand(
         component,
         setup.findings,
         `${spec.file} has findings, so the component can't be generated from it`,
+      ),
+    };
+  }
+  // Without fixtures, the stories render the empty fixture, which can't set what the API requires
+  // (docs/spec/story-matrix.md#fixtures). Fixtures aren't part of the approved API, so adding
+  // them needs no new approval.
+  const missing = emptyFixtureMissing(spec.spec);
+  if (missing.length > 0) {
+    return {
+      stop: refused(
+        `${spec.file} has no fixtures, so its stories would render the empty fixture, which doesn't set ${listOf(missing)}: ${spec.spec.name} requires ${missing.length === 1 ? "it" : "them"}.`,
+        `Add fixtures to ${spec.file} first, then run 'fazon spec check ${component}'; fixtures need no new approval.`,
       ),
     };
   }
@@ -101,6 +115,11 @@ export async function prepareLoopCommand(
     };
   }
   return setup;
+}
+
+/** `a`, `a and b`, `a, b and c`. */
+function listOf(items: readonly string[]): string {
+  return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items.at(-1) ?? ""}`;
 }
 
 /** What a loop command's run is: a generate run, or a feedback run with its parent and the developer's text. */

@@ -23,6 +23,7 @@ import {
   newRunId,
   noSelfChecks,
   parseSpecFile,
+  readSpecCheckInputs,
   readSpecFiles,
   resolveTokenSet,
   runAgent,
@@ -42,6 +43,7 @@ import {
   type LoopDependencies,
   type RunInputs,
   type RunReason,
+  type SpecCheckInputs,
   type SpecFile,
   type ValidSpecFile,
 } from "@fazon/core";
@@ -71,6 +73,8 @@ export interface ComponentSetup {
   readonly specs: readonly SpecFile[];
   /** The spec's findings by every SPEC rule `spec check` checks. */
   readonly findings: readonly Finding[];
+  /** What the SPEC rules need besides the specs, for checking the spec again after a change. */
+  readonly specInputs: SpecCheckInputs;
   /** The component's directory, from the repository root, with `/` separators: `<paths.components>/<component>`. */
   readonly directory: string;
 }
@@ -180,6 +184,7 @@ export async function readComponent(
   }
   const spec: ValidSpecFile = { ...file, spec: file.spec };
   const specText = await readFile(path.join(repo, file.file), "utf8");
+  const { inputs: specInputs } = await readSpecCheckInputs(repo, config, adapter);
   return {
     repo,
     config,
@@ -188,7 +193,8 @@ export async function readComponent(
     spec,
     specText,
     specs,
-    findings: checkSpec(file, specs),
+    findings: checkSpec(file, specs, specInputs),
+    specInputs,
     directory: path.posix.join(toPosix(config.paths.components), component),
   };
 }

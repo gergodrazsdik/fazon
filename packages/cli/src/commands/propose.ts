@@ -59,7 +59,7 @@ export async function propose(invocation: Invocation, context: Context): Promise
     }
     const file = parseSpecFile(spec.file, applied.text);
     const others = setup.specs.filter((other) => other.file !== spec.file);
-    const findings = checkSpec(file, [...others, file]);
+    const findings = checkSpec(file, [...others, file], setup.specInputs);
     if (findings.length > 0) {
       const listed = findings.map((finding) => describeFinding(finding, true)).join("; ");
       return `the proposed API breaks ${findings.length === 1 ? "a SPEC rule" : "SPEC rules"}: ${listed}`;
