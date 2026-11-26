@@ -35,7 +35,7 @@ One iteration of a generate or feedback run is:
 1. **Prompt:** the harness builds the agent's input ([agent permissions](agent-permissions.md#what-the-agent-receives)), with the findings of the previous iteration.
 2. **Agent call:** one headless `claude -p` call, which edits the component's files.
 3. **Permission check:** the harness compares the files outside the allowed paths ([PERM-002](agent-permissions.md#rules)). A violation ends the run.
-4. **Checks:** every check in the verifier image ([check catalogue](check-catalogue.md)).
+4. **Checks:** every check in the verifier image ([check catalogue](check-catalogue.md)), over the whole library as `fazon verify` with no component named runs them, so a regression in another component blocks too. Before them, the harness refreshes the component's generated files ([agent permissions](agent-permissions.md#files-the-harness-maintains)). When the image ends without writing its results, every check of the phase ends in error.
 5. **Judge:** when the checks pass and the judge's policy isn't `off`, the judge looks at the stories (from M3).
 6. **Outcome:** the iteration **passes** when no finding blocks; otherwise it **fails**, and its blocking findings go into the next prompt.
 

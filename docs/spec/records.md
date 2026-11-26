@@ -27,7 +27,8 @@ Every run's files live under `.fazon/` in the repository where Fazon runs. Git i
     20261125T164012Z-button-3f9a/
       run.json              the run record
       calls/1.jsonl         the agent's transcript for each call
-      captures/1/           captures and diff images of each iteration, by theme
+      captures/1/           captures and diff images of each iteration, by theme and component, such as light/button/<story>.png
+      checks/1/             each iteration's checks: checks.json (their results, which the image hands the harness), verify.json, and logs/, reports/, storybook/ and package/ as for a verify run
       judge/3.json          each iteration's judge plan and results
       report/index.html     the report built from this run, with the images it shows in report/images/
     20261125T171502Z-verify-a41c/

@@ -73,8 +73,13 @@ export interface RenderedChecksInput {
   readonly baselinesDir: string;
   /** The verifier image running the checks, by digest. */
   readonly image: string;
-  /** The run's directory, absolute; captures go to `captures/` in it. */
+  /** The run's directory, absolute; captures go to `captures/` in it, or to `captures`. */
   readonly runDir: string;
+  /**
+   * The captures' directory, relative to the run's directory: `captures` (the default) for a
+   * verify run, `captures/<n>` for an agent run's iteration. Diff images go beside the captures.
+   */
+  readonly captures?: string;
   /** The story IDs in the Storybook build's index, by component title, for MATRIX-003. */
   readonly storybookIndex?: ReadonlyMap<string, readonly string[]>;
   readonly now?: () => number;
@@ -226,7 +231,8 @@ async function compareCaptures(
   input: RenderedChecksInput,
   captures: readonly { component: VerifyComponent; story: Story; theme: string; png: Uint8Array; path: string }[],
 ): Promise<{ findings: CheckFinding[]; stories: StoryVisual[]; orphans: Orphan[] }> {
-  const capturesDir = path.join(input.runDir, capturesDirectory);
+  const captured = input.captures ?? capturesDirectory;
+  const capturesDir = path.join(input.runDir, captured);
   for (const capture of captures) {
     const file = path.join(capturesDir, capture.path);
     await mkdir(path.dirname(file), { recursive: true });
@@ -256,7 +262,7 @@ async function compareCaptures(
     const baseline = present.has(capture.path)
       ? new Uint8Array(await readFile(path.join(input.baselinesDir, capture.path)))
       : undefined;
-    const diff = `${capturesDirectory}/${capture.path.replace(/\.png$/, ".diff.png")}`;
+    const diff = `${captured}/${capture.path.replace(/\.png$/, ".diff.png")}`;
     const result = checkVisualStory({
       capture: capture.png,
       ...(baseline === undefined ? {} : { baseline }),
