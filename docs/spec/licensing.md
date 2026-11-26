@@ -43,6 +43,8 @@ Contributions to template text are licensed under MIT-0 as well as the GPL: the 
 - [THIRD-PARTY-NOTICES.md](example-library/THIRD-PARTY-NOTICES.md): Inter and Lucide, with their license texts;
 - [CONTRIBUTING.md](example-library/CONTRIBUTING.md): no outside contributions.
 
+**No headers:** its files, whether a person or Fazon wrote them, carry no license header; the LICENSE covers the repository ([ADR 0021](../adr/0021-settled-questions.md)).
+
 **Contributions:** the example repository takes no outside pull requests before the publishing decision (T-0071). It has no contributor agreement and no CLA assistant; issues go to the framework repository. The publishing decision settles whether that changes (T-0086).
 
 ## Third-party notices
@@ -61,7 +63,7 @@ With their own icon set (`icons` in the [config](config.md#keys)), adopters hand
 
 ### Inter
 
-Only the example library uses Inter, from the `@fontsource-variable/inter` package. The OFL doesn't cover documents made with the font, so captures and baselines need nothing. The font files need their license: the example repository's notices file holds it, and its packed library includes that file whenever the package ships the font files (Q-0011).
+Only the example library uses Inter, from the `@fontsource-variable/inter` package. The OFL doesn't cover documents made with the font, so captures and baselines need nothing. The font files need their license: the example repository's notices file holds it, and its packed library includes that file whenever the package ships the font files.
 
 ### The verifier image
 

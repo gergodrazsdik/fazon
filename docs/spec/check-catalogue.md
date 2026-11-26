@@ -71,7 +71,7 @@ A waived finding stays in the report, marked exempt. An exemption that waived no
 
 ### No inline suppressions
 
-Component files carry no inline suppressions, such as `eslint-disable`, `stylelint-disable`, `@ts-ignore`, `@ts-expect-error` or `@ts-nocheck`: the `lint` rule `inline-suppression` fails them. A check is waived only by an exemption in the spec, which the reviewer sees. Lint configuration belongs to the framework and the consumer, not to a component; a rule of ESLint's or Stylelint's own can't be exempted for one component.
+Component files carry no inline suppressions, such as `eslint-disable`, `stylelint-disable`, `@ts-ignore`, `@ts-expect-error`, `@ts-nocheck`, or vue-tsc's `@vue-ignore`, `@vue-expect-error` and `@vue-skip`: the `lint` rule `inline-suppression` fails them. A check is waived only by an exemption in the spec, which the reviewer sees. Lint configuration belongs to the framework and the consumer, not to a component; a rule of ESLint's or Stylelint's own can't be exempted for one component.
 
 ### Token-bound properties
 
@@ -87,6 +87,12 @@ Component files carry no inline suppressions, such as `eslint-disable`, `styleli
 | Motion | `transition-duration`, `transition-delay`, `transition-timing-function`, `animation-duration`, `animation-delay`, `animation-timing-function` |
 
 A value is valid when it is a role token's custom property (`var(--color-action-primary)`, with the [prefix](tokens.md#custom-properties) if one is set), a component-local custom property whose value is valid, or one of the **allowed values**: `0` (with any unit), `auto`, `none`, `normal`, `inherit`, `initial`, `unset`, `revert`, `currentColor`, `transparent` and `100%`. Inside `calc()`, `min()`, `max()` and `clamp()`, every operand is a valid value or a unitless number. Positioning (`top`, `left`, `inset`, `transform`), sizing (`width`, `height`) and the inline styles a headless library sets for positioning are out of scope.
+
+- **Shorthands** are checked on the token-bound properties they set. When a shorthand uses `var()` and its parts can't be told apart (`border`, `font`, `transition`), only literals that look like a token's value count as raw values.
+- **Fallbacks:** a `var()` fallback is checked like any other value.
+- **Prefixes and at-rules:** a vendor-prefixed property counts as the unprefixed one; `@font-face` descriptors aren't token-bound.
+- **Framework bindings:** a value bound from the component's code, such as Vue's `v-bind()` in a `<style>` block, is a raw value (`raw-value`).
+- **Local properties:** a `--_` property the component doesn't declare is `unknown-token`.
 
 ## build
 
@@ -180,7 +186,7 @@ axe's undecided results ("incomplete", for example contrast over a gradient) don
 | `raw-value` | The winning declaration is a literal that isn't an allowed value. |
 | `raw-token` | It resolves to a raw token instead of a role token. |
 | `unknown-token` | It references a custom property that is neither a token nor a valid component-local property. |
-| `user-agent` | No author declaration applies, and the browser's own stylesheet sets a value that isn't allowed, such as a button's default padding. |
+| `user-agent` | No author declaration applies, and the browser's own stylesheet sets a value that isn't allowed, such as a button's default padding or its system font (`font: -webkit-small-control`). |
 | `token-rule` | A [token rule](spec-format.md#tokens) in the spec applies to the element, and the declaration resolves to a different token. |
 
 A property that no stylesheet sets keeps its initial value, which isn't a finding. An inherited value is checked on the element that declares it; values inherited from outside the component come from the story frame's base styles.
@@ -198,7 +204,7 @@ A property that no stylesheet sets keeps its initial value, which isn't a findin
 | `overflow` | Content extends outside an element whose `overflow` is `visible`, or the component's root extends outside the frame. |
 | `clipped-text` | Text is cut off: an element that hides or clips overflow, or truncates text with an ellipsis or a line clamp, has more text than it shows. |
 | `scroll` | An element scrolls: its content is larger than its box and its `overflow` is `auto` or `scroll`. Intended scrolling is declared with an exemption, so the reviewer sees it. |
-| `target-size` | An interactive element fails [WCAG 2.5.8](https://www.w3.org/TR/WCAG22/#target-size-minimum): it is smaller than 24 by 24 CSS pixels, and a 24 px circle centred on it overlaps another target's circle. Inline targets in a line of text are excepted, as WCAG excepts them. |
+| `target-size` | An interactive element fails [WCAG 2.5.8](https://www.w3.org/TR/WCAG22/#target-size-minimum): it is smaller than 24 by 24 CSS pixels, and a 24 px circle centred on it intersects another target, or another undersized target's circle. Inline targets in a line of text are excepted, as WCAG excepts them. |
 
 An interactive element has a role of `button`, `link`, `tab`, `checkbox`, `radio`, `switch`, `menuitem`, `option`, `combobox`, `textbox`, `searchbox` or `slider`, or is in the tab order.
 
@@ -214,13 +220,13 @@ An interactive element has a role of `button`, `link`, `tab`, `checkbox`, `radio
 |---|---|
 | `changed` | The capture differs from its baseline beyond the tolerance, or has a different size. The finding's evidence is a diff image. |
 | `orphan` | A file in the baselines directory belongs to no story, or isn't a baseline. |
-| `image` | The verifier image running the check isn't the one recorded with the baselines; nothing is compared. |
+| `image` | The verifier image running the check isn't the one recorded with the baselines; nothing is compared. The images are compared by digest; baselines without a `fazon.json` count as made by another image. |
 
 A story without a baseline is reported as **new**, and doesn't fail. None of these rules can be exempted. In `fazon generate`, the component being generated has its `changed` and `orphan` findings shown to the person but not to the agent. The [baseline lifecycle](baseline-lifecycle.md) says how baselines are made, changed and removed.
 
 **Platform:** captures are made only on linux/amd64, the platform of CI's runners, in headless Chromium with software rendering, the browser and fonts the verifier image pins. On another architecture the image runs emulated.
 
-**Tolerance:** two pixels differ when their colour distance exceeds 0.1 (pixelmatch's threshold, on a scale of 0 to 1); anti-aliased pixels are not excluded. No differing pixel is allowed. M1 renders every example story repeatedly to measure whether this holds; any change to the tolerance is recorded in an ADR.
+**Tolerance:** two pixels differ when their colour distance exceeds 0.1 (pixelmatch 8's threshold: the HyAB distance in OKLab, on a scale of 0 to 1; version 7 measured in YIQ, so the version is pinned with the image); anti-aliased pixels are not excluded. No differing pixel is allowed. M1 renders every example story repeatedly to measure whether this holds; any change to the tolerance is recorded in an ADR.
 
 **Fixtures:** the verifier renders [base](examples/checks/visual/base.html) as the baseline; [pass](examples/checks/visual/pass.html) renders the same pixels from different markup; [fail](examples/checks/visual/fail.html) has 1 px more padding (`changed`).
 

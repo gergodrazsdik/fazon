@@ -87,7 +87,7 @@ It refuses (2) when `fazon.yaml` exists, and never overwrites a file. `--dry-run
 fazon doctor
 ```
 
-Checks the environment: Node.js, a container runtime, the required Claude Code version, whether `ANTHROPIC_API_KEY` is set (without showing it), whether the verifier image is available, and whether the config is valid. It exits 3 when something needed is missing (Node.js, a container runtime), with install hints; 1 when the config is invalid; and 2 when a `fazon.local.yaml` exists in CI. A missing config is only a warning, as `doctor` also runs before `init`, and so are a missing Claude Code and API key, which CI's `verify` job doesn't need. Result: each check and its state.
+Checks the environment: Node.js, a container runtime, Claude Code and whether it's at least the minimum version this framework version declares ([ADR 0021](../adr/0021-settled-questions.md)), whether `ANTHROPIC_API_KEY` is set (without showing it), whether the verifier image is available, and whether the config is valid. It exits 3 when something needed is missing (Node.js, a container runtime), with install hints; 1 when the config is invalid; and 2 when a `fazon.local.yaml` exists in CI. A missing config is only a warning, as `doctor` also runs before `init`, and so are a missing or too old Claude Code and a missing API key, which CI's `verify` job doesn't need; `propose`, `generate` and `feedback` refuse to start (3) with a Claude Code older than the minimum. Result: each check and its state.
 
 ### `fazon upgrade`
 

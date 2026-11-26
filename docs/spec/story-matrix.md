@@ -156,9 +156,9 @@ The verifier uses them to find targets, to pick `<Part>[default]`, to know each 
 Every rendered check uses the same conditions:
 
 - **Viewport:** 1024 by 768 CSS pixels at a device scale factor of 2. One render serves both the baselines and the judge's 2x crops. A full-viewport capture is 2048 by 1536 pixels, about 4,000 visual tokens.
-- **Frame:** the story renders inside a frame element generated with the story, with 16 px of padding and the token set's [base styles](tokens.md#base-styles). The frame's content box is as wide as the fixture's `frame.width`, or fits its content when there's none.
+- **Frame:** the story renders inside a frame element generated with the story, `div[data-fazon-frame]`, with 16 px of padding and the token set's [base styles](tokens.md#base-styles). The frame's content box is as wide as the fixture's `frame.width`, or fits its content when there's none.
 - **Theme:** the verifier sets `data-theme="<theme>"` on the document's root element ([selecting a theme](tokens.md#the-build)).
-- **Motion:** `prefers-reduced-motion: reduce`. Animations and transitions are finished before the capture, and the text caret is hidden.
+- **Motion:** `prefers-reduced-motion: reduce`. Animations and transitions are finished before the capture, and the text caret is hidden. The verifier and the contract tests emulate the setting; Storybook viewed in a browser follows the viewer's own.
 - **Readiness:** before input, the story has rendered and its fonts have loaded. After input, the layout is stable.
 
 ## Capture

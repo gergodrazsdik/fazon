@@ -27,6 +27,7 @@ The spec fixes the API; the adapter maps it to Vue ([API mapping](../adapter-bou
 |---|---|
 | Props, events, slots and methods are camelCase; enum values and states are kebab-case. | Enforced: `spec check` (SPEC-001) |
 | A boolean prop is named for the state it turns on, without `is` or `has`: `disabled`, `loading`, `open`. | Guidance |
+| A prop with a default in the spec declares it with `withDefaults`, a boolean's `false` too: vue-component-meta reads no default otherwise. | Enforced: `test` (`contract-api`) |
 | Visual emphasis is a `variant` enum. Size is a `size` enum of `sm`, `md` and `lg`, with `md` the default. | Guidance |
 | An event is named for what happened, without `on`: `click`, `dismiss`, `select`. The value of a model is announced by `v-model`, not by a separate event. | Guidance |
 | A slot for the main content is `default`. A slot for an icon before the content is `icon`; after it, `iconEnd`. | Guidance |
