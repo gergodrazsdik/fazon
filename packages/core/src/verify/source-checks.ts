@@ -75,9 +75,14 @@ function describe(command: SourceCommand): string {
 export function typeFindings(output: string, root: string): CheckFinding[] {
   const findings: CheckFinding[] = [];
   for (const line of output.split("\n")) {
-    const match = /^(.+?)\((\d+),(\d+)\): (error|warning) (TS\d+): (.*)$/.exec(line.trim());
-    if (match === null) continue;
-    const [, file = "", row = "1", column = "1", , code = "", message = ""] = match;
+    // The location marker alone, without quantifiers around it that could overlap: the file is
+    // what comes before it, the message what follows.
+    const text = line.trim();
+    const match = /\((\d+),(\d+)\): (?:error|warning) (TS\d+): /.exec(text);
+    if (match === null || match.index === 0) continue;
+    const [marker, row = "1", column = "1", code = ""] = match;
+    const file = text.slice(0, match.index);
+    const message = text.slice(match.index + marker.length);
     const relative = path.isAbsolute(file) ? path.relative(root, file) : file;
     findings.push({
       check: "build",
