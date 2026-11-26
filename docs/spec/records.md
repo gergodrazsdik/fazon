@@ -29,7 +29,7 @@ Every run's files live under `.fazon/` in the repository where Fazon runs. Git i
       calls/1.jsonl         the agent's transcript for each call
       captures/1/           captures and diff images of each iteration, by theme
       judge/3.json          each iteration's judge plan and results
-      report/index.html     the report built from this run
+      report/index.html     the report built from this run, with the images it shows in report/images/
     20261125T171502Z-verify-a41c/
       run.json              the run record
       verify.json           what the record has no field for, such as each story's visual status, per-component check statuses and the --base changes
@@ -38,6 +38,7 @@ Every run's files live under `.fazon/` in the repository where Fazon runs. Git i
       reports/              the lint and test tools' JSON reports
       storybook/            the static Storybook build the rendered checks load
       package/              the packed library tarball
+      report/               the report built from this run, as for an agent run
 ```
 
 A run's ID is its start time in UTC, the component's kebab-case name (or `verify`), and four random hex digits: `20261125T164012Z-button-3f9a`. IDs sort by start time.

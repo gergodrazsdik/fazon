@@ -1,8 +1,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { runDirectory, writeRunRecord, writeVerifyDetails, type CheckResult, type RunRecord } from "@fazon/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { artifactsPlaceholder, escapeMarkdown } from "../summary.js";
-import { capture, captureJson, image, minimalConfig, removeRepository, repository } from "../test-support.js";
+import {
+  capture,
+  captureJson,
+  fakeEnvironment,
+  image,
+  minimalConfig,
+  removeRepository,
+  repository,
+} from "../test-support.js";
+import { openers, openInBrowser } from "./report-open.js";
+
+const exampleRun = fileURLToPath(new URL("../../../../docs/spec/examples/records/run.json", import.meta.url));
 
 const checks = ["build", "lint", "test", "package", "a11y", "tokens", "layout", "visual"] as const;
 const passing = checks.map((check): CheckResult => ({ check, status: "pass", durationSeconds: 1, findings: [] }));
@@ -128,10 +142,117 @@ describe("fazon report", () => {
     await removeRepository(root);
   });
 
-  it("refuses (2) the HTML report until M2", async () => {
-    const { json, code } = await captureJson(["report"], { cwd: root });
-    expect(code).toBe(2);
-    expect(JSON.stringify(json.messages)).toContain("The HTML report arrives in M2");
+  describe("the HTML report", () => {
+    const generateId = "20261125T164012Z-button-3f9a";
+
+    async function writeGenerateRun(): Promise<void> {
+      const record = JSON.parse(await readFile(exampleRun, "utf8")) as RunRecord;
+      await writeRunRecord(runDirectory(root, generateId), record);
+    }
+
+    /** A machine where any opener succeeds, recording the programs called. */
+    function opening(calls: string[]) {
+      return (program: string, args: readonly string[]) => {
+        calls.push(`${program} ${args.join(" ")}`);
+        return Promise.resolve({ exitCode: 0, stdout: "", stderr: "" });
+      };
+    }
+
+    it("refuses (2) when there's no run", async () => {
+      const { json } = await captureJson(["report", "--no-open"], { cwd: root });
+      expect(json).toMatchObject({ status: "refused", exitCode: 2 });
+    });
+
+    it("with --no-open, builds the latest run's report and only prints its path", async () => {
+      await writeRun(root, "20261127T100000Z-verify-0002", passing);
+      const calls: string[] = [];
+      const { stdout, stderr, code } = await capture(["report", "--no-open"], { cwd: root, handle: opening(calls) });
+      const file = path.join(root, ".fazon/runs/20261127T100000Z-verify-0002/report/index.html");
+      expect(code).toBe(0);
+      expect(stdout).toBe(`${file}\n`);
+      expect(stderr).toBe("");
+      expect(calls).toEqual([]);
+      expect(await readFile(file, "utf8")).toMatch(/^<!doctype html>/);
+    });
+
+    it("gives the report's path in --json", async () => {
+      await writeRun(root, "20261127T100000Z-verify-0002", failing);
+      const { json, code } = await captureJson(["report", "--no-open"], { cwd: root });
+      expect(code).toBe(0);
+      expect(json.result).toEqual({
+        run: "20261127T100000Z-verify-0002",
+        kind: "verify",
+        status: "failed",
+        path: ".fazon/runs/20261127T100000Z-verify-0002/report/index.html",
+        images: 0,
+        opened: false,
+      });
+    });
+
+    it("opens the report with the platform's opener", async () => {
+      await writeRun(root, "20261127T100000Z-verify-0002", passing);
+      const calls: string[] = [];
+      const { json } = await captureJson(["report"], { cwd: root, handle: opening(calls) });
+      expect(json.result).toMatchObject({ opened: true });
+      expect(calls).toHaveLength(1);
+      expect(calls[0]).toContain(path.join(root, ".fazon/runs/20261127T100000Z-verify-0002/report/index.html"));
+      expect(JSON.stringify(json.messages)).toContain("Opened in the browser with");
+    });
+
+    it("prints the path, and succeeds, when no opener is installed or each fails", async () => {
+      await writeRun(root, "20261127T100000Z-verify-0002", passing);
+      const missing = await capture(["report"], { cwd: root });
+      expect(missing.code).toBe(0);
+      expect(missing.stdout).toContain("report/index.html");
+      expect(missing.stderr).toContain("No program could open a browser here");
+      const failingOpener = await captureJson(["report"], {
+        cwd: root,
+        handle: () => Promise.resolve({ exitCode: 4, stdout: "", stderr: "no display" }),
+      });
+      expect(failingOpener.json).toMatchObject({ status: "ok", result: { opened: false } });
+    });
+
+    it("doesn't open a browser in CI", async () => {
+      await writeRun(root, "20261127T100000Z-verify-0002", passing);
+      const calls: string[] = [];
+      const { json } = await captureJson(["report"], { cwd: root, env: { CI: "true" }, handle: opening(calls) });
+      expect(calls).toEqual([]);
+      expect(json.result).toMatchObject({ opened: false });
+    });
+
+    it("finds a component's latest run of any kind; --summary keeps to verify runs", async () => {
+      await writeRun(root, "20261124T100000Z-verify-0001", passing);
+      await writeGenerateRun();
+      const html = await captureJson(["report", "button", "--no-open"], { cwd: root });
+      expect(html.json.result).toMatchObject({ run: generateId, kind: "generate", status: "passed" });
+      const page = await readFile(path.join(root, `.fazon/runs/${generateId}/report/index.html`), "utf8");
+      expect(page).toContain("fazon accept button");
+      const summary = await captureJson(["report", "button", "--summary"], { cwd: root });
+      expect(summary.json.result).toMatchObject({ run: "20261124T100000Z-verify-0001" });
+      const byId = await captureJson(["report", generateId, "--summary"], { cwd: root });
+      expect(byId.json).toMatchObject({ status: "refused" });
+      expect(JSON.stringify(byId.json.messages)).toContain("--summary covers verify runs");
+      const none = await captureJson(["report", "tabs", "--no-open"], { cwd: root });
+      expect(JSON.stringify(none.json.messages)).toContain("No run in .fazon/runs/ covers 'tabs'");
+    });
+
+    it("links the screenshots to the Storybook FAZON_STORYBOOK_URL names, and refuses one that isn't http(s)", async () => {
+      await writeRun(root, "20261127T100000Z-verify-0002", passing);
+      await mkdir(path.join(root, ".fazon/runs/20261127T100000Z-verify-0002/captures/light/button"), {
+        recursive: true,
+      });
+      await writeFile(path.join(root, ".fazon/runs/20261127T100000Z-verify-0002/captures/light/button/a.png"), "png");
+      const env = { FAZON_STORYBOOK_URL: "http://127.0.0.1:6100" };
+      const { json } = await captureJson(["report", "--no-open"], { cwd: root, env });
+      expect(json.result).toMatchObject({ images: 1 });
+      const page = await readFile(
+        path.join(root, ".fazon/runs/20261127T100000Z-verify-0002/report/index.html"),
+        "utf8",
+      );
+      expect(page).toContain('href="http://127.0.0.1:6100/?path=/story/button--a&amp;globals=theme:light"');
+      const bad = await captureJson(["report", "--no-open"], { cwd: root, env: { FAZON_STORYBOOK_URL: "file:///x" } });
+      expect(bad.json).toMatchObject({ status: "refused", exitCode: 2 });
+    });
   });
 
   it("refuses (2) when there's no run, an unknown run ID, or no run of the component", async () => {
@@ -229,5 +350,37 @@ describe("fazon report", () => {
 describe("escapeMarkdown", () => {
   it("escapes the characters that would start markup", () => {
     expect(escapeMarkdown("a*b_c`d[e](f)<g>|h~i#j\\k")).toBe("a\\*b\\_c\\`d\\[e\\](f)\\<g\\>\\|h\\~i\\#j\\\\k");
+  });
+});
+
+describe("opening the report", () => {
+  const file = "/repo/.fazon/runs/x/report/index.html";
+
+  it("uses the platform's opener: open, rundll32, xdg-open, and wslview or wsl-open first in WSL", () => {
+    const plain = fakeEnvironment({ cwd: "/repo" });
+    const wsl = fakeEnvironment({ cwd: "/repo", env: { WSL_DISTRO_NAME: "Fedora" } });
+    const programs = (environment: typeof plain, platform: string) =>
+      openers(file, environment, platform).map((o) => o.program);
+    expect(programs(plain, "darwin")).toEqual(["open"]);
+    expect(programs(plain, "win32")).toEqual(["rundll32"]);
+    expect(programs(plain, "linux")).toEqual(["xdg-open"]);
+    expect(programs(wsl, "linux")).toEqual(["wslview", "wsl-open", "xdg-open"]);
+    expect(openers(file, plain, "linux")[0]?.args).toEqual([file]);
+  });
+
+  it("tries the next opener when one is missing or fails, and gives up quietly", async () => {
+    const tried: string[] = [];
+    const environment = fakeEnvironment({
+      cwd: "/repo",
+      env: { WSL_INTEROP: "/run/WSL/1_interop" },
+      handle: (program) => {
+        tried.push(program);
+        if (program === "wslview") return Promise.resolve(undefined);
+        return Promise.resolve({ exitCode: program === "xdg-open" ? 0 : 1, stdout: "", stderr: "" });
+      },
+    });
+    expect(await openInBrowser(file, environment, "linux")).toBe("xdg-open");
+    expect(tried).toEqual(["wslview", "wsl-open", "xdg-open"]);
+    expect(await openInBrowser(file, fakeEnvironment({ cwd: "/repo" }), "darwin")).toBeUndefined();
   });
 });

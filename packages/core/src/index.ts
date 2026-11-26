@@ -162,6 +162,10 @@ export {
   type JudgeInput,
   type LoopDependencies,
 } from "./loop/types.js";
+
+// The HTML report of a run (T-0050 step 7).
+export * from "./report/index.js";
+
 // The propose run and the connection between the agent call and the loop (T-0050 step 4): the
 // loop's agent call, the run lock, the proposed API and its prompt, and SPEC-019's marker.
 export {
