@@ -120,9 +120,7 @@ describe("applyProposal", () => {
           "props:",
           "  tone:",
           "    type: enum",
-          "    values:",
-          "      - neutral",
-          "      - positive",
+          "    values: [neutral, positive]",
           "    default: neutral",
           "    description: The status it shows, which sets its colours; a description long enough to pass eighty columns.",
           "slots:",
@@ -136,6 +134,38 @@ describe("applyProposal", () => {
     const written = parseSpecFile("specs/badge.md", text);
     expect(written.spec).toMatchObject(badgeApi);
     expect(checkSpec(written, [written])).toEqual([]);
+  });
+
+  it("writes short lists of scalars in flow style, and long ones and lists of objects in block style", () => {
+    const long = ["a-first-value-that-is-long", "a-second-value-that-is-long", "a-third-one"];
+    const proposal: ProposedApi = {
+      props: {
+        size: { type: "enum", values: ["sm", "md", "lg"], default: "md" },
+        tone: { type: "enum", values: long, default: "a-third-one" },
+      },
+      extensions: {
+        vue: {
+          options: {
+            levels: [1, 2, 3],
+            flags: [true, false],
+            none: [],
+            punctuation: ["a, b", "c: d"],
+            items: [{ name: "first" }, { name: "second" }],
+          },
+        },
+      },
+    };
+    const { text } = applyProposal(fresh, spec(fresh), proposal, "vue");
+    const front = text.split("---\n")[1] ?? "";
+    expect(front).toContain("    values: [sm, md, lg]\n");
+    expect(front).toContain('      punctuation: ["a, b", "c: d"]\n');
+    // `    values: [a-first-value-that-is-long, …]` is 82 columns, over 80: block style.
+    expect(front).toContain(`    values:\n${long.map((value) => `      - ${value}\n`).join("")}`);
+    expect(front).toContain("      levels: [1, 2, 3]\n      flags: [true, false]\n      none: []\n");
+    expect(front).toContain("      items:\n        - name: first\n        - name: second\n");
+    const written = parseSpecFile("specs/badge.md", text);
+    expect(written.findings).toEqual([]);
+    expect(written.spec).toMatchObject(proposal);
   });
 
   it("replaces and removes API fields in place, leaving the rest of the file byte for byte", () => {
