@@ -278,7 +278,7 @@ describe("fazon report", () => {
       "| button | all pass | 0 | 1 unchanged, 1 changed, 0 new | 1 changed, 1 removed, 1 renamed |",
     );
     expect(stdout).toContain("- renamed `light/button/c.png` (from `light/button/old.png`)");
-    expect(stdout).toContain("Not available yet: the judge arrives in M3");
+    expect(stdout).toContain("Not run: this run has no judge verdicts.");
     expect(stdout.trimEnd().endsWith(artifactsPlaceholder)).toBe(true);
   });
 
@@ -295,7 +295,7 @@ describe("fazon report", () => {
       unowned: unknown[];
       judge: unknown;
     };
-    expect(result).toMatchObject({ run: id, status: "failed", judge: { available: false, policy: "advisory" } });
+    expect(result).toMatchObject({ run: id, status: "failed", judge: { ran: false, policy: "advisory" } });
     expect(result.components.map((c) => [c.component, c.blocking.length])).toEqual([
       ["badge", 0],
       ["button", 1],

@@ -22,6 +22,8 @@ export interface FakeMachine {
   /** The Claude Code executable, as the agent commands run it. */
   readonly claudeCode?: string;
   readonly interrupt?: AbortSignal;
+  /** The judge's API client; tests that make judge calls pass a fake. */
+  readonly judgeClient?: Environment["judgeClient"];
   /** Installed programs, with what `<program> --version` prints. */
   readonly programs?: Readonly<Record<string, string>>;
   /** Runs a program other than with `--version`; `undefined` leaves it to the default (exit 1). */
@@ -40,6 +42,7 @@ export function fakeEnvironment({
   handle,
   claudeCode,
   interrupt,
+  judgeClient,
 }: FakeMachine): Environment {
   return {
     cwd,
@@ -48,6 +51,7 @@ export function fakeEnvironment({
     user: { uid: 1000, gid: 1000 },
     ...(claudeCode === undefined ? {} : { claudeCode }),
     ...(interrupt === undefined ? {} : { interrupt }),
+    ...(judgeClient === undefined ? {} : { judgeClient }),
     exec: (program, args, options) => {
       const handled = handle?.(program, args, options);
       if (handled !== undefined) return handled;
@@ -139,4 +143,39 @@ export function gitInit(root: string): Promise<void> {
       else reject(new Error(`git init failed: ${error.message}`));
     });
   });
+}
+
+/**
+ * A judge API client that answers every image `pass`, except the labels in `failing`, and counts
+ * its requests; it never reaches the network.
+ */
+export function fakeJudge(failing: ReadonlySet<string> = new Set()): {
+  readonly client: NonNullable<Environment["judgeClient"]>;
+  readonly requests: string[][];
+} {
+  const requests: string[][] = [];
+  const client: NonNullable<Environment["judgeClient"]> = () => ({
+    create: (params) => {
+      const content = params.messages[0]?.content;
+      const blocks = Array.isArray(content) ? content : [];
+      const labels = blocks.flatMap((block) =>
+        block.type === "text" ? [...block.text.matchAll(/^Image \d+, label `([^`]+)`/g)].map((m) => m[1] ?? "") : [],
+      );
+      requests.push(labels);
+      const intro = blocks[1];
+      const question = intro?.type === "text" ? (/Question `([^`]+)`/.exec(intro.text)?.[1] ?? "") : "";
+      const results = labels.map((story) =>
+        failing.has(story)
+          ? { story, verdict: "fail", findings: [{ severity: "high", message: `${story} looks wrong` }] }
+          : { story, verdict: "pass", findings: [] },
+      );
+      const message = {
+        content: [{ type: "text", text: JSON.stringify({ question, results }) }],
+        stop_reason: "end_turn",
+        usage: { input_tokens: 1000, output_tokens: 100, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 },
+      };
+      return Promise.resolve(message as never);
+    },
+  });
+  return { client, requests };
 }

@@ -5,11 +5,12 @@ import {
   claudeCodeStatus,
   ClaudeCodeVersionError,
   configFileName,
+  judgeCredential,
   minimumClaudeCodeVersion,
   type Finding,
 } from "@fazon/core";
 import { findRuntime, hasImage } from "../container.js";
-import { isSet, type Environment } from "../environment.js";
+import type { Environment } from "../environment.js";
 import type { Message, Outcome, Status } from "../outcome.js";
 import { configMessages, describeFinding, loadRepositoryConfig, type Context } from "./context.js";
 
@@ -262,15 +263,25 @@ async function checkVerifierImage(environment: Environment, image: string | unde
 }
 
 function checkApiKey(environment: Environment): DoctorCheck {
-  // Never the value, nor any part of it (CLI-003).
-  if (isSet(environment, "ANTHROPIC_API_KEY")) {
+  // Never a value, nor any part of one (CLI-003).
+  const credential = judgeCredential(environment.env);
+  if (credential?.kind === "api-key") {
     return { check: "api-key", state: "ok", required: false, detail: "ANTHROPIC_API_KEY is set" };
+  }
+  if (credential?.kind === "federation") {
+    return {
+      check: "api-key",
+      state: "ok",
+      required: false,
+      detail: "the workload identity federation variables are set; the judge uses them",
+    };
   }
   return {
     check: "api-key",
     state: "missing",
     required: false,
-    detail: "ANTHROPIC_API_KEY is not set; the judge, measure and calibrate need it",
+    detail:
+      "ANTHROPIC_API_KEY is not set, nor are the workload identity federation variables; the judge needs one of them, and measure and calibrate the key",
     hint: "Local generation can use your Claude Code login instead.",
   };
 }

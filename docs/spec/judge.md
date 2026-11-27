@@ -22,6 +22,7 @@ How the vision judge decides what the checks can't measure: when it runs, what i
 | Where | When | Which stories |
 |---|---|---|
 | Local loop | in an iteration whose checks pass, unless the policy is `off` | every story of the component, in the themes the manifest gives |
+| `fazon verify` | after the checks pass, unless the policy is `off` or with `--no-judge` | every story of the components it checked; with `--base`, the stories whose baselines are added or changed |
 | CI | after the checks, unless the policy is `off` or the pull request comes from a fork | the stories whose baselines the pull request adds or changes |
 | Calibration | as the measurement protocol says | the calibration set |
 

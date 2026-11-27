@@ -20,6 +20,7 @@ import {
   capture,
   captureJson,
   copyExample,
+  fakeJudge,
   image,
   libraryConfig,
   removeRepository,
@@ -56,6 +57,8 @@ interface Container {
   readonly checks?: CheckResult[];
   readonly exitCode?: number;
   readonly stderr?: string;
+  /** Write a capture for every story and theme the manifest gives, for the judge to read. */
+  readonly captures?: boolean;
 }
 
 /** A machine with Docker and the image, whose `docker run` plays the checks in the image. */
@@ -121,6 +124,18 @@ function machine(
             unusedExemptions: [],
           });
         }
+        if (container.captures === true) {
+          const manifest = JSON.parse(
+            await readFile(path.join(root, "src/components/button/generated/stories.json"), "utf8"),
+          ) as { stories: { name: string; judge: string[] }[] };
+          for (const story of manifest.stories) {
+            for (const theme of story.judge) {
+              const file = path.join(dir, "captures", baselinePath(theme, "button", story.name));
+              await mkdir(path.dirname(file), { recursive: true });
+              await writeFile(file, png(200));
+            }
+          }
+        }
         return { exitCode: container.exitCode ?? 0, stdout: "", stderr: container.stderr ?? "" };
       })();
     },
@@ -166,12 +181,57 @@ describe("fazon verify", () => {
     expect(command[2]).toBe("/fazon/src/node_modules/fazon/dist/bin.js");
     expect(command.slice(3)).toEqual(["verify", "--in-image", result.run]);
     expect(args.join(" ")).not.toMatch(/ANTHROPIC/);
-    expect(JSON.stringify(json.messages)).toContain("The judge isn't available yet");
+    expect(JSON.stringify(json.messages)).toContain("The judge didn't run: the judge needs ANTHROPIC_API_KEY");
     // No agent call and no judge: the record names neither version.
     const record = await readRunRecord(runDirectory(root, result.run));
     expect(record).toMatchObject({ kind: "verify", status: "passed", versions: { image } });
     expect(record?.versions).not.toHaveProperty("claudeCode");
     expect(record?.versions).not.toHaveProperty("judge");
+  });
+
+  it("runs the judge on the host once the checks pass, and records its summary and results", async () => {
+    const judge = fakeJudge(new Set(["button--label--variant-ghost--size-md--default"]));
+    const fake = machine(
+      root,
+      { checks: passing, captures: true },
+      { env: { ANTHROPIC_API_KEY: "test-key" }, judgeClient: judge.client },
+    );
+    const { json, code } = await captureJson(["verify"], fake);
+    // Before calibration, a fail is advisory: the run still passes (JUDGE-005).
+    expect(code).toBe(0);
+    const result = json.result as {
+      run: string;
+      judge: { ran: boolean; calls: number; stories: Record<string, number> };
+    };
+    expect(result.judge).toMatchObject({ ran: true, calls: 17, stories: { fail: 2, unsure: 0, notJudged: 0 } });
+    expect(judge.requests).toHaveLength(17);
+    const record = await readRunRecord(runDirectory(root, result.run));
+    expect(record).toMatchObject({
+      status: "passed",
+      versions: { judge: 1 },
+      config: { judgeCalibrated: false },
+      verification: { judge: { calls: 17, blocking: false, results: "judge.json" } },
+    });
+    expect(record?.totals.judgeCostUsd).toBeCloseTo(17 * 0.003, 10);
+    await expect(readFile(path.join(runDirectory(root, result.run), "judge.json"), "utf8")).resolves.toContain(
+      '"judgeVersion": 1',
+    );
+    expect(JSON.stringify(json.messages)).toContain("It isn't calibrated yet, so its verdicts are advisory.");
+    // The key never reaches the image (CLI-003).
+    expect((fake.runs[0] ?? []).join(" ")).not.toMatch(/ANTHROPIC|test-key/);
+  });
+
+  it("doesn't run the judge when the checks fail", async () => {
+    const judge = fakeJudge();
+    const failing = passing.map((c): CheckResult => (c.check === "lint" ? { ...c, status: "fail" } : c));
+    const fake = machine(
+      root,
+      { checks: failing, captures: true },
+      { env: { ANTHROPIC_API_KEY: "k" }, judgeClient: judge.client },
+    );
+    const { json } = await captureJson(["verify"], fake);
+    expect(judge.requests).toHaveLength(0);
+    expect(json.result).toMatchObject({ judge: { ran: false, reason: "the checks didn't pass" } });
   });
 
   it("says nothing about the judge with --no-judge, and passes the component names on", async () => {
@@ -350,5 +410,82 @@ describe("fazon baseline update", () => {
     const { json } = await captureJson(["baseline", "update", "button"], { cwd: root });
     expect(json).toMatchObject({ status: "refused", exitCode: 2 });
     expect(JSON.stringify(json.messages)).toContain("Button has no finished run; run `fazon verify button` first.");
+  });
+});
+
+describe("fazon judge", () => {
+  let root: string;
+  beforeEach(async () => {
+    root = await buttonRepository(`${libraryConfig}judge:\n  ciBudgetUsd: 0.01\n`);
+  });
+  afterEach(async () => {
+    await removeRepository(root);
+  });
+
+  /** A verify run without the judge, with a capture of every story. */
+  async function verifyRun(): Promise<string> {
+    const { json } = await captureJson(["verify", "--no-judge"], machine(root, { checks: passing, captures: true }));
+    return (json.result as { run: string }).run;
+  }
+
+  it("refuses without a run, with an unknown one, and with one that isn't a verify run (2)", async () => {
+    expect((await captureJson(["judge"], { cwd: root })).json).toMatchObject({ status: "refused", exitCode: 2 });
+    expect((await captureJson(["judge", "20261127T000000Z-verify-0000"], { cwd: root })).json).toMatchObject({
+      status: "refused",
+      exitCode: 2,
+    });
+    const run = await verifyRun();
+    const dir = runDirectory(root, run);
+    const record = await readRunRecord(dir);
+    if (record === undefined) throw new Error("no record");
+    await writeRunRecord(dir, { ...record, kind: "generate", versions: { ...record.versions, claudeCode: "2.1.332" } });
+    const { json } = await captureJson(["judge", run], { cwd: root });
+    expect(json).toMatchObject({ status: "refused", exitCode: 2 });
+    expect(JSON.stringify(json.messages)).toContain("is a generate run");
+  });
+
+  it("exits 3 without a credential", async () => {
+    const run = await verifyRun();
+    const { json } = await captureJson(["judge", run], { cwd: root });
+    expect(json).toMatchObject({ status: "error", exitCode: 3 });
+    expect(JSON.stringify(json.messages)).toContain("the judge needs ANTHROPIC_API_KEY");
+  });
+
+  it("judges the run and adds its summary to the record", async () => {
+    const run = await verifyRun();
+    const judge = fakeJudge();
+    const { json, code } = await captureJson(["judge", run], {
+      cwd: root,
+      env: { ANTHROPIC_API_KEY: "k" },
+      judgeClient: judge.client,
+    });
+    expect(code).toBe(0);
+    expect(json.result).toMatchObject({ run, judge: { ran: true, calls: 17 } });
+    const record = await readRunRecord(runDirectory(root, run));
+    expect(record?.verification?.judge).toMatchObject({ calls: 17, blocking: false });
+    expect(record?.versions.judge).toBe(1);
+  });
+
+  it("in CI, starts no call once the CI cap is spent, and reports the rest as not judged (JUDGE-004)", async () => {
+    const run = await verifyRun();
+    const judge = fakeJudge();
+    const { json } = await captureJson(["judge", run], {
+      cwd: root,
+      env: { ANTHROPIC_API_KEY: "k", CI: "true" },
+      judgeClient: judge.client,
+    });
+    // Each fake call costs $0.003 and the cap is $0.01: a request starts only while less than the
+    // cap is spent, so after at most three finished calls, with up to four in flight.
+    expect(judge.requests.length).toBeGreaterThanOrEqual(4);
+    expect(judge.requests.length).toBeLessThanOrEqual(7);
+    const results = JSON.parse(await readFile(path.join(runDirectory(root, run), "judge.json"), "utf8")) as {
+      components: { outcome: { calls: { skipped?: string }[] } }[];
+    };
+    const skipped = results.components[0]?.outcome.calls.filter((call) => call.skipped !== undefined) ?? [];
+    expect(skipped).toHaveLength(17 - judge.requests.length);
+    expect(skipped[0]?.skipped).toBe("the judge's budget was spent");
+    // A story-theme pair no call covered is reported as not judged; the rest got a verdict.
+    const { stories } = (json.result as { judge: { stories: { pass: number; notJudged: number } } }).judge;
+    expect(stories.pass + stories.notJudged).toBe(37);
   });
 });

@@ -12,6 +12,7 @@ import { report } from "./commands/report.js";
 import { specCheck } from "./commands/spec-check.js";
 import { specNew } from "./commands/spec-new.js";
 import { sync } from "./commands/sync.js";
+import { judge } from "./commands/judge.js";
 import { verify } from "./commands/verify.js";
 import type { Outcome } from "./outcome.js";
 
@@ -136,7 +137,8 @@ export const commands: readonly Command[] = [
     group: "The loop",
     usage: "fazon judge <run-id>",
     summary: "Run the judge for an earlier verify run.",
-    arrives: "M3",
+    maxPositionals: 1,
+    run: judge,
   },
   {
     name: "baseline update",

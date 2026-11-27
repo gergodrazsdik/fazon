@@ -76,8 +76,10 @@ export interface StoryFinding extends JudgeFinding {
   readonly verdict: "fail" | "unsure";
 }
 
+/** A story's verdict in one theme: the run record counts story-theme pairs. */
 export interface StoryVerdict {
   readonly story: string;
+  readonly theme: string;
   readonly verdict: Verdict | "not-judged";
   /** For `not-judged`, why; for an `unsure` the model didn't give, what went wrong. */
   readonly reasons: readonly string[];
@@ -213,9 +215,9 @@ export function majority(call: JudgeCall, attempts: readonly JudgeAttempt[]): Im
   });
 }
 
-/** Each story's verdict: `fail` if any call failed it, else `unsure` if any was unsure, else `pass`; "not judged" when no call that covers it ran. */
+/** Each story's verdict in each theme it's judged in: `fail` if any call failed it, else `unsure` if any was unsure, else `pass`; "not judged" when no call that covers it ran. */
 export function storyVerdicts(plan: JudgePlan, calls: readonly JudgeCallRecord[]): StoryVerdict[] {
-  const order: string[] = [];
+  const order: { story: string; theme: string; key: string }[] = [];
   const byStory = new Map<
     string,
     { verdicts: Verdict[]; reasons: string[]; findings: StoryFinding[]; skipped: string[] }
@@ -224,11 +226,12 @@ export function storyVerdicts(plan: JudgePlan, calls: readonly JudgeCallRecord[]
     const record = calls[index];
     for (const [position, image] of call.images.entries()) {
       if (image.story === undefined || image.kind === "component") continue;
-      let entry = byStory.get(image.story);
+      const key = `${image.story} ${call.theme}`;
+      let entry = byStory.get(key);
       if (entry === undefined) {
         entry = { verdicts: [], reasons: [], findings: [], skipped: [] };
-        byStory.set(image.story, entry);
-        order.push(image.story);
+        byStory.set(key, entry);
+        order.push({ story: image.story, theme: call.theme, key });
       }
       const verdict = record?.images?.[position];
       if (verdict === undefined) {
@@ -244,14 +247,14 @@ export function storyVerdicts(plan: JudgePlan, calls: readonly JudgeCallRecord[]
       }
     }
   });
-  return order.map((story) => {
-    const entry = byStory.get(story);
+  return order.map(({ story, theme, key }) => {
+    const entry = byStory.get(key);
     const verdicts = entry?.verdicts ?? [];
     if (verdicts.length === 0) {
-      return { story, verdict: "not-judged", reasons: [...new Set(entry?.skipped ?? [])], findings: [] };
+      return { story, theme, verdict: "not-judged", reasons: [...new Set(entry?.skipped ?? [])], findings: [] };
     }
     const verdict: Verdict = verdicts.includes("fail") ? "fail" : verdicts.includes("unsure") ? "unsure" : "pass";
-    return { story, verdict, reasons: [...new Set(entry?.reasons ?? [])], findings: entry?.findings ?? [] };
+    return { story, theme, verdict, reasons: [...new Set(entry?.reasons ?? [])], findings: entry?.findings ?? [] };
   });
 }
 
@@ -308,7 +311,8 @@ export async function runJudge(input: RunJudgeInput): Promise<JudgeOutcome> {
       images,
     });
     for (let repeat = 0; repeat < repeats; repeat++) {
-      if (repeat > 0 && stopReason() !== undefined) break;
+      // Checked again just before each request: images load in between, and other calls finish (JUDGE-004).
+      if (stopReason() !== undefined) break;
       const started = now();
       try {
         const message = await input.client.create(params, input.signal === undefined ? {} : { signal: input.signal });

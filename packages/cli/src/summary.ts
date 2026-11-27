@@ -44,7 +44,17 @@ export interface RunSummary {
   readonly incomplete: readonly { readonly check: string; readonly status: CheckStatus; readonly message: string }[];
   /** The `--base` ref, when the run compared the baselines with one. */
   readonly base?: string;
-  readonly judge: { readonly available: false; readonly policy: string; readonly costUsd: number };
+  readonly judge: {
+    readonly ran: boolean;
+    readonly policy: string;
+    readonly costUsd: number;
+    readonly stories?: {
+      readonly pass: number;
+      readonly fail: number;
+      readonly unsure: number;
+      readonly notJudged: number;
+    };
+  };
   readonly markdown: string;
 }
 
@@ -141,7 +151,13 @@ export function summarizeRun(
     .map((check) => ({ check: check.check, status: check.status, message: firstLine(check.message ?? "") }));
   const status = summaryStatus(record);
   const policy = record.config.judgePolicy;
-  const judge = { available: false as const, policy, costUsd: record.totals.judgeCostUsd };
+  const verdicts = record.verification?.judge;
+  const judge = {
+    ran: verdicts !== undefined,
+    policy,
+    costUsd: record.totals.judgeCostUsd,
+    ...(verdicts === undefined ? {} : { stories: verdicts.stories }),
+  };
   const base = details?.base?.ref;
 
   const lines: string[] = [`### Fazon verify ${headings[status]}`, ""];
@@ -212,9 +228,11 @@ export function summarizeRun(
   lines.push(
     "#### Judge",
     "",
-    policy === "off"
-      ? "Off: `fazon.yaml` sets `judge.policy` to `off`, so no story was judged. Cost: $0.00."
-      : "Not available yet: the judge arrives in M3, so no story was judged. Cost: $0.00.",
+    verdicts !== undefined
+      ? `${String(verdicts.calls)} ${verdicts.calls === 1 ? "call" : "calls"}: ${String(verdicts.stories.pass)} pass, ${String(verdicts.stories.fail)} fail, ${String(verdicts.stories.unsure)} unsure, ${String(verdicts.stories.notJudged)} not judged${record.config.judgeCalibrated === true ? "" : ", advisory until the judge is calibrated"}. Cost: $${verdicts.costUsd.toFixed(2)}.`
+      : policy === "off"
+        ? "Off: `fazon.yaml` sets `judge.policy` to `off`, so no story was judged. Cost: $0.00."
+        : "Not run: this run has no judge verdicts. Cost: $0.00.",
     "",
     artifactsPlaceholder,
   );

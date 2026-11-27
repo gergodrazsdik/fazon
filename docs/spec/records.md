@@ -35,6 +35,7 @@ Every run's files live under `.fazon/` in the repository where Fazon runs. Git i
     20261125T171502Z-verify-a41c/
       run.json              the run record
       verify.json           what the record has no field for, such as each story's visual status, per-component check statuses and the --base changes
+      judge.json            the judge's plan and results, when it ran
       captures/             captures and diff images, by theme and component, such as dark/button/<story>.png
       logs/                 each tool's output, by step, such as build-types.log
       reports/              the lint and test tools' JSON reports
