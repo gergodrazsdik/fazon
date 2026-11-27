@@ -14,7 +14,9 @@ import {
   agentTools,
   deniedTools,
   findSecretFiles,
+  findWriteDenied,
   readOnlyTools,
+  writableDirectories,
   type AgentAccess,
 } from "./settings.js";
 import { changedFiles, takeSnapshot, violations, type AgentScope, type Snapshot } from "./snapshot.js";
@@ -199,6 +201,9 @@ export async function runAgentCall(options: AgentCallOptions): Promise<AgentCall
     selfChecks: options.selfChecks,
     secretFiles: await findSecretFiles(options.repo),
     ...(options.access === undefined ? {} : { access: options.access }),
+    ...(options.access === "read"
+      ? {}
+      : { writeDenied: await findWriteDenied(options.repo, writableDirectories(options.scope, options.selfChecks)) }),
   });
   await writeFile(settingsFile, `${JSON.stringify(settings, null, 2)}\n`);
   const before = options.before ?? (await takeSnapshot(options.repo));
