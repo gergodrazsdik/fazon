@@ -45,6 +45,12 @@ export async function findRuntime(environment: Environment): Promise<FoundRuntim
   };
 }
 
+/** Whether the image is on this machine (`<runtime> image inspect`); never pulls it. */
+export async function hasImage(environment: Environment, runtime: Runtime, image: string): Promise<boolean> {
+  const inspect = await environment.exec(runtime, ["image", "inspect", image], { timeoutMs: 60_000 });
+  return inspect?.exitCode === 0;
+}
+
 /** Makes sure the image is there, pulling it for linux/amd64 when it isn't. */
 export async function ensureImage(
   environment: Environment,
@@ -52,8 +58,7 @@ export async function ensureImage(
   image: string,
   log: (text: string) => void,
 ): Promise<string | undefined> {
-  const inspect = await environment.exec(runtime, ["image", "inspect", image], { timeoutMs: 60_000 });
-  if (inspect?.exitCode === 0) return undefined;
+  if (await hasImage(environment, runtime, image)) return undefined;
   log(`Pulling the verifier image ${image}\n`);
   const pull = await environment.exec(runtime, ["pull", "--platform", "linux/amd64", image], {
     timeoutMs: 30 * 60_000,
