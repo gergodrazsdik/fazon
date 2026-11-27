@@ -19,7 +19,7 @@ image: ghcr.io/gergodrazsdik/fazon-verifier@sha256:4f1c2a9e7b0d3c58a6e21f9047bd8
 
 That is a [complete, minimal file](examples/config/minimal/fazon.yaml). The [full example](examples/config/full/fazon.yaml) lists every key with its default. From M5, the published schema's URL names the framework version rather than `main`.
 
-The file never holds credentials. The API key comes from the environment (`ANTHROPIC_API_KEY`), never from a file Fazon reads ([brief](../design/brief.md#authentication)).
+The file never holds credentials. They come from the environment: an API key (`ANTHROPIC_API_KEY`), or in CI the workload identity federation variables ([CLI reference](cli.md#environment), [brief](../design/brief.md#authentication)).
 
 ## Keys
 

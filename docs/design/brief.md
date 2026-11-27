@@ -286,8 +286,8 @@ Rules:
 
 - **Triggers:** verification runs on `pull_request` and never on `pull_request_target`. A separate job on pushes to `main` deploys the Storybook site to GitHub Pages.
 - **Judge policy:** `advisory`, `blocking` or `off`, set per repo in the config file. The default is `advisory`, because a nondeterministic required check makes merges flaky. The judge has its own cost cap in CI and sends images in batches. Both are defined in the judge document in M0 and tuned in M3.
-- **Forks:** the judge needs an API key secret, so it is skipped on pull requests from forks.
-- **Permissions:** workflows are read-only and use no secrets until a milestone needs more: the judge's API key in M3, Pages in M4, image and release publishing in M5. The reusable workflow's inputs, secrets and permissions are an M0 document.
+- **Forks:** the judge needs a credential, which pull requests from forks can't get, so it is skipped on them.
+- **Permissions:** workflows are read-only and use no secrets until a milestone needs more: the judge's credential in M3, Pages in M4, image and release publishing in M5. The reusable workflow's inputs, secrets and permissions are an M0 document.
 - **Supply chain:** actions are pinned by commit SHA. The image is signed and carries provenance. The npm packages are built in CI and attached to a GitHub release.
 
 ## Framework adapters
@@ -366,7 +366,7 @@ Per the [vision docs](https://platform.claude.com/docs/en/build-with-claude/visi
 ### Authentication
 
 - **Local generation:** the developer's own API key by default, or their own Claude Code login.
-- **Judge and CI:** an API key.
+- **Judge:** an API key locally. In CI, workload identity federation: the judge job exchanges GitHub's OIDC token for a short-lived API token, so the repository stores no key. An API key secret remains the alternative for repositories that can't use federation.
 - **Measured runs:** an API key, so the reported cost is exact. Under a subscription login, Claude Code's cost figure is a local estimate.
 - **Credentials:** the framework never ships, stores or proxies credentials. Every adopter brings their own.
 
@@ -476,7 +476,7 @@ Decisions are recorded as ADRs once the repo exists. This section is the startin
 | Contributions | outside contributors sign a CLA |
 | Styling | plain CSS with custom properties in version 1 |
 | Token values | the agent proposes a small neutral set and the maintainer approves it once |
-| Judge transport | a direct API call with an API key for now |
+| Judge transport | a direct API call: an API key locally, workload identity federation in CI |
 | Tooling | a Node CLI in TypeScript for adopters, `just` for repo tasks |
 | Merging | pull requests only, squash or rebase, no required signatures |
 

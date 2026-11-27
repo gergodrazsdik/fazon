@@ -50,7 +50,7 @@ fazon verify                        after a token change: what moved
 | 0 | `ok` | Done. |
 | 1 | `failed`, `needs-a-person` | Checks or validation failed, or a run stopped and needs a person. |
 | 2 | `refused`; usage and config errors | A wrong argument, an invalid config, or a precondition that isn't met (for example, the API isn't approved). |
-| 3 | `error` | The environment or the tool failed: no container runtime, no API key, the image can't be pulled, the network or the API failed. |
+| 3 | `error` | The environment or the tool failed: no container runtime, no credential for the API, the image can't be pulled, the network or the API failed. |
 | 130 | `interrupted` | The developer interrupted it. |
 
 ### Environment
@@ -58,6 +58,7 @@ fazon verify                        after a token change: what moved
 | Variable | Used by | Meaning |
 |---|---|---|
 | `ANTHROPIC_API_KEY` | `propose`, `generate`, `feedback`, `verify` and `judge` (for the judge), `measure`, `calibrate` | The API key; Claude Code may use the developer's own login instead for local generation ([brief](../design/brief.md#authentication)). Never printed or written anywhere. |
+| `ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`, `ANTHROPIC_SERVICE_ACCOUNT_ID`, `ANTHROPIC_IDENTITY_TOKEN_FILE`, `ANTHROPIC_WORKSPACE_ID` | `verify` and `judge` (for the judge) | Workload identity federation, which the [workflow](workflow.md#credentials) sets up in CI: the Anthropic SDK exchanges the identity token in the file for a short-lived API token. The workspace is needed only when the rule covers more than one. The judge uses an API key when one is set, these variables otherwise, and never another source the SDK knows, such as a profile ([ADR 0027](../adr/0027-m3-federation-calibration-cost.md)). |
 | `FAZON_CONTAINER_RUNTIME` | every command that runs the verifier | `docker` or `podman`; detected when unset, Docker first. |
 | `CI` | every command | When set, a `fazon.local.yaml` makes commands refuse, and `report` opens no browser. |
 | `FAZON_STORYBOOK_URL` | `report` | The local Storybook the report's screenshots link to, an http or https URL; `http://localhost:6006` when unset. |
@@ -88,7 +89,7 @@ It refuses (2) when `fazon.yaml` exists, and never overwrites a file. `--dry-run
 fazon doctor
 ```
 
-Checks the environment: Node.js, a container runtime, Claude Code and whether it's at least the minimum version this framework version declares ([ADR 0021](../adr/0021-settled-questions.md)), whether `ANTHROPIC_API_KEY` is set (without showing it), whether the verifier image the config pins is on this machine (`<runtime> image inspect`, with the runtime the [environment](#environment) selects), and whether the config is valid. It exits 3 when something needed is missing (Node.js, a container runtime), with install hints; 1 when the config is invalid; and 2 when a `fazon.local.yaml` exists in CI. A missing config is only a warning, as `doctor` also runs before `init`, and so are a missing or too old Claude Code and a missing API key, which CI's `verify` job doesn't need; `propose`, `generate` and `feedback` refuse to start (3) with a Claude Code older than the minimum. A verifier image that isn't on the machine yet is a warning too: `doctor` never pulls it, and the first `verify`, `generate` or `feedback` does. Without a valid config or a container runtime, the image isn't checked. Result: each check and its state.
+Checks the environment: Node.js, a container runtime, Claude Code and whether it's at least the minimum version this framework version declares ([ADR 0021](../adr/0021-settled-questions.md)), whether the judge has a credential: `ANTHROPIC_API_KEY`, or the federation variables (without showing either), whether the verifier image the config pins is on this machine (`<runtime> image inspect`, with the runtime the [environment](#environment) selects), and whether the config is valid. It exits 3 when something needed is missing (Node.js, a container runtime), with install hints; 1 when the config is invalid; and 2 when a `fazon.local.yaml` exists in CI. A missing config is only a warning, as `doctor` also runs before `init`, and so are a missing or too old Claude Code and a missing credential, which CI's `verify` job doesn't need; `propose`, `generate` and `feedback` refuse to start (3) with a Claude Code older than the minimum. A verifier image that isn't on the machine yet is a warning too: `doctor` never pulls it, and the first `verify`, `generate` or `feedback` does. Without a valid config or a container runtime, the image isn't checked. Result: each check and its state.
 
 ### `fazon upgrade`
 
@@ -217,7 +218,7 @@ A [verify run](loop-and-caps.md#runs): renders and checks the named components, 
 fazon judge <run-id>
 ```
 
-Runs the judge for an earlier verify run, on the stories it marked as added or changed, or on all of them when it had no `--base`. The judge's policy and CI cap apply. It refuses (2) when the run isn't a verify run, and exits 3 without an API key. Result: the judge's summary, added to the run's record.
+Runs the judge for an earlier verify run, on the stories it marked as added or changed, or on all of them when it had no `--base`. The judge's policy and CI cap apply. It refuses (2) when the run isn't a verify run, and exits 3 without a credential: an API key or the federation variables ([environment](#environment)). Result: the judge's summary, added to the run's record.
 
 ### `fazon baseline update`
 
@@ -269,10 +270,10 @@ Makes measured runs: for each component and repeat, a propose run and a generate
 ### `fazon calibrate`
 
 ```text
-fazon calibrate --round <n> [--model <model>] --out <path>
+fazon calibrate --round <n> [--model <model>] --budget <usd> --out <path>
 ```
 
-A calibration round: applies every mutation operator to every calibration component, runs the checks with and without baselines and the judge, repeats every judge call for self-agreement, and writes a [calibration record](records.md#calibration-records) to `--out`. The same refusals as `measure` apply. Result: the measures and whether the thresholds are met.
+A calibration round: applies every mutation operator to every calibration component, runs the checks with and without baselines and the judge, repeats every judge call for self-agreement, and writes a [calibration record](records.md#calibration-records) to `--out`. The judge's calls are the ones the [protocol](measurement.md#the-calls-a-round-makes) lists, sent through the Message Batches API. `--budget` is what's left of the measurement budget: when the estimate for the cases, made from the unmodified components' measured cost, exceeds it, the round stops before them with `needs-a-person` and the estimate. The same refusals as `measure` apply. Result: the measures and whether the thresholds are met.
 
 ## Rules
 

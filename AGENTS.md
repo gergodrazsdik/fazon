@@ -15,7 +15,7 @@ Where the truth lives:
 
 If the brief conflicts with an ADR, a spec, these instructions or a request, stop and raise it with the maintainer; don't pick a side yourself.
 
-**Current phase: M2, the loop** (M1, the walking skeleton, is complete). The M0 documents in [docs/spec/README.md](docs/spec/README.md) are the contract the code implements; a change to one is a pull request that updates the document with its schemas and examples. M2's steps are T-0050's subtasks in the [tracker](docs/plan/TRACKER.md), broken down with the maintainer before work starts.
+**Current phase: M3, the vision judge** (M2, the loop, is complete). The M0 documents in [docs/spec/README.md](docs/spec/README.md) are the contract the code implements; a change to one is a pull request that updates the document with its schemas and examples. M3's steps are T-0055's subtasks in the [tracker](docs/plan/TRACKER.md), broken down with the maintainer before work starts.
 
 ## Layout
 

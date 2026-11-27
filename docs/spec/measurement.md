@@ -75,11 +75,11 @@ Calibration measures how well the judge catches defects a viewer can see, how of
 
 ### Seeded defects
 
-A defect is made by a **mutation operator**: a deterministic CSS change appended to the component's styles in the story build, scoped by `data-part` and state attributes. The component's code stays unchanged. Each operator states which stories it affects, so a catch can be attributed.
+A defect is made by a **mutation operator**: a deterministic CSS change that the harness adds to the page after a story loads and before it's captured, scoped by `data-part` and state attributes. The component's code and the story build stay unchanged ([ADR 0027](../adr/0027-m3-federation-calibration-cost.md)). A case's **affected stories** are those whose capture, in any theme, differs from the unmodified component's, so a catch can be attributed. An application that changes no capture isn't a case.
 
 | Operator | Class | Change | Expected to catch it |
 |---|---|---|---|
-| `raw-color` | measurable | a role token replaced by its literal value | `lint`/`tokens` `raw-value` |
+| `raw-color` | measurable | a role token replaced by its literal value | `tokens` `raw-value`; `lint` reads only the source, which the operator doesn't change |
 | `low-contrast` | measurable | text colour replaced by a lighter role token | `a11y` `color-contrast` |
 | `clipped-text` | measurable | no wrapping, hidden overflow, a fixed width | `layout` `clipped-text` |
 | `target-shrunk` | measurable | the smallest size's padding set to 0 | `layout` `target-size` |
@@ -103,9 +103,18 @@ An operator applies only where the component has what it changes. For example, `
 | Check catch rate | for every case, whether a deterministic check fails; measured with baselines and without them, as for a new component |
 | False-positive rate | share of the stories of unmodified components that the judge fails |
 | Self-agreement | every call of the calibration set is repeated 5 times. For each image, the share of repeats that give its most common verdict, averaged over images |
-| Cost | judge cost per component and per case |
+| Cost | judge cost per component and per case, at the batch price the round paid |
 
 The comparison with the checks shows which defects only the judge catches. Measurable cases are reported too, so a judge that only repeats the checks is visible.
+
+### The calls a round makes
+
+Each call is the one the judge makes in a run, so that the measures describe the judge as it is used. Within that, a round spends as little as it can:
+
+- **Unmodified components:** the whole plan, as for a new component without baselines.
+- **Cases:** only the plan's calls that include an affected story, with the plan's own batches. A call without one would answer as it does for the unmodified component, which the round judges anyway.
+- **Batches:** calls go through the Message Batches API, at half the price of a direct call and with the same requests.
+- **Stages:** the unmodified components come first. Their measured cost per call gives the estimate for the cases, which start only when it fits what's left of the [budget](#repeats); otherwise the maintainer decides. Each model is a stage of its own: Sonnet 5.5 first, then Opus 5.5 with an estimate from Sonnet's measured costs.
 
 ### Thresholds
 

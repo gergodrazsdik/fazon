@@ -78,10 +78,10 @@ Signing is welcome but not required. GitHub shows a signed commit as "Verified" 
 
 ## Local secrets
 
-Fazon never stores or ships credentials. From M2 on, generation and the vision judge need a model API key, which they read from an environment variable (`ANTHROPIC_API_KEY`); the exact variables are listed in the config file reference once it is written.
+Fazon never stores or ships credentials. The vision judge, `fazon measure` and `fazon calibrate` need a model API key, which they read from `ANTHROPIC_API_KEY` ([CLI reference](spec/cli.md#environment)). In CI the judge uses workload identity federation instead ([workflow](spec/workflow.md#credentials)).
 
-- Export the key in your shell, or put it in `.env.local` (gitignored) if a tool reads it.
-- To keep it out of files altogether, read it from your own secret manager at run time in a personal recipe in `local.just` (gitignored); `local.just.example` shows the pattern.
+- Keep the key in your own secret manager and set it only for the commands that call the API, with a personal recipe in `local.just` (gitignored); `local.just.example` shows the pattern.
+- Don't export it in your shell profile: Claude Code may then use the key, and bill the API, instead of your login.
 - Never commit a key, and never paste one into an issue or a log.
 
 ## Working with Claude Code

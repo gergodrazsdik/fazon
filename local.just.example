@@ -2,18 +2,21 @@
 # Keep secrets out of files: read them from your own secret manager at run time.
 # Nothing in the committed justfile depends on these recipes.
 
-# Example: start Claude Code with the model API key from a secret manager of your choice.
+# Example: run one command with the model API key from a secret manager of your choice,
+# for the commands that call the API: `just with-key pnpm exec fazon judge <run>`.
 # Replace `my-secret-tool get anthropic/api-key` with your tool's command (a password
 # manager's CLI, the OS keyring, a cloud secret store...). The key lives only in the
-# environment of that one process.
+# environment of that one process. Don't start Claude Code with it: Claude Code may then use
+# the key, and bill the API, instead of your login.
 #
 # [group('local')]
-# my-claude:
+# [positional-arguments]
+# with-key *args:
 #     #!/bin/sh
 #     set -eu
 #     ANTHROPIC_API_KEY=$(my-secret-tool get anthropic/api-key)
 #     export ANTHROPIC_API_KEY
-#     exec claude
+#     exec "$@"
 
 # Example: apply the repository settings to your own fork.
 #
