@@ -60,6 +60,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- `fazon propose` writes short lists of scalars in flow style (`values: [sm, md]`), as the hand-written specs do, and its prompt says parts render in their parent's default slot, so proposals no longer declare a slot only to hold parts.
+- `fazon doctor` checks that the pinned verifier image is on the machine, and warns that the first `verify`, `generate` or `feedback` pulls it when it isn't.
+- The agent's self-checks can write their caches in Claude Code's sandbox: an agent call no longer denies writes to the whole repository, only to what lies beside the component's directory and the caches, so Vitest runs.
 - A generate or feedback run no longer counts Claude Code's sandbox stubs (`.claude/…`, `.mcp.json` and the like) as a hand edit between its calls.
 - `@fazon/core` carries the generation skill in `dist/skills/generate/`, so `fazon generate` finds it wherever the package is installed; it failed with ENOENT where the framework was installed from a copy.
 - `fazon propose` passes Claude Code a draft-07 copy of the proposal schema, which Claude Code 2.1.332 accepts; it rejected the 2020-12 schema before making a call.

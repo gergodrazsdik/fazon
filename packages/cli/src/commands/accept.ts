@@ -12,10 +12,8 @@ import {
   componentInputsHash,
   heldRunLock,
   linkedRuns,
-  listRunIds,
   provenancePath,
   readProvenance,
-  readRunRecord,
   readVerifyDetails,
   runDirectory,
   runsDirectory,
@@ -28,36 +26,10 @@ import {
 import { readComponent, readRunInputs, type ComponentSetup } from "../agent-run.js";
 import { refused, type Message, type Outcome } from "../outcome.js";
 import type { Context, Invocation } from "./context.js";
+import { latestLoopRun } from "./feedback.js";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../../package.json") as { version: string };
-
-/** A run ID's label: what's between its time (`YYYYMMDDTHHMMSSZ-`) and its random digits (`-3f9a`). */
-function runLabel(id: string): string {
-  return id.slice(17, -5);
-}
-
-type LatestRun =
-  | { readonly kind: "none" }
-  | { readonly kind: "unreadable"; readonly id: string }
-  | { readonly kind: "found"; readonly record: RunRecord };
-
-/**
- * The component's latest generate or feedback run. Propose runs write no code, so they're passed
- * over; a newer run of the component whose record can't be read stops the search, as it may be the
- * latest.
- */
-async function latestAgentRun(root: string, component: string, name: string): Promise<LatestRun> {
-  for (const id of await listRunIds(root)) {
-    if (runLabel(id) !== component) continue;
-    const record = await readRunRecord(runDirectory(root, id));
-    if (record === undefined) return { kind: "unreadable", id };
-    if (record.component === name && (record.kind === "generate" || record.kind === "feedback")) {
-      return { kind: "found", record };
-    }
-  }
-  return { kind: "none" };
-}
 
 /** Why a run that didn't pass can't be accepted, and what to run instead. */
 function notPassed(record: RunRecord, component: string): Outcome {
@@ -197,7 +169,7 @@ export async function accept(
     );
   }
 
-  const latest = await latestAgentRun(repo, component, name);
+  const latest = await latestLoopRun(repo, component, name);
   if (latest.kind === "none") {
     return refused(
       `${name} has no generate or feedback run in ${runsDirectory}/ to accept. Generate it first.`,

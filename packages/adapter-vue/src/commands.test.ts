@@ -62,7 +62,13 @@ describe("the Vue adapter's self-check commands", () => {
         'pnpm exec stylelint "src/components/button/**/*.{vue,css}"',
         "pnpm exec vitest run src/components/button",
       ],
-      cacheDirectories: ["node_modules/.vite", "node_modules/.vite-temp", "node_modules/.cache"],
+      cacheDirectories: [
+        "node_modules/.vite",
+        "node_modules/.vite-temp",
+        "node_modules/.vitest-cache",
+        "node_modules/.cache",
+        ".vitest",
+      ],
     });
   });
 });

@@ -149,9 +149,14 @@ describe("an agent call with a fake claude", () => {
     expect(args).toContain("--max-budget-usd");
     const settings = JSON.parse(await readFile(path.join(runDirectory, "calls/1.settings.json"), "utf8")) as {
       permissions: { allow: string[] };
+      sandbox: { filesystem: { denyWrite: string[] } };
     };
     expect(args[args.indexOf("--settings") + 1]).toBe(path.join(runDirectory, "calls/1.settings.json"));
     expect(settings.permissions.allow).toContain("Bash(pnpm exec vue-tsc --noEmit)");
+    // What exists beside the component's directory, not the repository as a whole (F-0029).
+    expect(settings.sandbox.filesystem.denyWrite).toEqual(
+      [".fazon", ".git", "package.json", "src/components/button/generated"].map((file) => path.join(repo, file)),
+    );
 
     const transcript = (await readFile(path.join(runDirectory, "calls/1.jsonl"), "utf8")).trim().split("\n");
     expect(transcript.map((line) => (JSON.parse(line) as { type: string }).type)).toEqual([
