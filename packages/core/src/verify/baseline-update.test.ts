@@ -246,6 +246,19 @@ describe("fazon baseline update", () => {
     expect(await readFile(path.join(root, "baselines/fazon.json"), "utf8")).toBe(formatBaselinesRecord(image));
   });
 
+  it("with the judge on, asks for verdicts only for the baselines whose pixels it would change", async () => {
+    await verifyRun("20261126T100000Z-verify-aaaa");
+    expect(await update("all")).toMatchObject({ kind: "done" });
+    const judged = resolveConfig({ fazon: 0, adapter: "vue", image, judge: { policy: "advisory" } }).config;
+    const judgedUpdate = () => updateBaselines({ root, config: judged, components: [button], targets: "all" });
+    // An image upgrade compares nothing, but identical pixels are rewritten by no one: no verdict needed.
+    await verifyRun("20261126T110000Z-verify-bbbb");
+    expect(await judgedUpdate()).toMatchObject({ kind: "done", written: [] });
+    // A capture that differs would be written, and the run has no judge verdicts.
+    await verifyRun("20261126T120000Z-verify-cccc", { dot: true });
+    expect(JSON.stringify(await judgedUpdate())).toContain("the judge didn't look at its stories");
+  });
+
   it("writes no NOTICE.md for an icon set of the repository's own, and removes one", async () => {
     await verifyRun("20261126T100000Z-verify-aaaa");
     await update(["button"]);
