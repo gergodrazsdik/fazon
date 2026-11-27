@@ -59,7 +59,7 @@ Write anything measurable as a field rather than prose, so a check can test it. 
 The component's API is `props`, `events`, `slots`, `methods`, `forward`, `form` and `parts`, plus `extensions`. `fazon propose` drafts it from the spec, and the developer approves it with `fazon approve` (decision 1). So while drafting:
 
 - Describe the variants, sizes, states and content the developer wants in prose, in their words, so `fazon propose` has what it needs. For example: "Comes in three emphases, primary, secondary and ghost, and three sizes."
-- Write API fields only when the developer states them exactly and confirms that they are the API, in the long form the spec format requires. Never add a prop, event, slot, method or part they haven't asked for, and never rename theirs.
+- Write API fields only when the developer states them exactly and confirms that they are the API, in the long form the spec format requires. Never add a prop, event, slot, method or part they haven't asked for, and never rename theirs. A part renders in its parent's default slot, so a parent needs no slot to hold its parts; when the developer asks for one only for that, tell them so ([parts](../../../docs/spec/spec-format.md#parts)).
 - Fields that refer to API members wait until the API exists: `states` other than `default`, `hover`, `focus-visible` and `active`, `produce`, `fixtures`, `matrix`, `tokens`, `judge` questions that select by props, and `a11y` names from a prop or part (`prop:label`, `part:Title`). A state such as `disabled` needs a boolean prop or a recipe, or `fazon spec check` rejects it.
 - After `fazon approve`, the developer can run this skill again on the same spec to add those fields.
 

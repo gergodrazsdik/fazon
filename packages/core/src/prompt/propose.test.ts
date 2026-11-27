@@ -40,6 +40,14 @@ describe("the propose prompt", () => {
     expect(prompt.endsWith("\n")).toBe(true);
   });
 
+  it("says that parts render in their parent's default slot, which needs no slot declared for them (F-0030)", () => {
+    const prompt = proposePrompt(promptInput());
+    expect(prompt).toContain("- **Parts render in their parent's default slot,**");
+    expect(prompt).toContain(
+      "never declare a slot only to say where a component's or a part's parts go: a parent whose only content is its parts has no `default` slot.",
+    );
+  });
+
   it("says when the spec has an API, and when there's no mapping, conventions doc or role token", () => {
     const prompt = proposePrompt(
       promptInput({ hasApi: true, adapter: { id: "vue", framework: "Vue 3" }, roleTokens: [] }),

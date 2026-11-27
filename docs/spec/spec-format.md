@@ -121,7 +121,7 @@ How the Vue adapter maps the API, and how later adapters are expected to (the [a
 - `portal: true` when the part renders outside the component's root, such as a dialog's content in an overlay layer; the verifier then captures it outside the story root;
 - its own `props`, `events`, `slots`, `methods`, `states`, `produce` and `a11y`, with the same rules as the component's.
 
-The component's own fields describe the root, which holds the state the parts share. In version 0, a part with `count: many` can't be the parent of another `many` part (F-0006).
+The component's own fields describe the root, which holds the state the parts share. A part renders in its parent's default slot, ahead of any content the slot is given, and a fixture lists its instances under `parts`, not as slot content. So a parent needs no slot to hold its parts: a slot is declared only for content other than the parts, and a parent whose only content is its parts has no `default` slot. In version 0, a part with `count: many` can't be the parent of another `many` part (F-0006).
 
 ### States and recipes
 
