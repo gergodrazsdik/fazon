@@ -53,8 +53,17 @@ export function testRule(file: string, name: string): TestRule {
   return name.includes("contract-api") ? "contract-api" : "contract-render";
 }
 
-/** Where Vite and Vitest keep their caches, which the self-checks write to: Vite's bundled config, its dependency cache, and other tools' caches. */
-const selfCheckCaches = ["node_modules/.vite", "node_modules/.vite-temp", "node_modules/.cache"] as const;
+/**
+ * Where the self-checks write: Vite's bundled config and dependency cache, Vitest's cache, other
+ * tools' caches, and the screenshots Vitest's browser mode takes of failed tests (`.vitest/`).
+ */
+const selfCheckCaches = [
+  "node_modules/.vite",
+  "node_modules/.vite-temp",
+  "node_modules/.vitest-cache",
+  "node_modules/.cache",
+  ".vitest",
+] as const;
 
 /**
  * The self-check commands for the component in `directory` (docs/spec/adapter-boundary.md#commands),
