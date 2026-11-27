@@ -1,0 +1,170 @@
+{
+  "fazon": 0,
+  "id": "20261125T181530Z-button-0b1c",
+  "kind": "feedback",
+  "parent": "20261125T164012Z-button-3f9a",
+  "feedback": {
+    "text": "Make the focus ring 3px wide, and keep the label on one line at size sm."
+  },
+  "component": "Button",
+  "status": "passed",
+  "started": "2026-11-25T18:15:30Z",
+  "ended": "2026-11-25T18:24:02Z",
+  "versions": {
+    "framework": "0.1.0",
+    "adapter": "0.1.0",
+    "claudeCode": "2.1.332",
+    "image": "ghcr.io/gergodrazsdik/fazon-verifier@sha256:4f1c2a9e7b0d3c58a6e21f9047bd8c3e5a1f6d2b9c7e0a4f8d3b6c1e9a2f5d70",
+    "judge": 1
+  },
+  "inputs": {
+    "spec": "sha256:d4f02eaafd1a9e9de7d10972ca8e47fa7a985825c3c9c1e249c72683cb3e4f19",
+    "api": "sha256:14c2529eb4498c5d1ffd6915d05bf58a91bdda796af59f41d480d11c099d0479",
+    "tokens": "sha256:c51e455b41df6c017327e16001dd064b8b6733faeaa69b23d9bd79c8079237d5",
+    "conventions": "sha256:04214ab48a17be412c75b225b33e7ca08edbea71558435f32362ee259723c13d",
+    "config": "sha256:b79606fb3afea5bd1609ed40b622142f1c98125abcfe89a76a661b0e8e343910"
+  },
+  "config": {
+    "caps": {
+      "iterations": 5,
+      "budgetUsd": 10,
+      "runMinutes": 90,
+      "callMinutes": 20
+    },
+    "models": {
+      "generator": "claude-sonnet-5-5",
+      "escalation": "claude-opus-5-5",
+      "judge": "claude-sonnet-5-5"
+    },
+    "escalateAfter": 2,
+    "judgePolicy": "advisory",
+    "judgeCalibrated": false
+  },
+  "iterations": [
+    {
+      "n": 1,
+      "call": {
+        "model": "claude-sonnet-5-5",
+        "started": "2026-11-25T18:15:41Z",
+        "durationSeconds": 301.4,
+        "end": "completed",
+        "tokens": {
+          "input": 120330,
+          "cacheRead": 880410,
+          "cacheWrite": 40120,
+          "output": 15020
+        },
+        "costUsd": 0.62,
+        "transcript": "calls/1.jsonl",
+        "filesChanged": [
+          "src/components/button/Button.vue"
+        ]
+      },
+      "violations": [],
+      "verification": {
+        "checks": [
+          {
+            "check": "build",
+            "status": "pass",
+            "durationSeconds": 41.2,
+            "findings": []
+          },
+          {
+            "check": "lint",
+            "status": "pass",
+            "durationSeconds": 6.3,
+            "findings": []
+          },
+          {
+            "check": "test",
+            "status": "pass",
+            "durationSeconds": 28.7,
+            "findings": []
+          },
+          {
+            "check": "package",
+            "status": "pass",
+            "durationSeconds": 12.4,
+            "findings": []
+          },
+          {
+            "check": "a11y",
+            "status": "pass",
+            "durationSeconds": 19.8,
+            "findings": []
+          },
+          {
+            "check": "tokens",
+            "status": "pass",
+            "durationSeconds": 22.1,
+            "findings": []
+          },
+          {
+            "check": "layout",
+            "status": "pass",
+            "durationSeconds": 9.6,
+            "findings": []
+          },
+          {
+            "check": "visual",
+            "status": "pass",
+            "durationSeconds": 14.9,
+            "findings": []
+          }
+        ],
+        "captures": "captures/1",
+        "judge": {
+          "calls": 17,
+          "costUsd": 0.35,
+          "tokens": {
+            "input": 61240,
+            "cacheRead": 48300,
+            "output": 30110
+          },
+          "stories": {
+            "pass": 36,
+            "fail": 0,
+            "unsure": 1,
+            "notJudged": 0
+          },
+          "blocking": false,
+          "results": "judge/1.json",
+          "findings": [
+            {
+              "question": "loading-spinner",
+              "story": "button--label--variant-ghost--size-md--loading",
+              "theme": "light",
+              "verdict": "unsure",
+              "severity": "low",
+              "message": "The spinner and the ghost variant's text are both low-contrast at this size; I can't tell whether the label shifts."
+            }
+          ]
+        }
+      },
+      "outcome": "pass"
+    }
+  ],
+  "handEdits": [
+    {
+      "after": 0,
+      "files": [
+        "src/components/button/Button.vue"
+      ]
+    }
+  ],
+  "totals": {
+    "iterations": 1,
+    "agentCostUsd": 0.62,
+    "judgeCostUsd": 0.35,
+    "costUsd": 0.97,
+    "costEstimated": false,
+    "tokens": {
+      "input": 181570,
+      "cacheRead": 928710,
+      "cacheWrite": 40120,
+      "output": 45130
+    },
+    "durationSeconds": 512,
+    "escalated": false
+  }
+}

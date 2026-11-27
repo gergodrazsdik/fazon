@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // The report's page: one self-contained HTML document with inline CSS, no script and no external
-// fetch. It shows the run's end, the commands for the next step, cost and duration, iterations and
-// models, check results and findings, judge verdicts, visual diffs, an agent run's other components
-// and the gallery. Every value from the record is escaped by the `html` tag.
+// fetch. It shows the run's end, a feedback run's feedback, the commands for the next step, cost
+// and duration, iterations and models, check results and findings, judge verdicts, visual diffs,
+// an agent run's other components and the gallery. Every value from the record is escaped by the
+// `html` tag.
 import type { CheckFinding } from "../checks/types.js";
 import { kebabCase } from "../spec/names.js";
 import type { VerifyDetails } from "../verify/details.js";
@@ -590,6 +591,27 @@ function iterationDetails(iteration: ReportIteration, open: boolean, model: Repo
   </details>`;
 }
 
+/**
+ * A feedback run's feedback, at the top of its report, and the component's files a person changed
+ * since the parent run's last call (its hand edits after iteration 0, ADR 0026).
+ */
+function feedbackBlock(record: ReportRecord): Html {
+  if (record.feedback === undefined) return html``;
+  const edits = record.handEdits.filter((edit) => edit.after === 0).flatMap((edit) => edit.files);
+  return html`<div class="feedback">
+    <p><strong>Feedback</strong>${record.parent === undefined ? "" : html` on <code>${record.parent}</code>`}:</p>
+    <blockquote class="message">${record.feedback.text}</blockquote>
+    ${
+      edits.length === 0
+        ? html``
+        : html`<p>
+            Changed by a person since that run, before the first call:
+            ${edits.map((f, i) => html`${i === 0 ? "" : ", "}<code>${f}</code>`)}
+          </p>`
+    }
+  </div>`;
+}
+
 function verifyExtras(details: VerifyDetails | undefined): Html {
   if (details === undefined) return html``;
   const incomplete = details.incomplete;
@@ -866,6 +888,7 @@ code { font: 0.88em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
 .pill.warn { background: var(--warn-bg); color: var(--warn); }
 .pill.big { font-size: 1rem; padding: 2px 12px; }
 .bad-text { color: var(--bad); }
+.feedback blockquote { margin: 4px 0 8px; padding: 4px 12px; border-left: 3px solid var(--line); background: var(--panel); }
 .next { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 4px 16px 8px; margin-top: 16px; }
 .next h2 { border: 0; margin-top: 8px; }
 .command { display: inline-block; padding: 1px 6px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line); }
@@ -920,6 +943,7 @@ export function renderReport(model: ReportModel): string {
             <h1>Fazon report ${pill(statusLabel(record), `big ${statusClass(record.status)}`)}</h1>
             <p class="subtitle">${title}</p>
             ${record.reason === undefined ? "" : html`<p><strong>Why:</strong> ${reasons[record.reason]}.</p>`}
+            ${feedbackBlock(record)}
           </header>
           ${steps(model)}
           <section aria-labelledby="overview">

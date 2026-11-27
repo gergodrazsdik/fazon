@@ -9,6 +9,7 @@ import type { AgentAccess } from "../agent/settings.js";
 import { changedFiles, takeSnapshot, type AgentScope, type Snapshot } from "../agent/snapshot.js";
 import type { ModelPrice } from "../config/types.js";
 import { parseAgentNeed } from "./blocking.js";
+import { componentFiles, writeComponentFiles } from "./component-files.js";
 import type { LoopCall, LoopCallInput, LoopCallResult } from "./types.js";
 
 /** No self-check commands: the agent of a call that only reads runs nothing. */
@@ -38,6 +39,12 @@ export interface AgentLoopCallOptions {
    * edits (F-0021). None by default.
    */
   readonly harnessFile?: (file: string) => boolean;
+  /**
+   * A feedback run's: the component's files as its parent run's last call left them
+   * (`readComponentFiles`). The first call's hand edits are the changes to the component's files
+   * since (ADR 0026); without it, a run's first call has none.
+   */
+  readonly parentFiles?: Snapshot;
   /** Prices by model (the config's `prices`), to estimate a call's cost when Claude Code reports none. */
   readonly prices?: Readonly<Record<string, ModelPrice>>;
   /** The Claude Code executable; `claude` on the PATH by default. */
@@ -68,6 +75,10 @@ export interface AgentLoopCall {
  *   call-time cap in milliseconds;
  * - a snapshot before each call, compared with the one after the previous call: the files a person
  *   changed in between are the call's `handEdits`, without the files the harness wrote (`harnessFile`);
+ *   before a feedback run's first call, compared with its parent's last (`parentFiles`), the
+ *   component's files a person changed since;
+ * - after each call, the component's files as it left them, in the run's directory
+ *   (`writeComponentFiles`), for a feedback run that answers this run;
  * - the result: how the call ended, its tokens and cost (estimated from `prices` when Claude Code
  *   reported none), the files it changed inside the allowed paths, the violations outside them,
  *   and a `FAZON-NEEDS` line of its final message;
@@ -84,8 +95,13 @@ export function agentLoopCall(options: AgentLoopCallOptions): AgentLoopCall {
   const call: LoopCall = async (input) => {
     const before = await takeSnapshot(options.repo);
     const harnessFile = options.harnessFile ?? (() => false);
-    const handEdits =
-      lastAfter === undefined ? [] : changedFiles(lastAfter, before).filter((file) => !harnessFile(file));
+    const changed =
+      lastAfter !== undefined
+        ? changedFiles(lastAfter, before)
+        : options.parentFiles !== undefined
+          ? changedFiles(options.parentFiles, componentFiles(before, options.scope.directory))
+          : [];
+    const handEdits = changed.filter((file) => !harnessFile(file));
     const price = options.prices?.[input.model];
     const result = await run({
       repo: options.repo,
@@ -109,6 +125,7 @@ export function agentLoopCall(options: AgentLoopCallOptions): AgentLoopCall {
     });
     results.push(result);
     lastAfter = result.after;
+    await writeComponentFiles(input.runDir, options.scope.directory, result.after);
     const loop = loopResult(result, handEdits, await answerProblem(options, result));
     returned.push(loop);
     return loop;

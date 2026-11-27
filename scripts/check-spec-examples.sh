@@ -8,7 +8,7 @@
 #     a rule only `fazon spec check` sees);
 #   - every spec under invalid/schema/ fails it, at the path its `# expect-error-at:` line names;
 #   - every manifest under docs/spec/examples/manifests/ passes the story manifest schema;
-#   - the examples of the baselines record, the judge plan and result, the run record, provenance
+#   - the examples of the baselines record, the judge plan and result, the run records, provenance
 #     and the calibration record pass their schemas;
 #   - the CLI output examples pass the CLI output schema;
 #   - the config examples (YAML) pass the config and local-override schemas, and the local schema's
@@ -143,7 +143,7 @@ expect_pass() { # <schema> <json>...
 expect_pass "$baselines_schema" "$root/docs/spec/examples/baselines/fazon.json"
 expect_pass "$plan_schema" "$root"/docs/spec/examples/judge/*-plan.json
 expect_pass "$result_schema" "$root"/docs/spec/examples/judge/*-result.json
-expect_pass "$run_schema" "$root/docs/spec/examples/records/run.json"
+expect_pass "$run_schema" "$root/docs/spec/examples/records/run.json" "$root/docs/spec/examples/records/run-feedback.json"
 expect_pass "$provenance_schema" "$root/docs/spec/examples/records/provenance.json"
 expect_pass "$calibration_schema" "$root"/docs/spec/examples/records/calibration-*.json
 expect_pass "$cli_schema" "$root"/docs/spec/examples/cli/*.json

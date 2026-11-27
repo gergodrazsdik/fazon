@@ -8,6 +8,7 @@ import { resolveConfig } from "../config/load.js";
 import type { ConfigFile } from "../config/types.js";
 import { readRunRecord, runRecordProblems } from "../records/run-record.js";
 import { agentLoopCall, noSelfChecks, type AgentLoopCallOptions } from "./agent-call.js";
+import { componentFilesFile, readComponentFiles } from "./component-files.js";
 import { runAgent, type AgentRunOptions } from "./run.js";
 import { loopSettings } from "./settings.js";
 import type { LoopCallInput } from "./types.js";
@@ -31,6 +32,13 @@ beforeEach(async () => {
   runDir = path.join(repo, ".fazon/runs/20261126T120000Z-badge-3f9a");
 });
 afterEach(() => rm(repo, { recursive: true, force: true }));
+
+/** The component's files the last call wrote to the run's directory. */
+async function written() {
+  const files = await readComponentFiles(runDir);
+  if (files === undefined) throw new Error(`no ${componentFilesFile} in ${runDir}`);
+  return files;
+}
 
 const log = async () =>
   JSON.parse(await readFile(path.join(runDir, "fake.json"), "utf8")) as { args: string[]; prompt: string };
@@ -127,6 +135,66 @@ describe("the agent call as the loop's call", () => {
     await mkdir(path.dirname(path.join(repo, generated)), { recursive: true });
     await writeFile(path.join(repo, generated), "{}\n");
     expect((await call(input({ iteration: 2 }))).handEdits).toEqual(["src/components/badge/Badge.vue"]);
+  });
+
+  it("writes the component's files after each call, outside generated/, for a feedback run (ADR 0026)", async () => {
+    const generated = "src/components/badge/generated/stories.json";
+    await mkdir(path.dirname(path.join(repo, generated)), { recursive: true });
+    await writeFile(path.join(repo, generated), "{}\n");
+    const { call } = connection({
+      FAKE_CLAUDE_EDITS: JSON.stringify({ "src/components/badge/Badge.css": ".badge {}\n" }),
+    });
+    await call(input());
+    const stored = JSON.parse(await readFile(path.join(runDir, componentFilesFile), "utf8")) as {
+      directory: string;
+      files: Record<string, string>;
+    };
+    expect(stored.directory).toBe("src/components/badge");
+    expect(Object.keys(stored.files)).toEqual(["src/components/badge/Badge.css", "src/components/badge/Badge.vue"]);
+    expect((await readComponentFiles(runDir))?.files).toEqual(new Map(Object.entries(stored.files)));
+  });
+
+  it("gives a feedback run's first call the component's files a person changed since the parent's last call (ADR 0026)", async () => {
+    const generated = "src/components/badge/generated/provenance.json";
+    await connection({}).call(input());
+    const parentFiles = await written();
+
+    await writeFile(path.join(repo, "src/components/badge/Badge.vue"), "<template><b /></template>\n");
+    await writeFile(path.join(repo, "src/components/badge/Badge.css"), ".badge {}\n");
+    // Not the component's files: the spec, the harness's generated files, a file elsewhere.
+    await writeFile(path.join(repo, "specs/badge.md"), "---\nname: Badge\n---\n\nA badge.\n");
+    await mkdir(path.dirname(path.join(repo, generated)), { recursive: true });
+    await writeFile(path.join(repo, generated), "{}\n");
+    await writeFile(path.join(repo, "package.json"), '{ "name": "x" }\n');
+
+    runDir = path.join(repo, ".fazon/runs/20261126T130000Z-badge-0b1c");
+    const { call } = connection({}, { parentFiles });
+    expect((await call(input())).handEdits).toEqual([
+      "src/components/badge/Badge.css",
+      "src/components/badge/Badge.vue",
+    ]);
+    // The second call compares with the first one's snapshot, as in any run.
+    expect((await call(input({ iteration: 2 }))).handEdits).toEqual([]);
+  });
+
+  it("gives a feedback run's first call no hand edits when only the harness wrote since the parent", async () => {
+    await connection({}).call(input());
+    const parentFiles = await written();
+    // `fazon accept`'s provenance, `fazon sync`'s generated files and entry file, `fazon baseline
+    // update`'s baselines, the sandbox's stubs.
+    for (const [file, text] of Object.entries({
+      "src/components/badge/generated/provenance.json": "{}\n",
+      "src/components/badge/generated/Badge.stories.ts": "export {};\n",
+      "src/index.ts": "export {};\n",
+      "baselines/light/badge/badge--default.png": "png",
+      ".claude/settings.json": "{}\n",
+    })) {
+      await mkdir(path.dirname(path.join(repo, file)), { recursive: true });
+      await writeFile(path.join(repo, file), text);
+    }
+    runDir = path.join(repo, ".fazon/runs/20261126T130000Z-badge-0b1c");
+    const { call } = connection({}, { parentFiles });
+    expect((await call(input())).handEdits).toEqual([]);
   });
 
   it("reads a FAZON-NEEDS line of the final message", async () => {

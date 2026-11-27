@@ -112,7 +112,10 @@ export interface IterationRecord {
 
 /** Files a person changed between agent calls (PERM-005). */
 export interface HandEdit {
-  /** The iteration they followed. */
+  /**
+   * The iteration they followed; 0 for a feedback run's changes to the component's files since
+   * its parent run's last call, found before its first call (ADR 0026).
+   */
   readonly after: number;
   readonly files: readonly string[];
 }
@@ -166,6 +169,8 @@ export interface RunRecord {
   readonly kind: RunKind;
   /** For a feedback run: the run it answers. */
   readonly parent?: string;
+  /** For a feedback run: the developer's feedback, as given (ADR 0026). */
+  readonly feedback?: { readonly text: string };
   readonly component?: string;
   readonly status: RunStatus;
   readonly reason?: RunReason;

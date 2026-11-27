@@ -66,8 +66,10 @@ export interface LoopCallResult {
   readonly violations: readonly string[];
   /**
    * The files a person changed since the previous call of this run ended (PERM-005): the
-   * difference between the snapshot after that call and the one before this call. Ignored on a
-   * run's first call, which follows no call of the run.
+   * difference between the snapshot after that call and the one before this call. On a feedback
+   * run's first call, the component's files a person changed since the parent run's last call
+   * (ADR 0026), which the loop records as following iteration 0; ignored on any other run's first
+   * call, which follows no call of the run.
    */
   readonly handEdits: readonly string[];
   /** Set when the agent said it needs a dependency or a change to shared code (`parseAgentNeed`). */

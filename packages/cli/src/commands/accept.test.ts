@@ -82,7 +82,8 @@ async function writeRun(
   overrides: Partial<RunRecord> = {},
   stories: StoryVisual[] = newStories,
 ): Promise<RunRecord> {
-  const record: RunRecord = { ...example, id, inputs: await inputsNow(), ...overrides };
+  const feedback = overrides.kind === "feedback" ? { feedback: { text: "Round the corners." } } : {};
+  const record: RunRecord = { ...example, id, inputs: await inputsNow(), ...feedback, ...overrides };
   const dir = runDirectory(root, id);
   await writeRunRecord(dir, record);
   const last = record.iterations.at(-1);
