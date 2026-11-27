@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { beforeAll, describe, expect, it } from "vitest";
 import type { TokenIndex } from "../tokens/build.js";
-import type { InspectedElement, StyleSource } from "./snapshot.js";
+import type { InspectedElement, RenderedFont, StyleSource, TextFonts } from "./snapshot.js";
 import { element, fixtureTokenIndex, style } from "./test-support.js";
 import { checkTokens, conditionHolds, tokenRuleExpectations, tokenRuleLonghands } from "./tokens.js";
 
@@ -173,6 +173,64 @@ describe("checkTokens", () => {
 
   it("refuses an element inspected without styles", () => {
     expect(() => checkTokens({ elements: [element()], index })).toThrow(/without its styles/);
+  });
+});
+
+describe("font-fallback", () => {
+  const dejaVu: RenderedFont = { family: "DejaVu Sans", postScriptName: "DejaVuSans", custom: false, glyphs: 12 };
+  const inter: RenderedFont = { family: "Inter", postScriptName: "Inter-Regular", custom: true, glyphs: 12 };
+  const withFonts = (fonts: Partial<TextFonts>, ...extra: StyleSource[]): InspectedElement => ({
+    ...button(...extra),
+    fonts: {
+      family: '"Inter Variable", Inter, system-ui, sans-serif',
+      first: "Inter Variable",
+      faces: [],
+      rendered: [],
+      ...fonts,
+    },
+  });
+
+  it("passes text rendered with a loaded web font of the first family", () => {
+    const fonts = { faces: ["unloaded", "loaded"], rendered: [inter, { ...dejaVu, glyphs: 1 }] };
+    expect(rules([withFonts(fonts)])).toEqual([]);
+  });
+
+  it("finds a first family that no face declares and no installed font provides", () => {
+    const findings = checkTokens({
+      elements: [withFonts({ family: "Inter, system-ui, sans-serif", first: "Inter", rendered: [dejaVu] })],
+      index,
+    });
+    expect(findings).toEqual([
+      expect.objectContaining({
+        check: "tokens",
+        rule: "font-fallback",
+        selector: '[data-part="Button"]',
+        expected: "Inter",
+        actual: "DejaVu Sans",
+        blocking: true,
+      }),
+    ]);
+    expect(findings[0]?.message).toMatch(/font-family \(font-family\.body\) names Inter first.*no font face/);
+  });
+
+  it("finds a web font whose faces haven't loaded, or that rendered nothing", () => {
+    expect(rules([withFonts({ faces: ["error"], rendered: [dejaVu] })])).toEqual([["font-fallback", "DejaVu Sans"]]);
+    expect(rules([withFonts({ faces: ["loaded"], rendered: [dejaVu] })])).toEqual([["font-fallback", "DejaVu Sans"]]);
+  });
+
+  it("passes an installed font by its family or PostScript name, and generic families", () => {
+    expect(rules([withFonts({ first: "DejaVu Sans", rendered: [dejaVu] })])).toEqual([]);
+    expect(rules([withFonts({ first: "dejavusans", rendered: [dejaVu] })])).toEqual([]);
+    expect(rules([withFonts({ first: "system-ui", rendered: [dejaVu] })])).toEqual([]);
+    expect(rules([withFonts({ first: "Inter", rendered: [] })])).toEqual([]);
+  });
+
+  it("leaves out a font family that doesn't come from a token", () => {
+    const raw = style("author", { "font-family": "Inter, sans-serif" }, { selector: ".raw" });
+    expect(rules([withFonts({ first: "Inter", rendered: [dejaVu] }, raw)]).map(([rule]) => rule)).toEqual([
+      "raw-value",
+      "raw-value",
+    ]);
   });
 });
 

@@ -190,12 +190,21 @@ axe's undecided results ("incomplete", for example contrast over a gradient) don
 | `unknown-token` | It references a custom property that is neither a token nor a valid component-local property. |
 | `user-agent` | No author declaration applies, and the browser's own stylesheet sets a value that isn't allowed, such as a button's default padding or its system font (`font: -webkit-small-control`). |
 | `token-rule` | A [token rule](spec-format.md#tokens) in the spec applies to the element, and the declaration resolves to a different token. |
+| `font-fallback` | The element has text of its own, its `font-family` resolves to a token, and the browser renders none of that text in the first family the value names: the text falls back to a later family. |
 
 A property that no stylesheet sets keeps its initial value, which isn't a finding. An inherited value is checked on the element that declares it; values inherited from outside the component come from the story frame's base styles.
 
+**Fonts:** `font-fallback` compares the first family of the element's computed `font-family` with the fonts Chromium reports for the element's own text nodes (the DevTools protocol's `CSS.getPlatformFontsForNode`), after the page's fonts have loaded:
+
+- A family that a `@font-face` rule (or a `FontFace`) in the page declares is used when one of its faces has loaded and a web font rendered the text. A font file's own family name can differ from the family its `@font-face` rules register (`Inter` in the files that register `Inter Variable`), so the names aren't compared.
+- Any other family is used when an installed font of that name rendered the text. The verifier image installs only the fonts its [README](../../verifier/README.md) lists, so a library brings its fonts as web fonts.
+- A generic family (`sans-serif`, `system-ui`, `monospace` and the others) always resolves, and isn't checked.
+
+Text rendered partly in the first family, with a fallback only for characters the font lacks, passes. A `@font-face` whose only source is `local()` renders an installed font, which counts as a fallback.
+
 **Allowed:** the allowed values above.
 
-**Fixtures:** [tokens](examples/checks/tokens/tokens.json) for both; [pass](examples/checks/tokens/pass.html), a button styled with role tokens only; [fail](examples/checks/tokens/fail.html), its background taken from a raw token (`raw-token`).
+**Fixtures:** [tokens](examples/checks/tokens/tokens.json) for both; [pass](examples/checks/tokens/pass.html), a button styled with role tokens only, with the token set's font loaded; [fail](examples/checks/tokens/fail.html), its background taken from a raw token (`raw-token`). The pages load Inter from the workspace's `@fontsource-variable/inter` package, as the example library's stylesheet does.
 
 ## layout
 

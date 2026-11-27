@@ -157,6 +157,8 @@ async function writeRecord(id: string, from: RunRecord, changes: Partial<RunReco
 }
 
 describe("fazon feedback", () => {
+  // Five calls and check phases in the file's first test, which also takes the modules' imports: a
+  // busy machine takes longer than the default 5 seconds.
   it("answers the latest run, with the feedback in every prompt and its findings in the first, fresh caps and the generator model", async () => {
     await config("  iterations: 3\n");
     const failing = checks([rawValue]);
@@ -191,7 +193,14 @@ describe("fazon feedback", () => {
 
     const own = await record(run);
     expect(runRecordProblems(own)).toEqual([]);
-    expect(own).toMatchObject({ kind: "feedback", parent, component: "Button", status: "passed", handEdits: [] });
+    expect(own).toMatchObject({
+      kind: "feedback",
+      parent,
+      feedback: { text: "Make the label bolder." },
+      component: "Button",
+      status: "passed",
+      handEdits: [],
+    });
     expect(own.inputs).toHaveProperty("api");
     // Fresh caps, and the generator model again although the parent ended on the escalation model.
     expect(own.iterations.map((iteration) => iteration.call.model)).toEqual(["claude-sonnet-5-5", "claude-sonnet-5-5"]);
@@ -211,7 +220,7 @@ describe("fazon feedback", () => {
     expect(second).toContain("The checks after iteration 1 found these");
     expect(second).toContain("`layout/target-size`");
     expect(second).toContain("Iteration 2. Left, this call included: 2 calls");
-  });
+  }, 30_000);
 
   it("reads the feedback from --file, and answers a run that passed with no findings", async () => {
     const parent = await generate();
@@ -230,6 +239,56 @@ describe("fazon feedback", () => {
     const [prompt = ""] = fake.prompts;
     expect(prompt).toContain("```text\nUse the brand colour for the focus ring.\n\nAnd round the corners.\n```");
     expect(prompt).toContain("The previous run's checks left nothing to fix; work from the feedback above.");
+  });
+
+  it("records the component's files a person changed since the parent as hand edits after 0, and shows them and the feedback in the report (ADR 0026)", async () => {
+    const parent = await generate();
+    await writeFile(path.join(root, button), '<template><button class="bold"><slot /></button></template>\n');
+    const text = "Make the label <b>bolder</b> & keep the focus ring.";
+    const { code, json } = await captureJson(["feedback", "button", "-m", text], machine());
+    expect(code, JSON.stringify(json.messages)).toBe(0);
+    const run = (json.result as { run: string }).run;
+    const own = await record(run);
+    expect(runRecordProblems(own)).toEqual([]);
+    expect(own).toMatchObject({ parent, feedback: { text }, handEdits: [{ after: 0, files: [button] }] });
+    const report = await read(`.fazon/runs/${run}/report/index.html`);
+    expect(report).toContain("Make the label &lt;b&gt;bolder&lt;/b&gt; &amp; keep the focus ring.</blockquote>");
+    expect(report).toContain(`<code>${button}</code>`);
+  });
+
+  it("records no hand edits when only the harness and the inputs changed since the parent", async () => {
+    const parent = await generate();
+    const ran = await capture(["sync"], { cwd: root });
+    expect(ran.code, ran.stderr).toBe(0);
+    // As `fazon accept` rewrites the provenance file and `fazon baseline update` writes baselines.
+    const provenance = "src/components/button/generated/provenance.json";
+    await writeFile(path.join(root, provenance), JSON.stringify(JSON.parse(await read(provenance))));
+    await mkdir(path.join(root, "baselines/light/button"), { recursive: true });
+    await writeFile(path.join(root, "baselines/light/button/button--default.png"), "png");
+    // The sandbox's stubs, and a change to the spec: an input, not the component's files.
+    await mkdir(path.join(root, ".claude"), { recursive: true });
+    await writeFile(path.join(root, ".claude/settings.json"), "{}\n");
+    await writeFile(
+      path.join(root, "specs/button.md"),
+      `${await read("specs/button.md")}\nMore notes for the next run.\n`,
+    );
+
+    const { code, json } = await captureJson(["feedback", "button", "-m", "Round the corners."], machine());
+    expect(code, JSON.stringify(json.messages)).toBe(0);
+    const own = await record((json.result as { run: string }).run);
+    expect(own).toMatchObject({ parent, handEdits: [] });
+  });
+
+  it("says so when the parent recorded no component files, and records no hand edits", async () => {
+    const parent = await generate();
+    await rm(path.join(runDirectory(root, parent), "component-files.json"));
+    await writeFile(path.join(root, button), "<template><b /></template>\n");
+    const { code, json } = await captureJson(["feedback", "button", "-m", "Round the corners."], machine());
+    expect(code, JSON.stringify(json.messages)).toBe(0);
+    expect((json.messages as { text: string }[])[0]?.text).toContain(
+      "That run didn't record the component's files after its last call, so changes made to them since aren't recorded as hand edits.",
+    );
+    expect(await record((json.result as { run: string }).run)).toMatchObject({ handEdits: [] });
   });
 
   it("needs a person (1) when the run's calls run out", async () => {

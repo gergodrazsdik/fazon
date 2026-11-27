@@ -2,8 +2,9 @@
 // The Claude Code settings the harness writes for each agent call (docs/spec/agent-permissions.md#the-headless-call):
 // edits only in the component's directory, outside `generated/`, for the adapter's patterns; Bash
 // only for the self-check commands; no web, MCP servers or subagents; the sandbox on, with no
-// network; secrets and the harness's directories unreadable. Keys confirmed against Claude Code 2.1.332.
-import { glob } from "node:fs/promises";
+// network and shell writes only in the component's directory and the self-checks' caches; secrets
+// and the harness's directories unreadable. Keys confirmed against Claude Code 2.1.332.
+import { glob, readdir } from "node:fs/promises";
 import path from "node:path";
 import type { SelfChecks } from "../adapter.js";
 import { generatedDirectory } from "../sync/sync.js";
@@ -58,6 +59,12 @@ export interface AgentSettingsInput {
    * sandbox on Linux ignores glob patterns in its filesystem rules, so they are also denied by path.
    */
   readonly secretFiles?: readonly string[];
+  /**
+   * The paths the sandbox denies writes to, relative to the repository's root (`findWriteDenied`):
+   * everything that exists next to the component's directory, the cache directories and their
+   * parents. Without them, or for a call that only reads, the whole repository is denied.
+   */
+  readonly writeDenied?: readonly string[];
   /** `read` for a call that may change nothing, as a propose call; `edit` by default. */
   readonly access?: AgentAccess;
 }
@@ -92,10 +99,20 @@ function relativeRule(tool: "Read" | "Edit", file: string): string {
   return `${tool}(./${file})`;
 }
 
+/** The directories the sandbox lets a call's shell commands write to, relative to the repository's root. */
+export function writableDirectories(scope: AgentScope, selfChecks: SelfChecks): string[] {
+  return [trimSlashes(scope.directory), ...selfChecks.cacheDirectories.map(trimSlashes)];
+}
+
 /**
  * The settings of one agent call (PERM-001). Permission rules use paths relative to the working
  * directory (`./…`), because a rule starting with `/` is anchored at the settings file's directory;
  * the sandbox's filesystem paths are absolute.
+ *
+ * The sandbox lets shell commands write in the working directory, the repository, unless a path is
+ * denied, and on Linux a denied directory stays denied below it, even where `allowWrite` names a
+ * narrower path (F-0029). So an edit call doesn't deny the repository as a whole: it denies what
+ * exists beside the writable directories (`writeDenied`), and `generated/` inside the component's.
  */
 export function agentSettings(input: AgentSettingsInput): AgentSettings {
   const directory = trimSlashes(input.scope.directory);
@@ -133,7 +150,10 @@ export function agentSettings(input: AgentSettingsInput): AgentSettings {
       network: { allowedDomains: [] },
       filesystem: {
         allowWrite: readOnly ? [] : [absolute(directory), ...input.selfChecks.cacheDirectories.map(absolute)],
-        denyWrite: [input.repo, absolute(path.posix.join(directory, generatedDirectory))],
+        denyWrite: [
+          ...(readOnly || input.writeDenied === undefined ? [input.repo] : input.writeDenied.map(absolute)),
+          absolute(path.posix.join(directory, generatedDirectory)),
+        ],
         denyRead: [...unreadableDirectories, ...(input.secretFiles ?? [])].map(absolute),
       },
     },
@@ -141,6 +161,34 @@ export function agentSettings(input: AgentSettingsInput): AgentSettings {
     disableClaudeAiConnectors: true,
     enableAllProjectMcpServers: false,
   };
+}
+
+/**
+ * What the sandbox denies writes to so that only `writable` (directories relative to the repository's
+ * root) and what's below them can be written: every entry that exists in `writable`'s parent
+ * directories, from the root down, other than `writable` and their parents, sorted. A path that
+ * doesn't exist yet can't be denied (the sandbox on Linux skips it); the snapshots after the call
+ * catch a file it creates there unless git ignores it (PERM-002).
+ */
+export async function findWriteDenied(repo: string, writable: readonly string[]): Promise<string[]> {
+  const allowed = new Set(writable.map(trimSlashes));
+  const denied: string[] = [];
+  const visit = async (directory: string): Promise<void> => {
+    let entries: string[];
+    try {
+      entries = await readdir(path.join(repo, directory));
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const relative = directory === "" ? entry : `${directory}/${entry}`;
+      if (allowed.has(relative)) continue;
+      if ([...allowed].some((target) => target.startsWith(`${relative}/`))) await visit(relative);
+      else denied.push(relative);
+    }
+  };
+  await visit("");
+  return denied.sort();
 }
 
 /** Directories `findSecretFiles` doesn't look in. */

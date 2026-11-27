@@ -2,7 +2,7 @@
 // A proposed API (`fazon propose`, docs/spec/cli.md#fazon-propose): the JSON Schema the agent's
 // answer follows, reading the answer from the call, and writing it into the spec's API fields with
 // the rest of the file as it was, so the developer reviews the proposal as a diff.
-import { isMap, isScalar, LineCounter, parseDocument, stringify } from "yaml";
+import { Document, isMap, isScalar, LineCounter, parseDocument, visit, type YAMLSeq } from "yaml";
 import type { JsonSchema } from "../adapter.js";
 import { canonicalJson } from "../records/hash.js";
 import { readSchema } from "../validation/schemas.js";
@@ -158,11 +158,55 @@ function fieldLines(front: string): FieldLines[] | undefined {
   });
 }
 
-/** One field as YAML lines, in block style without folding. */
+/** The widest line a list of scalars is written on in flow style; a wider one stays in block style. */
+const flowListWidth = 80;
+
+/** Whether a list holds only one-line strings, numbers and booleans: the lists written in flow style. */
+function isScalarList(list: YAMLSeq): boolean {
+  return list.items.every(
+    (item) =>
+      isScalar(item) &&
+      (typeof item.value === "number" ||
+        typeof item.value === "boolean" ||
+        (typeof item.value === "string" && !item.value.includes("\n"))),
+  );
+}
+
+/** A document's lists, in the order `visit` meets them. */
+function lists(document: Document): YAMLSeq[] {
+  const found: YAMLSeq[] = [];
+  visit(document, {
+    Seq(_, node) {
+      found.push(node);
+    },
+  });
+  return found;
+}
+
+/**
+ * One field as YAML lines, the way the hand-written specs write it: a list of scalars in flow style
+ * (`values: [sm, md]`) when its line fits in `flowListWidth` columns, any other list and every
+ * mapping in block style, and no folding.
+ */
 function fieldText(key: string, value: unknown): string[] {
-  return stringify({ [key]: value }, { lineWidth: 0 })
-    .trimEnd()
-    .split("\n");
+  const document = new Document({ [key]: value });
+  for (const list of lists(document)) list.flow = isScalarList(list);
+  const write = () => document.toString({ lineWidth: 0, flowCollectionPadding: false });
+  const text = write();
+  // A flow list is written on one line: the lists that came out too wide go back to block style.
+  // Both documents hold the same lists, so `visit` meets them in the same order.
+  const lineCounter = new LineCounter();
+  const lines = text.split("\n");
+  const written = lists(parseDocument(text, { lineCounter }));
+  const original = lists(document);
+  const tooWide = written.flatMap((list, index) => {
+    if (list.flow !== true || list.range == null) return [];
+    const line = lines[lineCounter.linePos(list.range[0]).line - 1] ?? "";
+    const own = original[index];
+    return line.length > flowListWidth && own !== undefined ? [own] : [];
+  });
+  for (const list of tooWide) list.flow = false;
+  return (tooWide.length > 0 ? write() : text).trimEnd().split("\n");
 }
 
 export interface AppliedProposal {

@@ -348,6 +348,7 @@ export async function runAgentCommand(
       ...(request.jsonSchema === undefined ? {} : { jsonSchema: request.jsonSchema }),
       ...(request.answer === undefined ? {} : { answer: request.answer }),
       harnessFile: request.harnessFile ?? refreshedFile(directory, toPosix(config.paths.entry)),
+      ...(request.feedback?.parentFiles === undefined ? {} : { parentFiles: request.feedback.parentFiles }),
       prices: config.prices,
       command: setup.claudeCode.command,
       env: context.environment.env,

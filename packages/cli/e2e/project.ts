@@ -188,9 +188,12 @@ export async function createProject(options: ProjectOptions, parent = tmpdir()):
   await applyTokenFixes(path.join(root, "tokens"));
   await cp(new URL("library/Button.vue", import.meta.url), path.join(root, "src/components/button/Button.vue"));
   await write("src/components/button/Button.test.ts", behaviourTest);
+  // The token set's font, which the stories load as the example library's do (tokens: font-fallback).
+  await write("src/style.css", '@import "@fontsource-variable/inter";\n');
   for (const file of await configFiles({
     components: "src/components",
     tokensCss: "src/tokens.css",
+    styles: ["src/style.css"],
     icons: "lucide",
   })) {
     await write(file.path, file.content);
@@ -203,8 +206,8 @@ export async function createProject(options: ProjectOptions, parent = tmpdir()):
 }
 
 /**
- * node_modules: the Vue adapter's dependencies, the framework's packages, and the icon set's
- * stand-in. The links are relative, so they resolve wherever the workspace is mounted.
+ * node_modules: the Vue adapter's dependencies, the framework's packages, the token set's font
+ * (the workspace's `@fontsource-variable/inter`), and the icon set's stand-in. The links are relative, so they resolve wherever the workspace is mounted.
  */
 async function linkModules(root: string): Promise<void> {
   const link = (target: string, at: string) => symlink(path.relative(path.dirname(at), target), at, "dir");
@@ -227,6 +230,11 @@ async function linkModules(root: string): Promise<void> {
     }
   }
   await link(adapterRoot, path.join(modules, "@fazon/adapter-vue"));
+  await mkdir(path.join(modules, "@fontsource-variable"), { recursive: true });
+  await link(
+    path.join(workspace, "node_modules/@fontsource-variable/inter"),
+    path.join(modules, "@fontsource-variable/inter"),
+  );
   await link(path.join(workspace, "packages/cli"), path.join(modules, "fazon"));
   // The command a package manager would install for the CLI's `bin`.
   await mkdir(path.join(modules, ".bin"), { recursive: true });
@@ -268,6 +276,8 @@ export async function seedDefects(root: string): Promise<string[]> {
   // package: export, an entry that leaves the component out (and build: generated, as sync wrote it)
   const entry = path.join(root, "src/index.ts");
   await writeFile(entry, (await readFile(entry, "utf8")).replace(/^export \{ default as Button \}.*\n/m, ""));
+  // tokens: font-fallback, a stylesheet that no longer loads the token set's font
+  await writeFile(path.join(root, "src/style.css"), "/* The font isn't loaded. */\n");
   return [
     "build/types",
     "build/generated",
@@ -276,6 +286,7 @@ export async function seedDefects(root: string): Promise<string[]> {
     "package/export",
     "a11y/spec-aria",
     "tokens/raw-value",
+    "tokens/font-fallback",
     "layout/clipped-text",
   ];
 }

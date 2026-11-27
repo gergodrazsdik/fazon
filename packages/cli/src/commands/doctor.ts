@@ -8,6 +8,7 @@ import {
   minimumClaudeCodeVersion,
   type Finding,
 } from "@fazon/core";
+import { findRuntime, hasImage } from "../container.js";
 import { isSet, type Environment } from "../environment.js";
 import type { Message, Outcome, Status } from "../outcome.js";
 import { configMessages, describeFinding, loadRepositoryConfig, type Context } from "./context.js";
@@ -33,19 +34,14 @@ const runtimes = ["docker", "podman"] as const;
 /** `fazon doctor`: checks the environment and the config (docs/spec/cli.md#fazon-doctor). */
 export async function doctor(context: Context): Promise<Outcome> {
   const { environment } = context;
+  const load = await loadRepositoryConfig(context);
   const checks: DoctorCheck[] = [
     checkNode(environment),
     await checkContainerRuntime(environment),
     await checkClaudeCode(environment),
     checkApiKey(environment),
-    {
-      check: "verifier-image",
-      state: "not-checked",
-      required: false,
-      detail: "the verifier image: not checked yet; the check arrives with the image (M1 step 6)",
-    },
+    await checkVerifierImage(environment, load.ok ? load.config.image : undefined),
   ];
-  const load = await loadRepositoryConfig(context);
   if (load.ok) {
     const overrides = load.overrides.length === 0 ? "" : `, with local overrides of ${load.overrides.join(", ")}`;
     checks.push({ check: "config", state: "ok", required: false, detail: `${configFileName} is valid${overrides}` });
@@ -222,6 +218,47 @@ async function checkClaudeCode(environment: Environment): Promise<DoctorCheck> {
         hint: new ClaudeCodeVersionError(status).hint,
       };
   }
+}
+
+/**
+ * Whether the verifier image the config pins is on this machine (`<runtime> image inspect`). Only
+ * a warning when it isn't: `verify`, `generate` and `feedback` pull it on their first run, and
+ * doctor never pulls. Not checked without a valid config to read the pin from, or without a
+ * container runtime to look with.
+ */
+async function checkVerifierImage(environment: Environment, image: string | undefined): Promise<DoctorCheck> {
+  if (image === undefined) {
+    return {
+      check: "verifier-image",
+      state: "not-checked",
+      required: false,
+      detail: `the verifier image: not checked, without a valid ${configFileName} to read its pin from`,
+    };
+  }
+  const runtime = await findRuntime(environment);
+  if ("problem" in runtime) {
+    return {
+      check: "verifier-image",
+      state: "not-checked",
+      required: false,
+      detail: `the verifier image ${image}: not checked, without a container runtime to look for it with`,
+    };
+  }
+  if (await hasImage(environment, runtime.runtime, image)) {
+    return {
+      check: "verifier-image",
+      state: "ok",
+      required: false,
+      detail: `the verifier image ${image} is on this machine`,
+    };
+  }
+  return {
+    check: "verifier-image",
+    state: "missing",
+    required: false,
+    detail: `the verifier image ${image} isn't on this machine yet; the first fazon verify, generate or feedback pulls it`,
+    hint: `To pull it now, run '${runtime.runtime} pull --platform linux/amd64 ${image}'.`,
+  };
 }
 
 function checkApiKey(environment: Environment): DoctorCheck {
