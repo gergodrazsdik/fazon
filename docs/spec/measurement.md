@@ -82,7 +82,7 @@ A defect is made by a **mutation operator**: a deterministic CSS change that the
 | `raw-color` | measurable | a role token replaced by its literal value | `tokens` `raw-value`; `lint` reads only the source, which the operator doesn't change |
 | `low-contrast` | measurable | text colour replaced by a lighter role token | `a11y` `color-contrast` |
 | `clipped-text` | measurable | no wrapping, hidden overflow, a fixed width | `layout` `clipped-text` |
-| `target-shrunk` | measurable | the smallest size's padding set to 0 | `layout` `target-size` |
+| `target-shrunk` | measurable | the smallest size's padding set to 0, and its minimum height removed | `layout` `target-size`, where a 24 px circle centred on the target reaches another target, as for stacked or small targets: WCAG 2.5.8 lets the others pass |
 | `padding-step` | measurable | the root's padding one token step larger | `visual` `changed`, with baselines |
 | `focus-ring-removed` | measurable | no outline on `:focus-visible` | `visual` `changed`, with baselines |
 | `emphasis-swapped` | viewer-only | primary and secondary exchange their colour tokens | judge, `axis-variant` |

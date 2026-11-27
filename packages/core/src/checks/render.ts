@@ -148,6 +148,16 @@ export class RenderedPage {
     if (options.theme !== undefined) this.theme = options.theme;
   }
 
+  /**
+   * Adds a style sheet to the page, after its own, and settles it: a calibration case's seeded
+   * defect (docs/spec/measurement.md#seeded-defects). Call it after the story's input, before
+   * reading or capturing the page.
+   */
+  async inject(css: string): Promise<void> {
+    await this.page.addStyleTag({ content: css });
+    await this.settle();
+  }
+
   /** Waits for fonts, finishes animations and waits until the layout is stable. */
   async settle(): Promise<void> {
     await this.page.evaluate(settle, { frameSelector: this.frameSelector, maxFrames: renderDefaults.maxSettleFrames });
