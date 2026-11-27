@@ -4,13 +4,13 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0106, F-0032, Q-0028.
+Next free IDs: T-0106, F-0034, Q-0028.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M3 step 1: the rubric and the plan (T-0055)
+1. M3 step 2: the judge call (T-0055)
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -134,13 +134,14 @@ Complete 2026-11-27: `spec new`, the spec skill and every SPEC rule; `propose`, 
 ### M3 Vision judge
 
 - [~] T-0055 Judge call, rubric from the spec, seeded-defect set, calibration, the judge in the local loop, advisory CI step; catch rate and false-positive rate measured against the thresholds (broken down with the maintainer 2026-11-27, [ADR 0027](../adr/0027-m3-federation-calibration-cost.md))
-  - [ ] Step 1: the rubric and the plan from a spec and its story manifest, matching the Button example plan; JUDGE-001. No API calls
+  - [x] Step 1: the rubric and the plan from a spec and its story manifest, matching the Button example plan; JUDGE-001. No API calls (F-0032) — 2026-11-27, [#90](https://github.com/gergodrazsdik/fazon/pull/90): `judgePlan` gives the Button example plan exactly; the prompt's JUDGE-001 test comes with step 2
   - [ ] Step 2: the judge call on the host with `@anthropic-ai/sdk`: the judge version and its instructions, the spec as a cached prefix, structured output against the result schema, repeats and the majority, declined calls and API errors as `unsure`, cost from usage and prices, the story verdicts; an API key or the federation variables, exit 3 without either; JUDGE-002, JUDGE-003. Tested against a fake client, then one real call on Button with the maintainer's OK
   - [ ] Step 3: the judge in `generate`, `feedback` and `verify`, and `fazon judge` with the CI cap (JUDGE-004); the judge's files in the run, the report's verdicts and findings, `doctor`'s credential check, the calibrated status (JUDGE-005)
   - [ ] Step 4: the judge job in CI (T-0056)
   - [ ] Step 5: the twelve mutation operators, injected at capture; cases and their affected stories from the captures; fixtures that show the measurable operators fail their checks
   - [ ] Step 6: `fazon calibrate`: the calls the protocol lists, through the Message Batches API, in stages within `--budget`; the measures with Wilson intervals; the calibration record
   - [ ] Step 7: calibration round 1 on Button, Badge, Link and Dialog, Sonnet 5.5 then Opus 5.5, within the budget left (about $147); the records in `calibration/judge-<version>/`
+- [x] F-0032 The judge plan schema's `question` pattern rejected `change-<story>`, as story names contain `--`; and `change-<story>` was an `each` question, though its baseline, capture and diff are judged together (step 1): the pattern allows `--`, and the question is `compare`, asked in each theme the story differs in — 2026-11-27, [#90](https://github.com/gergodrazsdik/fazon/pull/90)
 - [ ] T-0056 The workflows' first credential: the judge's, through workload identity federation with an API key secret as the alternative, skipped on pull requests from forks; the example repo's caller grants `id-token: write` and passes the federation IDs; the maintainer creates the federation rule in the Claude Console and the repository variables ([ADR 0027](../adr/0027-m3-federation-calibration-cost.md))
 
 ## Phase 3: Library and packaging (M4 and M5)
@@ -168,6 +169,7 @@ Complete 2026-11-27: `spec new`, the spec skill and every SPEC rule; `propose`, 
 ## Later
 
 - [ ] T-0080 Further adapters: Angular, then React, Svelte and Web Components
+- [ ] F-0033 Two adapter-vue tests (`reader.test.ts`, `vitest.test.ts`'s `fazonVueApi`) timed out at Vitest's 5 s default once during `just check`, and passed alone and in a full rerun: vue-component-meta is slow under load. Give them a longer timeout if it happens again (M3 step 1)
 - [ ] T-0081 Tailwind as a second styling option
 - [ ] T-0084 Tool updates as they come due: `just tool-updates` says which, and each is a pull request that changes the version (and for release binaries the URL and digest) in `scripts/install-ci-tools.sh` or `.github/workflows/lint.yml`, together with the local install
   - [ ] zizmor 1.33.1 from 2026-11-29: `ZIZMOR_VERSION` and the zizmor action's `version` input together; the action itself (v0.9.x) comes through Dependabot

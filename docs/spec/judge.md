@@ -51,12 +51,13 @@ The rubric is the fixed list of questions the judge answers for a component. The
 | `appearance-<n>`: do these stories meet the spec's *n*th `## Appearance` statement? | compare | the axes and include grids' stories | every theme |
 | `reference`: does the component match the reference image's look? | compare | the default story and the reference image | the default theme |
 | `family`: does the component look like it belongs with these? | compare | the default story, and other components' default baselines | the default theme |
-| `change-<story>`: is this change consistent with the spec, and does it look intended? | each | the story's baseline, capture and diff | the story's theme |
+| `change-<story>`: is this change consistent with the spec, and does it look intended? | compare | the story's baseline, capture and diff | each theme the story differs in |
 | a spec question | compare, or each when it selects one story | the stories its `select` picks; the axes grid without one | the themes those stories are judged in |
 
 - A **compare** question is answered with its images side by side, so that "primary reads as more prominent than secondary" can be judged at all. Every image still gets its own verdict.
 - An **each** question judges every image on its own.
-- `change-<story>` questions are asked for every story whose baseline exists and differs. In CI, only questions that include an added or changed story are asked.
+- `change-<story>` questions are asked for every story whose baseline exists and differs; the ID carries the story's name.
+- In CI, the judge sees the added or changed stories: an `each` question is asked only about them, and a `compare` question only in a theme where one of its images shows one of them, with all of its images.
 - `family` is left out until another component has baselines.
 
 ## Batching

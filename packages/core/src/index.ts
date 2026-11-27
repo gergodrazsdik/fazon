@@ -36,6 +36,17 @@ export type * from "./spec/types.js";
 export { parseSpecFile, readSpecFiles, type SpecFile } from "./spec/load.js";
 export { checkSpec, checkedSpecRules, specRules, type SpecRule, type ValidSpecFile } from "./spec/rules.js";
 export { isKebabCase, kebabCase } from "./spec/names.js";
+export {
+  appearanceStatements,
+  judgePlan,
+  maxFamilyComponents,
+  maxImagesPerCall,
+  type JudgeCall,
+  type JudgeImageKind,
+  type JudgePlan,
+  type JudgePlanImage,
+  type JudgePlanInput,
+} from "./judge/plan.js";
 
 export type * from "./config/types.js";
 export {
