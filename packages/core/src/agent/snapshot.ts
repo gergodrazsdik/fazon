@@ -10,8 +10,9 @@ import { generatedDirectory } from "../sync/sync.js";
 
 /**
  * The state of a repository's files: every file git tracks or would track (tracked files, and
- * untracked files that aren't ignored), outside `.fazon/`, by path relative to the repository
- * root with `/` separators. Ignored files, such as `node_modules/` and build output, aren't covered.
+ * untracked files that aren't ignored), outside `.fazon/` and the sandbox's stub paths when git
+ * doesn't track them (`sandboxStubPaths`), by path relative to the repository root with `/`
+ * separators. Ignored files, such as `node_modules/` and build output, aren't covered.
  */
 export interface Snapshot {
   /** A fingerprint of each file that exists: its kind, its executable bit and the SHA-256 of its content or link target. */
@@ -29,15 +30,42 @@ export interface AgentScope {
 /** Paths the snapshot leaves out: the harness's own run files. */
 const harnessDirectory = ".fazon/";
 
+/**
+ * Paths Claude Code's sandbox protects inside the working directory. While a sandboxed command
+ * runs, the sandbox mounts a stub over each one that doesn't exist, and it removes the stubs
+ * afterwards; a snapshot taken in between would list them, and the next one wouldn't, which read
+ * as a hand edit (F-0031). The snapshot leaves them out when git doesn't track them: the agent
+ * can't write them (agent-permissions.md), so they say nothing about the run.
+ */
+export const sandboxStubPaths: readonly string[] = [
+  ".bash_profile",
+  ".bashrc",
+  ".claude",
+  ".gitconfig",
+  ".gitmodules",
+  ".idea",
+  ".mcp.json",
+  ".profile",
+  ".ripgreprc",
+  ".vscode",
+  ".zprofile",
+  ".zshrc",
+];
+
+/** Whether an untracked file is under one of the sandbox's stub paths. */
+export function isSandboxStub(file: string): boolean {
+  return sandboxStubPaths.some((stub) => file === stub || file.startsWith(`${stub}/`));
+}
+
 /** How many files are read at once. */
 const parallelReads = 32;
 
-/** The files git lists in `repo`: tracked, and untracked but not ignored. */
-function listFiles(repo: string): Promise<string[]> {
+/** The files git lists in `repo`: tracked (`--cached`), or untracked but not ignored (`--others`). */
+function listFiles(repo: string, which: "--cached" | "--others"): Promise<string[]> {
   return new Promise((resolve, reject) => {
     execFile(
       "git",
-      ["ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+      ["ls-files", "-z", which, "--exclude-standard"],
       { cwd: repo, maxBuffer: 256 * 1024 * 1024, windowsHide: true },
       (error, stdout) => {
         if (error !== null) {
@@ -69,7 +97,9 @@ async function fingerprint(repo: string, file: string): Promise<string | undefin
 
 /** Takes a snapshot of the repository's files (see `Snapshot` for what it covers). */
 export async function takeSnapshot(repo: string): Promise<Snapshot> {
-  const listed = [...new Set(await listFiles(repo))].filter((file) => !file.startsWith(harnessDirectory)).sort();
+  const tracked = await listFiles(repo, "--cached");
+  const untracked = (await listFiles(repo, "--others")).filter((file) => !isSandboxStub(file));
+  const listed = [...new Set([...tracked, ...untracked])].filter((file) => !file.startsWith(harnessDirectory)).sort();
   const files = new Map<string, string>();
   for (let start = 0; start < listed.length; start += parallelReads) {
     const batch = listed.slice(start, start + parallelReads);

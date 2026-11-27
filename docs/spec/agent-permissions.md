@@ -156,7 +156,7 @@ CI regenerates the generated files from the committed specs and fails when they 
 
 ## Hand edits
 
-During a run, the harness takes a snapshot before and after each agent call. A snapshot covers every file git tracks or would track: tracked files, and untracked files that aren't ignored, outside `.fazon/`; for each, its content's hash, its executable bit and, for a link, its target. Ignored files, such as `node_modules/` and build output, aren't covered.
+During a run, the harness takes a snapshot before and after each agent call. A snapshot covers every file git tracks or would track: tracked files, and untracked files that aren't ignored, outside `.fazon/` and, unless git tracks them, the paths Claude Code's sandbox mounts stubs over while it runs (`.claude/`, `.mcp.json`, `.vscode/`, `.idea/`, `.gitconfig`, `.gitmodules`, `.ripgreprc` and the shell startup files), which the agent can't write and which would otherwise read as hand edits; for each, its content's hash, its executable bit and, for a link, its target. Ignored files, such as `node_modules/` and build output, aren't covered.
 
 - A change made **during** a call, outside the allowed paths, is a violation: the run ends as "needs a person", and the report lists the files. The harness doesn't revert them, so a person can see what happened.
 - A change made **between** calls is a person's hand edit, wherever it is. The run record stores each one, with its files; it counts as a human intervention in the measurements.
