@@ -84,7 +84,9 @@ export interface JudgeBatchInput {
 /** Each entry's attempts, one per repeat, by key; their costs are at the batch price. */
 export async function judgeInBatches(input: JudgeBatchInput): Promise<Map<string, JudgeAttempt[]>> {
   const repeats = Math.max(1, Math.floor(input.repeats));
-  const requests = input.entries.flatMap((entry) => {
+  // The API allows only `^[a-zA-Z0-9_-]{1,64}$` as a request's ID: `r<entry>-<repeat>`.
+  const requestId = (entry: number, repeat: number) => `r${String(entry)}-${String(repeat)}`;
+  const requests = input.entries.flatMap((entry, at) => {
     const params = judgeRequest({
       model: input.model,
       ...(input.effort === undefined ? {} : { effort: input.effort }),
@@ -92,7 +94,7 @@ export async function judgeInBatches(input: JudgeBatchInput): Promise<Map<string
       call: entry.call,
       images: entry.images,
     });
-    return Array.from({ length: repeats }, (_, repeat) => ({ custom_id: `${entry.key}~${String(repeat)}`, params }));
+    return Array.from({ length: repeats }, (_, repeat) => ({ custom_id: requestId(at, repeat), params }));
   });
   // Batches of at most maxBatchBytes and maxBatchRequests, in order.
   const chunks: (typeof requests)[] = [];
@@ -142,11 +144,11 @@ export async function judgeInBatches(input: JudgeBatchInput): Promise<Map<string
       }
     }
   }
-  for (const entry of input.entries) {
+  for (const [at, entry] of input.entries.entries()) {
     const list = attempts.get(entry.key) ?? [];
     for (let repeat = 0; repeat < repeats; repeat++) {
       list.push(
-        received.get(`${entry.key}~${String(repeat)}`) ?? {
+        received.get(requestId(at, repeat)) ?? {
           durationSeconds: 0,
           tokens: noTokens,
           costUsd: 0,
