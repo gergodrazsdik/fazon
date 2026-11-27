@@ -273,17 +273,18 @@ jobs:
           if-no-files-found: ignore
           retention-days: ${{ inputs.artifact-retention-days }}
 
-  # The judge (docs/spec/workflow.md#judge): after a passing verify, unless the judge's policy is
-  # off or the pull request comes from a fork. It gets one credential (#credentials): workload
-  # identity federation when the rule input is set, the API key secret otherwise; only this job
-  # sees it (WF-002). With the policy `advisory` it fails only on its own errors.
+  # The judge (docs/spec/workflow.md#judge): after a passing verify, for a pull request from this
+  # repository, unless the judge's policy is off. A push has no pull request's stories to judge, and
+  # a fork gets no credential. It gets one credential (#credentials): workload identity federation
+  # when the rule input is set, the API key secret otherwise; only this job sees it (WF-002). With
+  # the policy `advisory` it fails only on its own errors.
   judge:
     name: judge
     needs: verify
     if: >-
       ${{ needs.verify.outputs.status == 'ok' && needs.verify.outputs.judge == 'run'
-      && (github.event_name != 'pull_request'
-      || github.event.pull_request.head.repo.full_name == github.repository) }}
+      && github.event_name == 'pull_request'
+      && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-24.04
     timeout-minutes: ${{ fromJSON(needs.verify.outputs.judge-timeout || '15') }}
     permissions:
