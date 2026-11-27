@@ -2,7 +2,8 @@
 // A calibration round's renders, in the verifier image (docs/spec/measurement.md#judge-calibration):
 // every story of each calibration component unmodified, then each mutation case on the stories it
 // gives CSS for. The unmodified renders give the facts the cases are made from; a story a case
-// changes in any pixel is affected, and its capture is kept for the judge. For each case, the
+// changes in any pixel is affected, and its capture is kept for the judge; one a check catches
+// though no pixel changes is flagged (ADR 0028). For each case, the
 // deterministic checks' verdict: without baselines (a11y, tokens, layout) and with them (visual
 // against the committed baseline as well).
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -32,6 +33,11 @@ export interface RenderedCase {
   readonly description: string;
   /** The stories whose capture differs from the unmodified one, with the themes it differs in. */
   readonly affected: readonly { readonly story: string; readonly themes: readonly string[] }[];
+  /**
+   * The stories a check catches it on though their capture doesn't change, such as raw-color's:
+   * the judge sees the unmodified pixels there, so its verdicts are the unmodified component's.
+   */
+  readonly flagged: readonly { readonly story: string; readonly themes: readonly string[] }[];
   /** Whether a deterministic check fails it. */
   readonly checks: {
     /** a11y, tokens or layout has a blocking finding on an affected story. */
@@ -49,7 +55,7 @@ export interface RenderedComponent {
   readonly unmodifiedFindings: readonly string[];
   /** The cases that changed at least one capture, in the operators' order. */
   readonly cases: readonly RenderedCase[];
-  /** The cases that changed nothing, by ID: they aren't cases. */
+  /** The cases that changed no capture and that no check caught, by ID: they aren't cases. */
   readonly unchanged: readonly string[];
 }
 
@@ -118,6 +124,12 @@ export async function calibrationRenders(input: CalibrationRendersInput): Promis
     const facts = new Map<string, StoryFacts>();
     const captures = new Map<string, Uint8Array>();
     const unmodifiedFindings = new Set<string>();
+    /** Each story's own blocking rules unmodified: a case counts only the rules it adds. */
+    const unmodifiedRules = new Map<string, ReadonlySet<string>>();
+    const added = (story: Story, theme: string, result: RenderedStory): string[] => {
+      const before = unmodifiedRules.get(`${story.name} ${theme}`) ?? new Set<string>();
+      return blockingRules(component, story, theme, result, input.index).filter((rule) => !before.has(rule));
+    };
     input.progress?.(`${component.name}: the unmodified stories\n`);
     for (const story of manifest.stories) {
       for (const theme of manifest.themes) {
@@ -126,7 +138,9 @@ export async function calibrationRenders(input: CalibrationRendersInput): Promis
         facts.set(key, storyFacts(rendered.inspection));
         captures.set(key, rendered.capture.png);
         await write(path.join(input.outDir, capturePath(component.name, story.name, theme)), rendered.capture.png);
-        for (const rule of blockingRules(component, story, theme, rendered, input.index)) unmodifiedFindings.add(rule);
+        const own = blockingRules(component, story, theme, rendered, input.index);
+        unmodifiedRules.set(key, new Set(own));
+        for (const rule of own) unmodifiedFindings.add(rule);
       }
     }
     const cases = mutationCases({
@@ -140,6 +154,7 @@ export async function calibrationRenders(input: CalibrationRendersInput): Promis
     for (const entry of cases) {
       input.progress?.(`${component.name}: ${entry.id}\n`);
       const affected = new Map<string, string[]>();
+      const flagged = new Map<string, string[]>();
       const rules = new Set<string>();
       let differsFromBaseline = false;
       for (const story of manifest.stories) {
@@ -148,13 +163,20 @@ export async function calibrationRenders(input: CalibrationRendersInput): Promis
           if (css === undefined) continue;
           const result = await input.renderer.render(component, story, theme, css);
           const original = captures.get(`${story.name} ${theme}`);
-          if (original !== undefined && !capturesDiffer(original, result.capture.png)) continue;
+          if (original !== undefined && !capturesDiffer(original, result.capture.png)) {
+            // No pixel changed, but a check may still catch it, as it does raw-color (ADR 0028).
+            const caught = added(story, theme, result);
+            if (caught.length === 0) continue;
+            flagged.set(story.name, [...(flagged.get(story.name) ?? []), theme]);
+            for (const rule of caught) rules.add(rule);
+            continue;
+          }
           affected.set(story.name, [...(affected.get(story.name) ?? []), theme]);
           await write(
             path.join(input.outDir, capturePath(component.name, story.name, theme, entry.id)),
             result.capture.png,
           );
-          for (const rule of blockingRules(component, story, theme, result, input.index)) rules.add(rule);
+          for (const rule of added(story, theme, result)) rules.add(rule);
           const baseline = await readFile(
             path.join(input.baselinesDir, baselinePath(theme, component.name, story.name)),
           ).catch(() => undefined);
@@ -162,7 +184,7 @@ export async function calibrationRenders(input: CalibrationRendersInput): Promis
             differsFromBaseline = true;
         }
       }
-      if (affected.size === 0) {
+      if (affected.size === 0 && flagged.size === 0) {
         unchanged.push(entry.id);
         continue;
       }
@@ -172,6 +194,7 @@ export async function calibrationRenders(input: CalibrationRendersInput): Promis
         class: entry.class,
         description: entry.description,
         affected: [...affected].map(([story, themes]) => ({ story, themes })),
+        flagged: [...flagged].map(([story, themes]) => ({ story, themes })),
         checks: {
           withoutBaselines: rules.size > 0,
           withBaselines: rules.size > 0 || differsFromBaseline,

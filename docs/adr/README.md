@@ -32,7 +32,8 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0024](0024-feedback-in-every-prompt.md) | The developer's feedback in every prompt of a feedback run | accepted |
 | [0025](0025-empty-fixture-and-recipe-values.md) | The empty fixture refused by generate, recipe values type-checked | accepted |
 | [0026](0026-feedback-record-and-font-check.md) | A feedback run records its feedback and the hand edits since its parent; the tokens check checks loaded fonts | accepted |
-| [0027](0027-m3-federation-calibration-cost.md) | Workload identity federation for the judge in CI; a calibration round that fits the budget; seeded defects injected at capture | accepted |
+| [0027](0027-m3-federation-calibration-cost.md) | Workload identity federation for the judge in CI; a calibration round that fits the budget; seeded defects injected at capture | accepted, amended by 0028 |
+| [0028](0028-cases-a-check-catches.md) | A calibration case a check catches counts though no pixel changes; viewer-only cases the checks catch stay in the judge's catch rate | accepted |
 
 ## Numbering and status
 

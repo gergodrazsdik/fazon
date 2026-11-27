@@ -58,7 +58,9 @@ function fake(): StoryRenderer & { calls: number } {
     calls: 0,
     render: (_: VerifyComponent, story: Story, theme: string, css?: string): Promise<RenderedStory> => {
       renderer.calls += 1;
-      const visible = css !== undefined && !css.includes("outline-style");
+      // An outline change doesn't show here, nor a literal colour equal to its token's value.
+      const literal = css?.includes("#") === true;
+      const visible = css !== undefined && !css.includes("outline-style") && !literal;
       return Promise.resolve({
         inspection: {
           viewport: { width: 1024, height: 768 },
@@ -76,6 +78,7 @@ function fake(): StoryRenderer & { calls: number } {
                     color: "var(--fz-color-text-on-action)",
                     "padding-top": "var(--fz-space-inset-sm)",
                   }),
+                  ...(literal ? [style("author", { "background-color": "#2154d9 !important" })] : []),
                 ],
                 inherited: [],
               },
@@ -123,13 +126,18 @@ describe("calibrationRenders", () => {
     const component = renders.components[0];
     const ids = component?.cases.map((entry) => entry.id) ?? [];
     expect(ids).toContain("raw-color");
+    // raw-color changes no pixel, but the tokens check catches it on every story (ADR 0028).
+    const raw = component?.cases.find((entry) => entry.id === "raw-color");
+    expect(raw?.affected).toEqual([]);
+    expect(raw?.flagged).toHaveLength(manifest.stories.length);
+    expect(raw?.checks.rules).toContain("tokens/raw-value");
     expect(ids).toContain("padding-step");
     // The fake shows no outline change, and its stories have no icon.
     expect(component?.unchanged).toContain("focus-ring-removed");
     expect(component?.unchanged).toContain("icon-misaligned");
-    const raw = component?.cases.find((entry) => entry.id === "raw-color");
-    expect(raw?.affected).toHaveLength(manifest.stories.length);
-    expect(raw?.affected[0]?.themes).toEqual(["light", "dark"]);
+    const padding = component?.cases.find((entry) => entry.id === "padding-step");
+    expect(padding?.affected).toHaveLength(manifest.stories.length);
+    expect(padding?.affected[0]?.themes).toEqual(["light", "dark"]);
   });
 
   it("counts a case caught with baselines when an affected capture differs from its baseline", () => {
@@ -142,7 +150,7 @@ describe("calibrationRenders", () => {
   it("writes the affected captures by case, and renders.json", async () => {
     const story = manifest.stories[0]?.name ?? "";
     await expect(
-      readFile(path.join(outDir, capturePath("button", story, "light", "raw-color"))),
+      readFile(path.join(outDir, capturePath("button", story, "light", "padding-step"))),
     ).resolves.toBeDefined();
     expect(await readdir(path.join(outDir, "cases", "button"))).not.toContain("focus-ring-removed");
     const written = JSON.parse(await readFile(path.join(outDir, rendersFile), "utf8")) as CalibrationRenders;
