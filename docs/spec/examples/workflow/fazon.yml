@@ -2,6 +2,8 @@
 # Before M5 the reusable workflow is referenced by the framework commit the repository pins;
 # from M5, by a release tag. A repository whose install needs more than
 # `pnpm install --frozen-lockfile` passes `install-command` under `with:` (docs/spec/workflow.md#installing).
+# The judge uses workload identity federation; a repository without it drops `id-token: write`
+# and the `anthropic-*` inputs, and passes the `anthropic-api-key` secret (docs/spec/workflow.md#credentials).
 ---
 name: fazon
 
@@ -19,6 +21,9 @@ jobs:
     uses: gergodrazsdik/fazon/.github/workflows/verify.yml@0123456789abcdef0123456789abcdef01234567
     permissions:
       contents: read
+      id-token: write # only the judge job uses it
       pull-requests: write # only the comment job uses it
-    secrets:
-      anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+    with:
+      anthropic-federation-rule-id: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+      anthropic-organization-id: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+      anthropic-service-account-id: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}

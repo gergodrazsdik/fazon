@@ -25,7 +25,7 @@ How the vision judge decides what the checks can't measure: when it runs, what i
 | CI | after the checks, unless the policy is `off` or the pull request comes from a fork | the stories whose baselines the pull request adds or changes |
 | Calibration | as the measurement protocol says | the calibration set |
 
-The judge is called directly through the API with an API key. It's skipped on pull requests from forks, which have no access to the secret.
+The judge is called directly through the API: locally with an API key, and in CI through workload identity federation or an API key secret ([workflow](workflow.md#credentials), [ADR 0027](../adr/0027-m3-federation-calibration-cost.md)). It's skipped on pull requests from forks, which can get neither.
 
 ## What the judge sees
 
