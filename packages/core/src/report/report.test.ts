@@ -11,7 +11,7 @@ import { runDirectory, type CheckResult, type RunRecord } from "../verify/run-re
 import { buildReport, storybookStoryUrl } from "./build.js";
 import { escapeHtml, html, relativeUrl } from "./html.js";
 import { nextSteps, renderReport, type ReportModel } from "./render.js";
-import type { ReportRecord } from "./types.js";
+import { findingOwner, type ReportRecord } from "./types.js";
 
 const image = "ghcr.io/gergodrazsdik/fazon-verifier@sha256:" + "4f1c2a9e".repeat(8);
 const exampleRun = fileURLToPath(new URL("../../../../docs/spec/examples/records/run.json", import.meta.url));
@@ -302,5 +302,171 @@ describe("buildReport", () => {
     expect(page).not.toContain("dark/button/label--a.png");
     expect(page).toContain('href="http://localhost:6006/?path=/story/button--label-a&amp;globals=theme:light"');
     expect(page).toContain("fazon accept button");
+  });
+
+  /** A generate run of Badge with one iteration, whose checks covered the whole library. */
+  async function badgeRun(checks: CheckResult[], overrides: Partial<ReportRecord> = {}): Promise<RunRecord> {
+    const example = await generateRecord();
+    const [first] = example.iterations;
+    if (first === undefined) throw new Error("the example has an iteration");
+    const failed = checks.some((c) => c.status !== "pass");
+    const record: ReportRecord = {
+      ...example,
+      id: "20261127T100000Z-badge-0001",
+      component: "Badge",
+      status: failed ? "needs-a-person" : "passed",
+      ...(failed ? { reason: "iterations" as const } : {}),
+      iterations: [
+        {
+          n: 1,
+          call: first.call,
+          verification: { checks, captures: "captures/1" },
+          outcome: failed ? "fail" : "pass",
+        },
+      ],
+      ...overrides,
+    };
+    return record as unknown as RunRecord;
+  }
+
+  it("shows an agent run's own stories, and another component that is all unchanged as one line", async () => {
+    const record = await badgeRun(passing);
+    const run = `.fazon/runs/${record.id}`;
+    await put(`${run}/captures/1/light/badge/label--a.png`, png("badge"));
+    await put(`${run}/captures/1/light/button/label--a.png`, png("button light"));
+    await put(`${run}/captures/1/dark/button/label--a.png`, png("button dark"));
+    await put("baselines/light/button/label--a.png", png("button light"));
+    await put("baselines/dark/button/label--a.png", png("button dark"));
+    const statuses = Object.fromEntries(checks.map((check) => [check, "pass"]));
+    const details: VerifyDetails = {
+      fazon: 0,
+      platform: "linux/amd64",
+      components: ["badge", "button", "dialog"].map((name) => ({ name, inputs: "sha256:0", checks: statuses })),
+      stories: [
+        {
+          component: "badge",
+          story: "badge--label--a",
+          theme: "light",
+          path: "light/badge/label--a.png",
+          status: "new",
+        },
+        ...["light", "dark"].map((theme) => ({
+          component: "button",
+          story: "button--label--a",
+          theme,
+          path: `${theme}/button/label--a.png`,
+          status: "unchanged" as const,
+        })),
+      ],
+      orphans: [],
+      incomplete: [],
+      unusedExemptions: [],
+    };
+    await put(`${run}/checks/1/verify.json`, JSON.stringify(details));
+
+    const built = await buildReport({ root, config, record });
+    expect(built.images).toBe(1);
+    const page = await readFile(built.file, "utf8");
+    expect(page).toContain('src="images/run/captures/1/light/badge/label--a.png"');
+    expect(page).not.toContain("captures/1/light/button");
+    expect(page).not.toContain("captures/1/dark/button");
+    await expect(stat(path.join(root, run, "report/images/run/captures/1/light/button"))).rejects.toThrow();
+    expect(page).toContain('<h2 id="others">Other components</h2>');
+    expect(page).toMatch(/<code>button<\/code>:\s+2 captures unchanged, every check passed/);
+    expect(page).toMatch(/<code>dialog<\/code>:\s+no captures, every check passed/);
+    expect(page).not.toContain('id="other-button"');
+    expect(page).not.toContain('id="component-button"');
+    expect(page).toContain("Only <code>badge</code>'s stories are here");
+    // Badge's new story is its own baseline to write; the other components have none.
+    expect(page).toContain("fazon baseline update badge");
+  });
+
+  it("shows another component in full, with its diff and findings, when it has a changed story", async () => {
+    const visual: CheckResult = {
+      check: "visual",
+      status: "fail",
+      durationSeconds: 1,
+      findings: [
+        {
+          check: "visual",
+          rule: "changed",
+          message: "Button's capture differs from its baseline.",
+          story: "button--label--b",
+          theme: "light",
+          evidence: "captures/1/light/button/label--b.diff.png",
+          blocking: true,
+        },
+        {
+          check: "visual",
+          rule: "changed",
+          message: "Badge's own diff, advisory in its generate run.",
+          story: "badge--label--a",
+          theme: "light",
+          evidence: "captures/1/light/badge/label--a.diff.png",
+          blocking: false,
+        },
+      ],
+    };
+    const lint: CheckResult = {
+      check: "lint",
+      status: "pass",
+      durationSeconds: 1,
+      findings: [
+        {
+          check: "lint",
+          rule: "advisory",
+          message: "Card's advisory lint finding.",
+          file: "src/components/card/Card.vue",
+          blocking: false,
+        },
+      ],
+    };
+    const record = await badgeRun([...passing.filter((c) => c.check !== "lint" && c.check !== "visual"), lint, visual]);
+    const run = `.fazon/runs/${record.id}`;
+    // No verify.json: the captures directory is read as it is.
+    await put(`${run}/captures/1/light/badge/label--a.png`, png("badge"));
+    await put(`${run}/captures/1/light/badge/label--a.diff.png`, png("badge diff"));
+    await put("baselines/light/badge/label--a.png", png("badge before"));
+    await put(`${run}/captures/1/light/button/label--a.png`, png("button a"));
+    await put("baselines/light/button/label--a.png", png("button a"));
+    await put(`${run}/captures/1/light/button/label--b.png`, png("button b"));
+    await put(`${run}/captures/1/light/button/label--b.diff.png`, png("button b diff"));
+    await put("baselines/light/button/label--b.png", png("button b before"));
+    await put(`${run}/captures/1/light/card/label--a.png`, png("card"));
+    await put("baselines/light/card/label--a.png", png("card"));
+
+    const built = await buildReport({ root, config, record });
+    const page = await readFile(built.file, "utf8");
+    // Badge's 3 images, Button's capture, diff and baseline of b, and its capture of a; none of Card's.
+    expect(built.images).toBe(7);
+    expect(page).toContain('<section class="component" id="other-button">');
+    expect(page).toMatch(
+      /<a href="#other-button"><code>button<\/code><\/a>:\s+1 capture unchanged, 1 changed, visual fail/,
+    );
+    expect(page).toMatch(/<code>card<\/code>:\s+1 capture unchanged, every check passed/);
+    expect(page).toContain('src="images/baselines/light/button/label--b.png"');
+    expect(page).toContain('src="images/run/captures/1/light/button/label--b.diff.png"');
+    expect(page).toContain('<a href="images/run/captures/1/light/button/label--b.diff.png">Evidence</a>');
+    expect(page).not.toContain("captures/1/light/card");
+    // Button's finding is under its own heading, once; Card's advisory one is only counted.
+    expect(page.split("Button&#39;s capture differs from its baseline.").length).toBe(2);
+    expect(page).toMatch(/Findings of other components:\s+button 1 \(1 blocking\), card 1\./);
+    expect(page).not.toContain("Card&#39;s advisory lint finding.");
+    expect(page).toContain("Badge&#39;s own diff, advisory in its generate run.");
+    // Badge's own diff is in the visual diffs; Button's is in its section, not the gallery.
+    expect(page).toContain("Other components' changed stories are under Other components.");
+    expect(page).not.toContain('id="component-button"');
+  });
+});
+
+describe("findingOwner", () => {
+  const paths = { components: "src/components", specs: "specs" };
+  it("tells a finding's component by its story, its baseline's path, its file or its spec", () => {
+    expect(findingOwner({ check: "a11y", story: "button-group--a--default" }, paths)).toBe("button-group");
+    expect(findingOwner({ check: "visual", file: "dark/badge/old.png" }, paths)).toBe("badge");
+    expect(findingOwner({ check: "lint", file: "src/components/card/Card.vue" }, paths)).toBe("card");
+    expect(findingOwner({ check: "build", file: "specs/card.md" }, paths)).toBe("card");
+    expect(findingOwner({ check: "build", file: "src/index.ts" }, paths)).toBeUndefined();
+    expect(findingOwner({ check: "test" }, paths)).toBeUndefined();
   });
 });

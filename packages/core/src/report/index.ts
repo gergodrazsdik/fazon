@@ -12,9 +12,12 @@ export {
 export { escapeHtml, html, Html, relativeUrl } from "./html.js";
 export { nextSteps, renderReport, type NextStep, type ReportModel } from "./render.js";
 export {
+  findingOwner,
   galleryVerification,
   type ReportCall,
   type ReportCapture,
+  type ReportFocus,
+  type ReportOtherComponent,
   type ReportIteration,
   type ReportJudge,
   type ReportJudgeFinding,
