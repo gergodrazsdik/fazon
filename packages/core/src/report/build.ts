@@ -189,7 +189,8 @@ async function collectCaptures(
 
 /** A configured directory, repository-relative and `/`-separated, without `./` or a trailing `/`. */
 function posixDirectory(directory: string): string {
-  const normalized = path.posix.normalize(toPosix(directory)).replace(/\/+$/, "");
+  // normalize() has collapsed repeated slashes, so at most one trailing slash is left.
+  const normalized = path.posix.normalize(toPosix(directory)).replace(/\/$/, "");
   return normalized === "." ? "" : normalized.replace(/^\.\//, "");
 }
 
