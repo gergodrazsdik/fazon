@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0104, F-0029, Q-0027.
+Next free IDs: T-0105, F-0029, Q-0027.
 
 ## Now
 
@@ -126,6 +126,7 @@ Complete 2026-11-26: the CLI (`doctor`, `spec check`, `sync`, `verify`, `baselin
 - [ ] T-0098 The rendered and source checks' remaining gaps: pseudo-elements in `tokens`; MATRIX-005; Vite and Storybook warnings as findings; the `package` check's `styles` rule loading the styles in a browser, and accepting any reachable stylesheet, so the exported `tokens.css` alone passes it ([fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4)) ([#56](https://github.com/gergodrazsdik/fazon/pull/56), [#57](https://github.com/gergodrazsdik/fazon/pull/57))
 - [ ] T-0101 The reusable `verify.yml` uploads the HTML report: `fazon report --no-open` on the run and `.fazon/runs/<id>/report/` in the `fazon-report` artifact beside `summary.md`; workflow.md's artifact table says so ([#68](https://github.com/gergodrazsdik/fazon/pull/68))
 - [ ] T-0103 `fazon propose` writes the API fields' lists in block style (`values:` then `- sm` lines), while the hand-written specs use flow style (`values: [sm, md]`): write short scalar lists in flow style (the maintainer, T-0050 step 8)
+- [x] T-0104 An agent run's report shows only its component's gallery: the checks phase covers the whole library, so Badge's first report showed Button's 54 captures beside its own 24; every other component gets one summary line, and is shown in full only when it blocks (the maintainer, T-0050 step 8) — 2026-11-27, [#80](https://github.com/gergodrazsdik/fazon/pull/80): only the images shown are copied; `findingOwner` decides which component a finding belongs to
 - [ ] T-0102 `fazon accept` finds the component's latest run with its own private copy of `latestLoopRun` from `fazon feedback`: use the exported one ([#74](https://github.com/gergodrazsdik/fazon/pull/74))
 - [x] T-0099 Prepare the example repo for `fazon verify` (step 12): the build emits type declarations, the exports map includes the stylesheet, and `fazon`, `playwright` 1.65.1 and `lucide-static` are dev dependencies ([#57](https://github.com/gergodrazsdik/fazon/pull/57)) — 2026-11-26, [fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4): the build emits the declarations from a Vite plugin (F-0017)
 - [x] T-0100 The example repo's ruleset requires only `lint`, `zizmor` and `pr-title`: add `framework-pin`, `library` and `fazon / verify` as required checks, so a failing verify blocks the merge (maintainer: `just github-settings`; [fazon-vue-example#5](https://github.com/gergodrazsdik/fazon-vue-example/pull/5)) — 2026-11-26, [fazon-vue-example#6](https://github.com/gergodrazsdik/fazon-vue-example/pull/6): applied by the maintainer; `just github-settings-check` reports no differences
