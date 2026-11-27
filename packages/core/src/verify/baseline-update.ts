@@ -201,12 +201,15 @@ async function qualify(
         ? run.record.verification?.judge
         : run.record.iterations.find((i) => i.n === run.iteration)?.verification?.judge;
     const judged = await judgedStories(runDirectory(input.root, run.id), judge?.results, component.name);
-    const writes = new Set(
-      details.stories
-        .filter((s) => s.component === component.name && s.status !== "unchanged")
-        .filter((s) => input.stories === undefined || input.stories.includes(s.story))
-        .map((s) => s.story),
-    );
+    // The stories it would write: those whose capture differs from the committed baseline, or that
+    // have none. After an image upgrade nothing was compared, and identical pixels aren't rewritten.
+    const baselines = path.join(input.root, input.config.paths.baselines);
+    const writes = new Set<string>();
+    for (const s of details.stories) {
+      if (s.component !== component.name || s.status === "unchanged") continue;
+      if (input.stories !== undefined && !input.stories.includes(s.story)) continue;
+      if (await rewrites(path.join(run.checked.captures, s.path), path.join(baselines, s.path))) writes.add(s.story);
+    }
     const unseen = [...writes].filter((story) => judged?.has(story) !== true);
     if (judged === undefined && writes.size > 0) {
       failed.push(
@@ -229,6 +232,15 @@ async function qualify(
     );
   }
   return { qualification: { ...at, failed: failed.map((reason) => `${label}: ${reason}`) }, run };
+}
+
+/** Whether writing the capture would change the baseline: it's missing, or its pixels differ. */
+async function rewrites(capture: string, baseline: string): Promise<boolean> {
+  try {
+    return !samePixels(new Uint8Array(await readFile(baseline)), new Uint8Array(await readFile(capture)));
+  } catch {
+    return true;
+  }
 }
 
 function samePixels(a: Uint8Array, b: Uint8Array): boolean {

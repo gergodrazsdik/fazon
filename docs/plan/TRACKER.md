@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0106, F-0036, Q-0029.
+Next free IDs: T-0106, F-0037, Q-0029.
 
 ## Now
 
@@ -147,6 +147,7 @@ Complete 2026-11-27: `spec new`, the spec skill and every SPEC rule; `propose`, 
 - [ ] F-0034 ADR 0027's calibration estimate is about 7 times too high: it assumed $0.35 per pass over Button's plan, but the first real call cost $0.0088, most of it the one-time write of the 2,709-token cached prefix, with 374 input and 125 output tokens; a whole pass should cost about $0.05 with Sonnet 5.5. Step 6's staged estimate replaces the guess with measured costs (step 2)
 - [!] Q-0028 The `ant` CLI's login as a local credential for the judge, instead of an API key: the SDK can use its profile and refreshes the token itself, but stores it unencrypted on disk, while the key stays gpg-encrypted in pass; ADR 0027 chose an API key locally, and the brief defers a local judge without one until after M3. Decide after M3 (maintainer, 2026-11-27)
 - [ ] F-0035 When the judge's fails block (once it's calibrated), the next iteration's prompt carries only the checks' blocking findings: the loop takes `findings` from the checks phase, so the agent wouldn't see why the judge failed the story. Carry the judge's fail findings into the prompt before a calibrated judge can block (step 7) (step 3b)
+- [x] F-0036 `fazon baseline update` asked for judge verdicts on every story whose visual status wasn't `unchanged`, so after a verifier image upgrade, which compares nothing, it wanted verdicts for all 130 of the example repo's stories though it rewrites none: it asks only for the stories whose capture differs from the committed baseline, or that have none (T-0056, the example repo's pin move) — 2026-11-27, [#95](https://github.com/gergodrazsdik/fazon/pull/95)
 - [~] T-0056 The workflows' first credential: the judge's, through workload identity federation with an API key secret as the alternative, skipped on pull requests from forks; the example repo's caller grants `id-token: write` and passes the federation IDs; the maintainer creates the federation rule in the Claude Console and the repository variables ([ADR 0027](../adr/0027-m3-federation-calibration-cost.md))
   - [x] The reusable workflow's judge job: the federation inputs, the identity token kept fresh, the API key as the alternative, the fork check, the verdicts in the summary and the artifacts; `fazon verify`'s result names the judge's policy — 2026-11-27, [#94](https://github.com/gergodrazsdik/fazon/pull/94)
   - [ ] The maintainer creates the service account `fazon-vue-example-ci-judge` and the federation rule in the Claude Console, and gives the IDs
