@@ -57,7 +57,7 @@ It takes the captures from the component's latest finished run: a verify run tha
 
 1. ran in the verifier image recorded in `fazon.json`, or in any pinned image with `--all`, on linux/amd64;
 2. passed every check other than `visual`, with the exemptions in the spec;
-3. had the judge look at every story it would write: a verdict of any kind is enough, as the person decides. This doesn't apply when the judge's policy in the config is `off`, as it is before the judge exists (M1 and M2);
+3. had the judge look at every story it would write: a verdict of any kind is enough, as the person decides, and a story counts once the judge gave it one in any theme, as the judge sees some stories only in the default theme. This doesn't apply when the judge's policy in the config is `off`;
 4. is newer than the last change to the component's spec and files: the [hash of its inputs](records.md#hashes) is the same now as when the checks started. The provenance file isn't one of them, so approving the API or accepting the run doesn't count as a change.
 
 A baseline whose pixels equal the capture's isn't rewritten, so running the command twice changes nothing.

@@ -86,7 +86,6 @@ export {
 } from "./in-image.js";
 export {
   capturePlatform,
-  judgeAvailable,
   lucideNotice,
   updateBaselines,
   type BaselineUpdateInput,

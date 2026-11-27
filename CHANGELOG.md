@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `fazon generate` and `fazon feedback` run the judge after an iteration's checks pass, on every story of the component, within what's left of the run's budget; its results go to `judge/<n>.json`. Without a credential, the run says once that the judge didn't run.
+- `fazon baseline update` requires a judge verdict, of any kind, for every story it writes, unless the judge's policy is `off`.
 - The vision judge (judge version 1): `fazon verify` runs it on the host once every check passes, and `fazon judge <run>` runs it for an earlier verify run, within the CI cap in CI. Its plan and results go to the run's `judge.json`, and the run record gets its summary. Before calibration its verdicts are advisory. It reads `ANTHROPIC_API_KEY`, or the workload identity federation variables, and `fazon doctor` reports either.
 - The reusable workflow's pull request comment links the `fazon-report` artifact, with the HTML report, below the summary.
 - The reusable workflow's `fazon-report` artifact holds the HTML report (`report/index.html`) beside `summary.md`, also when verify fails.
