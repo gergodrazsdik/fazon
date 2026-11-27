@@ -501,6 +501,43 @@ describe("fazon calibrate", () => {
     await removeRepository(root);
   });
 
+  const round1 = [
+    "calibrate",
+    "--round",
+    "1",
+    "--budget",
+    "10",
+    "--out",
+    "calibration/judge-1/claude-sonnet-5-5.json",
+    "--records",
+    "https://github.com/o/r/releases/download/measurement-1/records.tar.gz",
+  ];
+
+  it("refuses (2) without --budget or --out, and exits 3 without an API key", async () => {
+    const bare = await captureJson(["calibrate", "--round", "1"], machine(root));
+    expect(bare.json).toMatchObject({ status: "refused", exitCode: 2 });
+    expect(JSON.stringify(bare.json.messages)).toContain("A round needs --budget");
+    const keyless = await captureJson(round1, machine(root));
+    expect(keyless.json).toMatchObject({ status: "error", exitCode: 3 });
+    const federated = await captureJson(
+      round1,
+      machine(
+        root,
+        {},
+        {
+          env: {
+            ANTHROPIC_FEDERATION_RULE_ID: "r",
+            ANTHROPIC_ORGANIZATION_ID: "o",
+            ANTHROPIC_SERVICE_ACCOUNT_ID: "s",
+            ANTHROPIC_IDENTITY_TOKEN_FILE: "/t",
+          },
+        },
+      ),
+    );
+    expect(federated.json).toMatchObject({ status: "refused", exitCode: 2 });
+    expect(JSON.stringify(federated.json.messages)).toContain("needs an API key");
+  });
+
   it("refuses (2) a round the protocol doesn't define", async () => {
     const { json } = await captureJson(["calibrate", "--round", "3"], machine(root));
     expect(json).toMatchObject({ status: "refused", exitCode: 2 });
@@ -509,18 +546,18 @@ describe("fazon calibrate", () => {
 
   it("refuses (2) with fazon.local.yaml, and with uncommitted changes, as measure does", async () => {
     await writeFile(path.join(root, "fazon.local.yaml"), "fazon: 0\n");
-    expect(JSON.stringify((await captureJson(["calibrate", "--round", "1"], machine(root))).json.messages)).toContain(
-      "runs without fazon.local.yaml",
-    );
+    expect(
+      JSON.stringify((await captureJson(round1, machine(root, {}, { env: { ANTHROPIC_API_KEY: "k" } }))).json.messages),
+    ).toContain("runs without fazon.local.yaml");
     await rm(path.join(root, "fazon.local.yaml"));
     await git("git", ["add", "specs/button.md"], { cwd: root });
-    const { json } = await captureJson(["calibrate", "--round", "1"], machine(root));
+    const { json } = await captureJson(round1, machine(root, {}, { env: { ANTHROPIC_API_KEY: "k" } }));
     expect(json).toMatchObject({ status: "refused", exitCode: 2 });
     expect(JSON.stringify(json.messages)).toContain("runs from a clean checkout");
   });
 
   it("refuses (2) a round whose components have no spec here", async () => {
-    const { json } = await captureJson(["calibrate", "--round", "1"], machine(root));
+    const { json } = await captureJson(round1, machine(root, {}, { env: { ANTHROPIC_API_KEY: "k" } }));
     expect(json).toMatchObject({ status: "refused", exitCode: 2 });
     expect(JSON.stringify(json.messages)).toContain(
       "Round 1 calibrates button, badge, link, dialog, but badge, link, dialog have no spec here.",

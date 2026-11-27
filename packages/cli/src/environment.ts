@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { execFile, spawn } from "node:child_process";
-import type { JudgeClient, JudgeCredential } from "@fazon/core";
+import type { BatchClient, JudgeClient, JudgeCredential } from "@fazon/core";
 
 export interface ExecResult {
   readonly exitCode: number;
@@ -32,6 +32,8 @@ export interface Environment {
   readonly interrupt?: AbortSignal;
   /** The judge's API client for a credential; the SDK's when absent. Tests pass a fake. */
   readonly judgeClient?: (credential: JudgeCredential) => JudgeClient;
+  /** The judge's batch client for a calibration round; the SDK's when absent. Tests pass a fake. */
+  readonly judgeBatchClient?: (credential: JudgeCredential) => BatchClient;
   /** Runs a program; `undefined` when it can't be started, as when it isn't installed. */
   exec(program: string, args: readonly string[], options?: ExecOptions): Promise<ExecResult | undefined>;
 }

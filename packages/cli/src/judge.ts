@@ -54,7 +54,10 @@ export type VerifyJudgeResult =
   | { readonly kind: "error"; readonly message: string };
 
 /** The components the judge can see: those with a story manifest, with their spec's text and body. */
-async function passComponents(repo: string, components: readonly VerifyComponent[]): Promise<JudgePassComponent[]> {
+export async function passComponents(
+  repo: string,
+  components: readonly VerifyComponent[],
+): Promise<JudgePassComponent[]> {
   const result: JudgePassComponent[] = [];
   for (const component of components) {
     if (component.manifest === undefined) continue;

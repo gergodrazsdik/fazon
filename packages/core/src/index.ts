@@ -110,6 +110,26 @@ export {
   type CalibrateInImageOptions,
   type CalibrateInImageOutcome,
 } from "./calibration/in-image.js";
+export { judgeRound, type RoundCall, type RoundJudgeInput, type RoundJudgeOutcome } from "./calibration/judge.js";
+export {
+  calibrationRecord,
+  roundMeasures,
+  thresholds,
+  wilson,
+  type CalibrationRecordInput,
+  type OperatorResult,
+  type Proportion,
+  type RoundMeasures,
+} from "./calibration/measures.js";
+export {
+  batchDiscount,
+  judgeInBatches,
+  sdkBatchClient,
+  type BatchClient,
+  type BatchEntry,
+  type BatchResult,
+  type JudgeBatchInput,
+} from "./judge/batch.js";
 
 export type * from "./config/types.js";
 export {
