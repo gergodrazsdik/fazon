@@ -4,7 +4,15 @@
 import { access, cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { readRunRecord, runDirectory, runRecordProblems, type CheckFinding, type CheckResult } from "@fazon/core";
+import {
+  baselinePath,
+  encodePng,
+  readRunRecord,
+  runDirectory,
+  runRecordProblems,
+  type CheckFinding,
+  type CheckResult,
+} from "@fazon/core";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import type { ExecResult } from "../environment.js";
 import {
@@ -12,6 +20,7 @@ import {
   captureJson,
   copyExample,
   fakeClaudeCode,
+  fakeJudge,
   gitInit,
   libraryConfig,
   removeRepository,
@@ -73,6 +82,8 @@ interface Image {
   readonly crash?: number;
   /** Called when the container starts; the run waits until `docker kill` when it returns true. */
   readonly onStart?: () => boolean;
+  /** Write a capture of every story the manifest gives, in each theme it's judged in. */
+  readonly captures?: boolean;
 }
 
 interface Machine extends FakeMachine {
@@ -128,6 +139,23 @@ function machine(image: Image = {}, env: Record<string, string> = {}, extra: Par
           captures: `captures/${String(n)}`,
         };
         await writeFile(path.join(dir, "checks.json"), JSON.stringify(result));
+        if (image.captures === true) {
+          const manifest = JSON.parse(await read("src/components/button/generated/stories.json")) as {
+            stories: { name: string; judge: string[] }[];
+          };
+          for (const story of manifest.stories) {
+            for (const theme of story.judge) {
+              const file = path.join(
+                runDirectory(root, id),
+                "captures",
+                String(n),
+                baselinePath(theme, "button", story.name),
+              );
+              await mkdir(path.dirname(file), { recursive: true });
+              await writeFile(file, encodePng({ width: 2, height: 2, data: new Uint8Array(16).fill(200) }));
+            }
+          }
+        }
         return { exitCode: 0, stdout: "", stderr: "" };
       })();
     },
@@ -193,6 +221,36 @@ describe("fazon generate", () => {
     expect(claudeArgs[claudeArgs.indexOf("--model") + 1]).toBe("claude-sonnet-5-5");
     expect(prompt).toContain("# Generate the Button component");
     expect(prompt).toContain("This is the run's first call");
+  });
+
+  it("judges the iteration whose checks pass, counting its cost toward the run's budget", async () => {
+    const judge = fakeJudge();
+    const fake = machine({ captures: true }, { ANTHROPIC_API_KEY: "test-key" }, { judgeClient: judge.client });
+    const { code, json } = await captureJson(["generate", "button"], fake);
+    expect(code, JSON.stringify(json.messages)).toBe(0);
+    expect(judge.requests).toHaveLength(17);
+    const [run = ""] = await runs();
+    const record = await readRunRecord(path.join(root, ".fazon/runs", run));
+    expect(runRecordProblems(record)).toEqual([]);
+    expect(record).toMatchObject({
+      status: "passed",
+      versions: { judge: 1 },
+      config: { judgeCalibrated: false },
+      iterations: [{ verification: { judge: { calls: 17, blocking: false, results: "judge/1.json" } } }],
+    });
+    expect(record?.totals.judgeCostUsd).toBeCloseTo(17 * 0.003, 4);
+    expect(record?.totals.costUsd).toBeCloseTo(0.4321 + 17 * 0.003, 4);
+    expect(await exists(`.fazon/runs/${run}/judge/1.json`)).toBe(true);
+    // The key never reaches the image or Claude Code's sandboxed checks (CLI-003).
+    expect((fake.runs[0] ?? []).join(" ")).not.toMatch(/test-key/);
+  });
+
+  it("says once that the judge didn't run without a credential", async () => {
+    const { json } = await captureJson(["generate", "button"], machine());
+    const warnings = (json.messages as { text: string }[]).filter((message) =>
+      message.text.startsWith("The judge didn't run"),
+    );
+    expect(warnings).toHaveLength(1);
   });
 
   it("feeds a failing iteration's blocking findings into the next prompt", async () => {

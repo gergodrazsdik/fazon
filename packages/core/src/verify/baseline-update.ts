@@ -24,17 +24,32 @@ import type { VerifyComponent } from "./components.js";
 import { capturesDirectory } from "./rendered.js";
 import { componentInputsHash, optimizePng, readVerifyDetails, type VerifyDetails } from "./details.js";
 import { findPackage } from "./in-image.js";
+import type { JudgeResults } from "../judge/pass.js";
 import { listRunIds, readRunRecord, runDirectory, type RunKind, type RunRecord } from "./run-record.js";
 
 /** The platform captures are made on (docs/spec/check-catalogue.md#visual). */
 export const capturePlatform = "linux/amd64";
 
 /**
- * Whether this framework version has a judge. Until it does (M3), the third condition, that the
- * judge looked at every story written, doesn't apply, as with the judge's policy `off`.
+ * The stories of a component the judge gave a verdict, of any kind, in a run: from the results
+ * file its summary names. A story counts once the judge saw it in any theme, as it sees some
+ * stories only in the default theme. Undefined when the run has no judge results.
  */
-export function judgeAvailable(): boolean {
-  return false;
+async function judgedStories(
+  dir: string,
+  results: string | undefined,
+  component: string,
+): Promise<Set<string> | undefined> {
+  if (results === undefined) return undefined;
+  try {
+    const file = JSON.parse(await readFile(path.join(dir, results), "utf8")) as JudgeResults;
+    const entry = file.components.find((c) => c.component === component);
+    return new Set(
+      (entry?.outcome.stories ?? []).filter((story) => story.verdict !== "not-judged").map((story) => story.story),
+    );
+  } catch {
+    return undefined;
+  }
 }
 
 export interface BaselineUpdateInput {
@@ -180,8 +195,31 @@ async function qualify(
       `it didn't pass every check other than visual: ${failing.map(([check, status]) => `${check} ${status === "fail" ? "failed" : status === "error" ? "ended in error" : status}`).join(", ")}; fix them and run \`fazon verify ${component.name}\` again.`,
     );
   }
-  if (judgeAvailable() && input.config.judge.policy !== "off") {
-    failed.push("the judge didn't look at its stories.");
+  if (input.config.judge.policy !== "off") {
+    const judge =
+      run.iteration === undefined
+        ? run.record.verification?.judge
+        : run.record.iterations.find((i) => i.n === run.iteration)?.verification?.judge;
+    const judged = await judgedStories(runDirectory(input.root, run.id), judge?.results, component.name);
+    const writes = new Set(
+      details.stories
+        .filter((s) => s.component === component.name && s.status !== "unchanged")
+        .filter((s) => input.stories === undefined || input.stories.includes(s.story))
+        .map((s) => s.story),
+    );
+    const unseen = [...writes].filter((story) => judged?.has(story) !== true);
+    if (judged === undefined && writes.size > 0) {
+      failed.push(
+        run.iteration === undefined
+          ? `the judge didn't look at its stories; run \`fazon judge ${run.id}\`, or \`fazon verify ${component.name}\` with a credential.`
+          : "the judge didn't look at its stories in it; run `fazon verify " + component.name + "` with a credential.",
+      );
+    } else if (unseen.length > 0) {
+      const shown = unseen.slice(0, 3).join(", ");
+      failed.push(
+        `the judge gave no verdict for ${String(unseen.length)} of the stories it would write (${shown}${unseen.length > 3 ? ", …" : ""}), as its budget ran out or a call didn't run; run \`fazon judge ${run.id}\` again.`,
+      );
+    }
   }
   const now = await componentInputsHash(input.root, component, input.config.paths.tokens);
   const then = details.components.find((c) => c.name === component.name)?.inputs;

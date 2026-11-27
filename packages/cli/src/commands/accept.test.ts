@@ -76,6 +76,25 @@ const newStories: StoryVisual[] = [
   { component: "badge", story: "badge--a", theme: "light", path: "light/badge/a.png", status: "new" },
 ];
 
+/** Writes the judge's results of a run's last iteration, `judge/3.json` in the example record, with these verdicts in the light theme. */
+async function judged(id: string, verdicts: Readonly<Record<string, string>>): Promise<void> {
+  const stories = Object.entries(verdicts).map(([story, verdict]) => ({
+    story,
+    theme: "light",
+    verdict,
+    reasons: [],
+    findings: [],
+  }));
+  const results = {
+    fazon: 0,
+    judgeVersion: 1,
+    model: "claude-sonnet-5-5",
+    components: [{ component: "button", plan: {}, outcome: { stories } }],
+  };
+  await mkdir(path.join(runDirectory(root, id), "judge"), { recursive: true });
+  await writeFile(path.join(runDirectory(root, id), "judge", "3.json"), JSON.stringify(results));
+}
+
 /** Writes a generate or feedback run of the button from the spec's example record, with its last iteration's verify.json. */
 async function writeRun(
   id: string,
@@ -255,6 +274,17 @@ describe("fazon accept", () => {
     await write("node_modules/lucide-static/package.json", '{ "name": "lucide-static", "version": "1.2.3" }\n');
     await write("node_modules/lucide-static/LICENSE", "ISC License\n");
     expect((await captureJson(["accept", "button"], machine)).code).toBe(0);
+    // The judge looked at the stories it writes: a verdict of any kind is enough.
+    const refused = await captureJson(["baseline", "update", "button"], machine);
+    expect(refused.code).toBe(2);
+    expect(JSON.stringify(refused.json.messages)).toContain("the judge didn't look at its stories in it");
+    await judged(generateId, { "button--a": "unsure" });
+    const partly = await captureJson(["baseline", "update", "button"], machine);
+    expect(partly.code).toBe(2);
+    expect(JSON.stringify(partly.json.messages)).toContain(
+      "the judge gave no verdict for 1 of the stories it would write (button--b)",
+    );
+    await judged(generateId, { "button--a": "unsure", "button--b": "pass" });
     const { code, json } = await captureJson(["baseline", "update", "button"], machine);
     expect(code).toBe(0);
     expect(json.result).toMatchObject({

@@ -15,7 +15,6 @@ import {
   hashApi,
   imageChecksPhase,
   loadGenerateContext,
-  noJudge,
   provenancePath,
   readProvenance,
   refreshGenerated,
@@ -36,6 +35,7 @@ import {
   type AgentRunDone,
   type Stop,
 } from "../agent-run.js";
+import { loopJudge } from "../judge.js";
 import { refused, type Message, type Outcome } from "../outcome.js";
 import type { Context, Invocation } from "./context.js";
 import { generateInImage, prepareImage } from "./generate-image.js";
@@ -135,7 +135,7 @@ export interface LoopRunRequest {
  * Runs a generate or feedback run for a prepared command (`prepareLoopCommand`). Once the run
  * lock is held: the pre-flight `fazon sync --check` outside the component (2), the image's
  * environment (3), and `--clean`. Then the loop, with the generate prompt, the generated-files
- * refresh, the checks in the verifier image and, until M3, no judge; and at the end the run's
+ * refresh, the checks in the verifier image and the judge (`loopJudge`); and at the end the run's
  * HTML report. A feedback run's result names its parent. Exits 1 when the run needs a person.
  */
 export async function runLoopCommand(
@@ -148,6 +148,7 @@ export async function runLoopCommand(
   const feedback = request.feedback;
   if (feedback !== undefined) messages.push(feedbackMessage(feedback));
   const refresh = { root: repo, config, adapter, name: component };
+  const judge = await loopJudge({ environment: context.environment, config, adapter, component, messages });
   let removed: readonly string[] | undefined;
   let prompted: GenerateContext | undefined;
 
@@ -161,7 +162,8 @@ export async function runLoopCommand(
         prompted ??= await loadGenerateContext(refresh);
         return generatePrompt(prompted, input);
       },
-      dependencies: { refreshGenerated: generatedRefresh(refresh), judge: noJudge },
+      dependencies: { refreshGenerated: generatedRefresh(refresh), judge: judge.hook },
+      judge: { ...(judge.version === undefined ? {} : { version: judge.version }), calibrated: judge.calibrated },
       ...(feedback === undefined ? {} : { feedback }),
       prepare: async () => {
         const stale = await staleOutside(setup);

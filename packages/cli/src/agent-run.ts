@@ -260,6 +260,8 @@ export interface AgentRunRequest {
   readonly answer?: (result: AgentCallResult) => string | undefined | Promise<string | undefined>;
   /** The checks phase, the generated-files refresh and the judge of a generate or feedback run. */
   readonly dependencies?: Pick<LoopDependencies, "checks" | "refreshGenerated" | "judge">;
+  /** The judge's version, when it can run, and whether it's calibrated: the run record names both. */
+  readonly judge?: { readonly version?: number; readonly calibrated: boolean };
   /** Whether the run's inputs include the approved API's hash: true for generate and feedback. */
   readonly approvedApi?: boolean;
   /**
@@ -359,8 +361,14 @@ export async function runAgentCommand(
         id,
         runDir,
         component: setup.spec.spec.name,
-        settings: loopSettings(config),
-        versions: { framework: version, adapter: version, claudeCode: setup.claudeCode.version, image: config.image },
+        settings: loopSettings(config, request.judge?.calibrated ?? false),
+        versions: {
+          framework: version,
+          adapter: version,
+          claudeCode: setup.claudeCode.version,
+          image: config.image,
+          ...(request.judge?.version === undefined ? {} : { judge: request.judge.version }),
+        },
         ...(request.measurement === undefined ? {} : { measurement: request.measurement }),
         ...(request.proposal === undefined ? {} : { proposal: request.proposal }),
         ...(request.feedback === undefined ? {} : { feedback: request.feedback }),

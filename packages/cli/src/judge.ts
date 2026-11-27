@@ -12,12 +12,17 @@ import {
   judgePass,
   judgeSdkClient,
   judgeVersion,
+  loadComponents,
   missingCredential,
+  noJudge,
   parseSpecFile,
   priceOf,
+  readVerifyDetails,
   sdkJudgeClient,
   writeRunRecord,
+  type Adapter,
   type Config,
+  type JudgeHook,
   type JudgePass,
   type JudgePassComponent,
   type JudgeSummary,
@@ -177,4 +182,82 @@ export function judgeText(pass: JudgePass, calibrated: boolean): { text: TextLin
     },
   ];
   return { text, messages };
+}
+
+export interface LoopJudgeInput {
+  readonly environment: Environment;
+  readonly config: Config;
+  readonly adapter: Adapter;
+  /** The component the run generates, by its kebab-case name. */
+  readonly component: string;
+  /** Collects what the developer should hear at the run's end, such as a refused credential. */
+  readonly messages: Message[];
+}
+
+/** The judge for a generate or feedback run's iterations: its hook, and what the run records about it. */
+export interface LoopJudge {
+  readonly hook: JudgeHook;
+  /** Absent when the judge can't run, as without a credential. */
+  readonly version?: number;
+  readonly calibrated: boolean;
+}
+
+/**
+ * The judge of an agent run (docs/spec/judge.md#when-the-judge-runs): after an iteration's checks
+ * pass, every story of the component in the iteration's captures, within what's left of the run's
+ * budget. Its fails block only once the judge is calibrated (JUDGE-005).
+ */
+export async function loopJudge(input: LoopJudgeInput): Promise<LoopJudge> {
+  const { environment, config, adapter, component, messages } = input;
+  const off = config.judge.policy === "off" || config.judge.localPolicy === "off";
+  if (off) return { hook: noJudge, calibrated: false };
+  const credential = judgeCredential(environment.env);
+  if (credential === undefined) {
+    messages.push({ level: "warning", text: `The judge didn't run: ${missingCredential}.`, hint: "fazon doctor" });
+    return { hook: noJudge, calibrated: false };
+  }
+  const model = config.models.judge;
+  const price = priceOf(config.prices, model);
+  if (price === undefined) {
+    messages.push({
+      level: "warning",
+      text: `The judge didn't run: its model ${model} has no price in fazon.yaml's prices or the framework's table (CONFIG-005).`,
+    });
+    return { hook: noJudge, calibrated: false };
+  }
+  const client = environment.judgeClient?.(credential) ?? sdkJudgeClient(judgeSdkClient(credential));
+  const calibrated = await judgeCalibrated(model, frameworkCalibration);
+  let refusedCredential = false;
+  const hook: JudgeHook = async ({ runDir, iteration, budgetUsd, signal }) => {
+    if (refusedCredential) return undefined;
+    const { components } = await loadComponents(environment.cwd, config, adapter);
+    const own = components.filter((entry) => entry.name === component);
+    const details = await readVerifyDetails(path.join(runDir, "checks", String(iteration)));
+    try {
+      const pass = await judgePass({
+        repo: environment.cwd,
+        runDir,
+        captures: `captures/${String(iteration)}`,
+        baselines: config.paths.baselines,
+        components: await passComponents(environment.cwd, own),
+        library: components,
+        visuals: (details?.stories ?? []).filter((story) => story.component === component),
+        results: `judge/${String(iteration)}.json`,
+        model,
+        ...(config.effort.judge === undefined ? {} : { effort: config.effort.judge }),
+        repeats: config.judge.repeats,
+        price,
+        budgetUsd,
+        client,
+        signal,
+      });
+      return { ...pass.summary, blocking: calibrated && pass.summary.stories.fail > 0 };
+    } catch (error) {
+      if (!(error instanceof JudgeCredentialError)) throw error;
+      refusedCredential = true;
+      messages.push({ level: "warning", text: `The judge stopped: ${error.message}.`, hint: "fazon doctor" });
+      return undefined;
+    }
+  };
+  return { hook, version: judgeVersion, calibrated };
 }
