@@ -62,6 +62,7 @@ function agentRun(id: string, overrides: Partial<RunRecord> = {}): RunRecord {
     iterations: [iteration(1, "claude-sonnet-5-5")],
     handEdits: [],
     totals: { iterations: 1, agentCostUsd: 1, judgeCostUsd: 0, costUsd: 1, escalated: false },
+    ...(overrides.kind === "feedback" ? { feedback: { text: "Round the corners." } } : {}),
     ...overrides,
   };
 }

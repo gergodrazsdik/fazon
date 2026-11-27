@@ -31,6 +31,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0023](0023-m2-skills-and-claude-code-version.md) | Skills from the pinned framework commit, Claude Code 2.1.332 as the minimum | accepted |
 | [0024](0024-feedback-in-every-prompt.md) | The developer's feedback in every prompt of a feedback run | accepted |
 | [0025](0025-empty-fixture-and-recipe-values.md) | The empty fixture refused by generate, recipe values type-checked | accepted |
+| [0026](0026-feedback-record-and-font-check.md) | A feedback run records its feedback and the hand edits since its parent; the tokens check checks loaded fonts | accepted |
 
 ## Numbering and status
 

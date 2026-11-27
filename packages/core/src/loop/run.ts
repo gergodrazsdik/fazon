@@ -2,6 +2,7 @@
 // The loop (docs/spec/loop-and-caps.md): a propose run's one call, or a generate or feedback run's
 // iterations, with the caps, escalation and run ends enforced here and the run record rewritten
 // after every step (docs/spec/records.md#the-run-record).
+import type { Snapshot } from "../agent/snapshot.js";
 import type { CheckFinding, CheckId } from "../checks/types.js";
 import { recordTimestamp } from "../records/json-file.js";
 import {
@@ -31,6 +32,12 @@ export interface FeedbackInput {
   readonly text: string;
   /** The parent run's last findings (`lastFindings`), for the first prompt. */
   readonly findings: readonly CheckFinding[];
+  /**
+   * The component's files as the parent run's last call left them (`readComponentFiles`), for the
+   * agent call (`agentLoopCall`'s `parentFiles`): the changes since are the hand edits before the
+   * first call (ADR 0026). Absent when the parent wrote none; the loop doesn't read it.
+   */
+  readonly parentFiles?: Snapshot;
 }
 
 export interface AgentRunOptions {
@@ -124,7 +131,9 @@ export async function runAgent(options: AgentRunOptions, dependencies: LoopDepen
       fazon: 0,
       id: options.id,
       kind,
-      ...(options.feedback === undefined ? {} : { parent: options.feedback.parent }),
+      ...(options.feedback === undefined
+        ? {}
+        : { parent: options.feedback.parent, feedback: { text: options.feedback.text } }),
       component: options.component,
       status,
       ...(reason === undefined ? {} : { reason }),
@@ -202,7 +211,11 @@ export async function runAgent(options: AgentRunOptions, dependencies: LoopDepen
     agentCostUsd += result.costUsd;
     costEstimated ||= result.costEstimated;
     tokens = addTokens(tokens, result.tokens);
-    if (n > 1 && result.handEdits.length > 0) handEdits.push({ after: n - 1, files: [...result.handEdits] });
+    // A run's first call follows no call of the run; a feedback run's first follows its parent's
+    // last, and the changes since are recorded as following iteration 0 (ADR 0026).
+    if ((n > 1 || options.feedback !== undefined) && result.handEdits.length > 0) {
+      handEdits.push({ after: n - 1, files: [...result.handEdits] });
+    }
     const call: CallRecord = {
       model: choice.model,
       ...(choice.effort === undefined ? {} : { effort: choice.effort }),

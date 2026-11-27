@@ -2,12 +2,21 @@
 // `fazon feedback <component> (-m <text> | --file <path>)` (docs/spec/cli.md#fazon-feedback): a
 // feedback run (docs/spec/loop-and-caps.md#feedback). It answers the component's latest generate
 // or feedback run: its first prompt carries the developer's feedback and that run's last blocking
-// findings, and it starts with fresh caps on the generator model. Everything else is generate's:
-// the same refusals before the run, the same loop and the same result (`prepareLoopCommand`,
-// `runLoopCommand`).
+// findings, and it starts with fresh caps on the generator model. Its record keeps the feedback,
+// and the component's files a person changed since that run as hand edits (ADR 0026). Everything
+// else is generate's: the same refusals before the run, the same loop and the same result
+// (`prepareLoopCommand`, `runLoopCommand`).
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { lastFindings, listRunIds, readRunRecord, runDirectory, runsDirectory, type RunRecord } from "@fazon/core";
+import {
+  lastFindings,
+  listRunIds,
+  readComponentFiles,
+  readRunRecord,
+  runDirectory,
+  runsDirectory,
+  type RunRecord,
+} from "@fazon/core";
 import { refused, type Outcome } from "../outcome.js";
 import type { Context, Invocation } from "./context.js";
 import { prepareLoopCommand, runLoopCommand } from "./generate.js";
@@ -36,9 +45,20 @@ export async function feedback(invocation: Invocation, context: Context): Promis
     );
   }
   const { record } = parent;
+  // The component's files as the parent's last call left them: what a person changed since, the
+  // run records as hand edits before its first call (ADR 0026).
+  const parentFiles = await readComponentFiles(runDirectory(repo, record.id));
   return runLoopCommand(
     setup,
-    { kind: "feedback", feedback: { parent: record.id, text, findings: lastFindings(record) } },
+    {
+      kind: "feedback",
+      feedback: {
+        parent: record.id,
+        text,
+        findings: lastFindings(record),
+        ...(parentFiles === undefined ? {} : { parentFiles }),
+      },
+    },
     context,
   );
 }

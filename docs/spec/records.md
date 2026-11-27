@@ -27,6 +27,7 @@ Every run's files live under `.fazon/` in the repository where Fazon runs. Git i
     20261125T164012Z-button-3f9a/
       run.json              the run record
       calls/1.jsonl         the agent's transcript for each call
+      component-files.json  the component's files as the last call left them, for a feedback run that answers this run (ADR 0026)
       captures/1/           captures and diff images of each iteration, by theme and component, such as light/button/<story>.png
       checks/1/             each iteration's checks: checks.json (their results, which the image hands the harness), verify.json, and logs/, reports/, storybook/ and package/ as for a verify run
       judge/3.json          each iteration's judge plan and results
@@ -48,11 +49,12 @@ Transcripts are local only. CI never uploads them, and published measurement rec
 
 ## The run record
 
-`run.json` ([schema](schemas/run-record.schema.json), [example](examples/records/run.json)) holds everything a run did. The harness rewrites it atomically after every step: each agent call, check phase and judge pass. A crash leaves the record of the last completed step, with the status `running`. Until its outcome is known, the iteration in progress is recorded as `stopped`, so after a crash it shows as one that never finished.
+`run.json` ([schema](schemas/run-record.schema.json), examples: [a generate run](examples/records/run.json), [a feedback run](examples/records/run-feedback.json)) holds everything a run did. The harness rewrites it atomically after every step: each agent call, check phase and judge pass. A crash leaves the record of the last completed step, with the status `running`. Until its outcome is known, the iteration in progress is recorded as `stopped`, so after a crash it shows as one that never finished.
 
 | Field | Content |
 |---|---|
-| `id`, `kind`, `parent`, `component` | The run, its kind (propose, generate, feedback, verify), the run a feedback run answers, and the component. |
+| `id`, `kind`, `parent`, `component` | The run, its kind (propose, generate, feedback, verify), the run a feedback run answers, and the component. Only a feedback run has `parent`, and it always has one. |
+| `feedback` | A feedback run's feedback from the developer, `{ text }`, as every prompt of the run carried it ([ADR 0026](../adr/0026-feedback-record-and-font-check.md)). Required in a feedback run's record, absent from every other. |
 | `status`, `reason` | `running`, `passed`, `failed`, `needs-a-person` with its reason, or `stopped`. Only a verify run ends `failed`: it has a blocking finding, or, with the reason `check-error`, a check ended in error or the image couldn't run the checks. Only an agent run ends `needs-a-person`. |
 | `started`, `ended` | UTC timestamps. |
 | `measurement` | The round and repeat of a measured run. |
@@ -62,7 +64,7 @@ Transcripts are local only. CI never uploads them, and published measurement rec
 | `iterations` | Each iteration: its agent call (model, effort, tokens, cost, duration, how it ended, transcript, files changed), any permission violations, its checks with their findings, the judge's summary, and its outcome. |
 | `verification` | A verify run's checks and judge, which have no agent call. |
 | `proposal` | A propose run's proposed API. |
-| `handEdits` | Files a person changed between calls, by the iteration they followed. Changes before a run's first call aren't between its calls, and aren't recorded. |
+| `handEdits` | Files a person changed between calls, by the iteration they followed. Changes before a generate or propose run's first call aren't between its calls, and aren't recorded. A feedback run also records the component's files a person changed since its parent run's last call, as following iteration 0 (`after: 0`, [hand edits](agent-permissions.md#hand-edits)); only a feedback run has an entry with `after: 0`. |
 | `totals` | Iterations; agent, judge and total cost; whether any cost was estimated; any overrun; tokens; duration; whether the run escalated. |
 
 The judge's plan and every call's result are in the run's `judge/` directory. The record keeps a summary: the number of calls, the cost, verdict counts, and the findings of `fail` and `unsure` verdicts.
@@ -75,7 +77,7 @@ The judge's plan and every call's result are in the run's `judge/` directory. Th
 - `api`: the hash of the approved API and the date it was approved. `fazon generate` refuses to run while the spec's API no longer has this hash ([spec format](spec-format.md#approval));
 - `generation`: the framework version, the date the result was accepted, the accepted run and the runs linked to it (kind, status, iterations, models, cost), the number of hand edits, and the total cost.
 
-`fazon accept` writes `generation`, and the spec's hash the accepted run started from; the run record isn't changed, so the provenance file is the only record of which run was accepted. `handEdits` counts the hand-edit entries of the runs, one per gap between calls with changes, not the files.
+`fazon accept` writes `generation`, and the spec's hash the accepted run started from; the run record isn't changed, so the provenance file is the only record of which run was accepted. `handEdits` counts the hand-edit entries of the runs, one per gap with changes, not the files: between two calls of a run, or between a feedback run's parent and its first call.
 
 It's overwritten when the component is regenerated; git keeps its history. It names no person: the approval and acceptance carry dates, and git records who committed them.
 

@@ -160,6 +160,7 @@ During a run, the harness takes a snapshot before and after each agent call. A s
 
 - A change made **during** a call, outside the allowed paths, is a violation: the run ends as "needs a person", and the report lists the files. The harness doesn't revert them, so a person can see what happened.
 - A change made **between** calls is a person's hand edit, wherever it is. The run record stores each one, with its files; it counts as a human intervention in the measurements.
+- A change made **between runs**, before a feedback run's first call, is a hand edit when it is to the component's files: its directory, outside `generated/` ([ADR 0026](../adr/0026-feedback-record-and-font-check.md)). After each call, the harness writes the component's files as the call left them to the run's directory (`component-files.json`); a feedback run compares its parent's with its snapshot before its first call, and records the files that differ as following iteration 0. The spec and the other inputs aren't the component's files: a person changes them on purpose, and they don't count. Nor do the files the harness writes between runs: `fazon accept`'s provenance file and `fazon sync`'s generated files under `generated/`, and the entry file, the token CSS, the Storybook themes and `fazon baseline update`'s baselines outside the component's directory. A parent without the file (it made no call, or an older framework version ran it) gives no hand edits after iteration 0.
 
 ## Rules
 
@@ -169,4 +170,4 @@ During a run, the harness takes a snapshot before and after each agent call. A s
 | PERM-002 | After a call, no file outside the allowed paths differs from its state before the call. | the harness, after every call |
 | PERM-003 | The component's directory holds only files of the adapter's patterns, outside `generated/`. | the harness, after every call |
 | PERM-004 | The committed generated files are what the harness generates from the committed spec. | CI (`build` rule `generated`) |
-| PERM-005 | Every change made between calls is recorded as a hand edit. | the harness |
+| PERM-005 | Every change made between calls is recorded as a hand edit, and so is every change to the component's files between a feedback run's parent and its first call. | the harness |

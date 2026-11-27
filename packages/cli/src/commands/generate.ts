@@ -209,9 +209,13 @@ function feedbackMessage(feedback: FeedbackInput): Message {
     count === 0
       ? "that run left no findings that block"
       : `the first also carries the ${String(count)} blocking ${count === 1 ? "finding" : "findings"} of that run's last checks`;
+  const edits =
+    feedback.parentFiles === undefined
+      ? " That run didn't record the component's files after its last call, so changes made to them since aren't recorded as hand edits."
+      : "";
   return {
     level: "info",
-    text: `This feedback run answers ${feedback.parent}: every prompt carries your feedback, and ${findings}.`,
+    text: `This feedback run answers ${feedback.parent}: every prompt carries your feedback, and ${findings}.${edits}`,
   };
 }
 
