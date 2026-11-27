@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPEC-011, SPEC-012, SPEC-014 and SPEC-018 (docs/spec/spec-format.md#validation): token rules,
 // exemptions, conditions and judge questions.
-import { isDeepStrictEqual } from "node:util";
 import { buildManifest } from "../matrix/build.js";
-import type { Story, StoryManifest } from "../matrix/types.js";
+import type { StoryManifest } from "../matrix/types.js";
 import type { PathSegment } from "../validation/validate.js";
 import { catalogueRule, checkCatalogue, isCheckId } from "./catalogue.js";
 import type { SpecRule } from "./rules.js";
-import { conditionProblems, Findings, hasPart, own, propOf } from "./scope.js";
+import { picks } from "./select.js";
+import { conditionProblems, Findings, hasPart, own } from "./scope.js";
 import type { ComponentName, KebabName, PropValue, Spec, When } from "./types.js";
 
 /** Every condition of a spec, with its part and where it is: token rules', exemptions', judge questions' and `matrix.exclude`'s. */
@@ -178,49 +178,6 @@ export const spec012: SpecRule = {
 /** The judge's own question names (docs/spec/judge.md#the-rubric): whole names, then prefixes. */
 const derivedNames: readonly string[] = ["story", "reference", "family"];
 const derivedPrefixes: readonly string[] = ["axis-", "state-", "appearance-", "change-"];
-
-/** A prop's value in a story (docs/spec/story-matrix.md#exclusions): the story sets it, else its fixture, else its default. */
-function valueIn(
-  spec: Spec,
-  manifest: StoryManifest,
-  story: Story,
-  part: ComponentName | undefined,
-  prop: string,
-): unknown {
-  let value: unknown;
-  for (const { target, props } of story.set ?? []) {
-    const onTarget = part === undefined ? target === "root" : target.startsWith(`${part}[`);
-    if (onTarget && Object.hasOwn(props, prop)) value = props[prop];
-  }
-  if (value !== undefined) return value;
-  const fixture = own(manifest.fixtures, story.fixture);
-  const props = part === undefined ? fixture?.props : own(fixture?.parts, part)?.[0]?.props;
-  const set = own(props, prop);
-  return set ?? propOf(spec, part, prop)?.default;
-}
-
-/** Whether a judge question's `select` picks a story: its fixture, and its condition on the part's (or the component's) props and state. */
-function picks(
-  spec: Spec,
-  manifest: StoryManifest,
-  story: Story,
-  select: NonNullable<NonNullable<Spec["judge"]>[number]["select"]>,
-): boolean {
-  if (select.fixture !== undefined && story.fixture !== select.fixture) return false;
-  const when = select.when;
-  if (when?.state !== undefined) {
-    if (
-      when.state === "default"
-        ? story.state.name !== "default"
-        : story.state.name !== when.state || story.state.part !== select.part
-    ) {
-      return false;
-    }
-  }
-  return Object.entries(when?.props ?? {}).every(([prop, expected]) =>
-    isDeepStrictEqual(valueIn(spec, manifest, story, select.part, prop), expected),
-  );
-}
 
 export const spec018: SpecRule = {
   id: "SPEC-018",

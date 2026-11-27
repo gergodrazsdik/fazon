@@ -21,9 +21,9 @@
       "additionalProperties": false,
       "properties": {
         "question": {
-          "description": "The question's ID; a derived question's ID says what it was derived from.",
+          "description": "The question's ID; a derived question's ID says what it was derived from. `change-<story>` carries the story's name, with its `--` separators.",
           "type": "string",
-          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+          "pattern": "^[a-z][a-z0-9]*(--?[a-z0-9]+)*$"
         },
         "source": {
           "description": "`derived` by the harness, or from the spec's `judge` field.",
