@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+import { execFile } from "node:child_process";
 import { chmod, rm, symlink, unlink } from "node:fs/promises";
 import path from "node:path";
+import { promisify } from "node:util";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { changedFiles, handEdits, isAllowedPath, takeSnapshot, violations, type AgentScope } from "./snapshot.js";
 import { gitRepository, writeFiles } from "./test-support.js";
@@ -57,6 +59,34 @@ describe("snapshots", () => {
       after: 1,
       files: ["README.md", "src/components/button/Button.vue"],
     });
+  });
+
+  it("leave out the sandbox's stubs that git doesn't track, so they make no hand edit (F-0031)", async () => {
+    const afterCall = await takeSnapshot(repo);
+    // What Claude Code's sandbox mounts over the protected paths that don't exist, while it runs.
+    await writeFiles(repo, {
+      ".mcp.json": "",
+      ".claude/agents": "",
+      ".claude/skills/x": "",
+      ".bashrc": "",
+      ".vscode/settings.json": "",
+    });
+    const beforeNextCall = await takeSnapshot(repo);
+    expect([...beforeNextCall.files.keys()].filter((file) => file.startsWith("."))).toEqual([".gitignore"]);
+    expect(handEdits(afterCall, beforeNextCall, 1)).toBeUndefined();
+  });
+
+  it("keep a tracked file under a stub path, such as a committed .claude/settings.json", async () => {
+    const tracked = await gitRepository({ ".claude/settings.json": "{}\n", "package.json": "{}\n" });
+    try {
+      await promisify(execFile)("git", ["add", "-A"], { cwd: tracked });
+      const before = await takeSnapshot(tracked);
+      expect([...before.files.keys()]).toEqual([".claude/settings.json", "package.json"]);
+      await writeFiles(tracked, { ".claude/settings.json": '{ "changed": true }\n' });
+      expect(changedFiles(before, await takeSnapshot(tracked))).toEqual([".claude/settings.json"]);
+    } finally {
+      await rm(tracked, { recursive: true, force: true });
+    }
   });
 
   it("fail when the directory isn't a git repository", async () => {
