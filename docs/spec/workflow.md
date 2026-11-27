@@ -70,7 +70,8 @@ The required check, named `<caller job> / verify` (for example `fazon / verify`)
 4. `fazon spec check` and `fazon sync --check`.
 5. `fazon verify --base <base branch> --no-judge`. It runs the source and rendered checks in the pinned verifier image, started with the runner's Docker exactly as on a laptop, and marks the stories whose baselines the pull request adds or changes.
 6. Upload the artifacts, even when a step failed: `fazon-storybook`, `fazon-package` and `fazon-run` first.
-7. `fazon report --summary` writes the job summary, under a heading with the job's status and any of steps 2 to 4 that failed, with links to the artifacts; it is uploaded as `fazon-report`.
+7. `fazon report --no-open <run>` builds the run's HTML report, also when `fazon verify` failed. A report that can't be built doesn't fail the job; the summary says so.
+8. `fazon report --summary` writes the job summary, under a heading with the job's status and any of steps 2 to 4 that failed, with links to the artifacts. It is uploaded as `fazon-report`, with the HTML report beside it when step 7 built one.
 
 The job fails when any check has a blocking finding, or any step fails.
 
@@ -114,7 +115,7 @@ It links to the artifacts: `fazon report --summary` ends with a placeholder line
 
 | Artifact | Content |
 |---|---|
-| `fazon-report` | the HTML report, with captures, diff images, before-and-after images of changed baselines, and judge findings; until the HTML report arrives in M2, only the summary (`summary.md`) |
+| `fazon-report` | the summary (`summary.md`) and the HTML report (`report/index.html`, with the captures, diff images and before-and-after images of changed baselines it shows in `report/images/`; judge findings from M3). Without a run, or when the report can't be built, only the summary. The report's story links point at a local Storybook (`FAZON_STORYBOOK_URL`, by default `http://localhost:6006`), such as `fazon-storybook` served there |
 | `fazon-storybook` | the static Storybook build |
 | `fazon-package` | the packed library tarball |
 | `fazon-run` | the verify run's directory without its Storybook build and tarball: the record, `verify.json`, captures and diff images, logs and tool reports, which the `judge` job reads |
