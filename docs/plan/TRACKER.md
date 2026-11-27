@@ -4,13 +4,13 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0106, F-0037, Q-0029.
+Next free IDs: T-0106, F-0038, Q-0029.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M3 step 4: the judge job in CI, with workload identity federation (T-0056)
+1. M3 step 6: `fazon calibrate` (T-0055)
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -139,8 +139,8 @@ Complete 2026-11-27: `spec new`, the spec skill and every SPEC rule; `propose`, 
   - [x] Step 3: the judge in `generate`, `feedback` and `verify`, and `fazon judge` with the CI cap (JUDGE-004); the judge's files in the run, the report's verdicts and findings, `doctor`'s credential check, the calibrated status (JUDGE-005)
     - [x] 3a: the judge pass over a run's captures, `fazon verify` running it on the host after passing checks, `fazon judge <run>` with the CI cap, `judge.json` and the record's summary, `doctor`'s credential check, the calibrated status from the framework's calibration records — 2026-11-27, [#92](https://github.com/gergodrazsdik/fazon/pull/92)
     - [x] 3b: the judge in `generate` and `feedback` iterations (its cost in the run's budget), the report's verdicts and findings, `fazon baseline update` requiring a verdict for every story it writes — 2026-11-27, [#93](https://github.com/gergodrazsdik/fazon/pull/93): the report already showed the summary and findings; a story counts as judged once it has a verdict in any theme (F-0035)
-  - [~] Step 4: the judge job in CI (T-0056)
-  - [ ] Step 5: the twelve mutation operators, injected at capture; cases and their affected stories from the captures; fixtures that show the measurable operators fail their checks
+  - [x] Step 4: the judge job in CI (T-0056) — 2026-11-27, [#94](https://github.com/gergodrazsdik/fazon/pull/94), [fazon-vue-example#24](https://github.com/gergodrazsdik/fazon-vue-example/pull/24)
+  - [x] Step 5: the twelve mutation operators, injected at capture; cases and their affected stories from the captures; fixtures that show the measurable operators fail their checks — 2026-11-27, [#96](https://github.com/gergodrazsdik/fazon/pull/96): each case's CSS comes from the unmodified story's facts (its part roots' winning declarations); the six measurable operators fail their checks in the verifier image (F-0037)
   - [ ] Step 6: `fazon calibrate`: the calls the protocol lists, through the Message Batches API, in stages within `--budget`; the measures with Wilson intervals; the calibration record
   - [ ] Step 7: calibration round 1 on Button, Badge, Link and Dialog, Sonnet 5.5 then Opus 5.5, within the budget left (about $147); the records in `calibration/judge-<version>/`
 - [x] F-0032 The judge plan schema's `question` pattern rejected `change-<story>`, as story names contain `--`; and `change-<story>` was an `each` question, though its baseline, capture and diff are judged together (step 1): the pattern allows `--`, and the question is `compare`, asked in each theme the story differs in — 2026-11-27, [#90](https://github.com/gergodrazsdik/fazon/pull/90)
@@ -148,10 +148,11 @@ Complete 2026-11-27: `spec new`, the spec skill and every SPEC rule; `propose`, 
 - [!] Q-0028 The `ant` CLI's login as a local credential for the judge, instead of an API key: the SDK can use its profile and refreshes the token itself, but stores it unencrypted on disk, while the key stays gpg-encrypted in pass; ADR 0027 chose an API key locally, and the brief defers a local judge without one until after M3. Decide after M3 (maintainer, 2026-11-27)
 - [ ] F-0035 When the judge's fails block (once it's calibrated), the next iteration's prompt carries only the checks' blocking findings: the loop takes `findings` from the checks phase, so the agent wouldn't see why the judge failed the story. Carry the judge's fail findings into the prompt before a calibrated judge can block (step 7) (step 3b)
 - [x] F-0036 `fazon baseline update` asked for judge verdicts on every story whose visual status wasn't `unchanged`, so after a verifier image upgrade, which compares nothing, it wanted verdicts for all 130 of the example repo's stories though it rewrites none: it asks only for the stories whose capture differs from the committed baseline, or that have none (T-0056, the example repo's pin move) — 2026-11-27, [#95](https://github.com/gergodrazsdik/fazon/pull/95)
-- [~] T-0056 The workflows' first credential: the judge's, through workload identity federation with an API key secret as the alternative, skipped on pull requests from forks; the example repo's caller grants `id-token: write` and passes the federation IDs; the maintainer creates the federation rule in the Claude Console and the repository variables ([ADR 0027](../adr/0027-m3-federation-calibration-cost.md))
+- [x] F-0037 `target-shrunk` fails `layout` `target-size` only where a 24 px circle centred on the shrunk target reaches another target: WCAG 2.5.8 lets a lone or wide small target pass, so a single Button story keeps passing the check, and only the judge or a person can notice. The measurement table says so (step 5) — 2026-11-27, [#96](https://github.com/gergodrazsdik/fazon/pull/96)
+- [x] T-0056 The workflows' first credential: the judge's, through workload identity federation with an API key secret as the alternative, skipped on pull requests from forks; the example repo's caller grants `id-token: write` and passes the federation IDs; the maintainer creates the federation rule in the Claude Console and the repository variables ([ADR 0027](../adr/0027-m3-federation-calibration-cost.md))
   - [x] The reusable workflow's judge job: the federation inputs, the identity token kept fresh, the API key as the alternative, the fork check, the verdicts in the summary and the artifacts; `fazon verify`'s result names the judge's policy — 2026-11-27, [#94](https://github.com/gergodrazsdik/fazon/pull/94)
-  - [ ] The maintainer creates the service account `fazon-vue-example-ci-judge` and the federation rule in the Claude Console, and gives the IDs
-  - [ ] The example repo: its caller grants `id-token: write` and passes the IDs from repository variables (a GitHub write, with the maintainer's OK); its pins move to the framework commit with the judge, and its first pull request runs the judge in CI
+  - [x] The maintainer creates the service account `fazon-vue-example-ci-judge` and the federation rule in the Claude Console, and gives the IDs — 2026-11-27: the rule matches the repository's `pull_request` runs by owner and repository ID, with a CEL condition on `job_workflow_ref` and `workflow_ref`, in the Fazon workspace; the IDs are the repository's variables
+  - [x] The example repo: its caller grants `id-token: write` and passes the IDs from repository variables (a GitHub write, with the maintainer's OK); its pins move to the framework commit with the judge, and its first pull request runs the judge in CI — 2026-11-27, [fazon-vue-example#24](https://github.com/gergodrazsdik/fazon-vue-example/pull/24): the judge job took the federation path and fetched an identity token; the pull request changed no story, so it made no call, and the first token exchange comes with the first pull request that changes a baseline
 
 ## Phase 3: Library and packaging (M4 and M5)
 

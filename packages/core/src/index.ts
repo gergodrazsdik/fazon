@@ -86,6 +86,16 @@ export {
   type JudgePassInput,
   type JudgeResults,
 } from "./judge/pass.js";
+export { factProperties, storyFacts, type FactDeclaration, type PartFacts, type StoryFacts } from "./mutation/facts.js";
+export {
+  mutationCases,
+  operators,
+  type MutationCase,
+  type MutationContext,
+  type Operator,
+  type OperatorId,
+} from "./mutation/operators.js";
+export { affectedStories, capturesDiffer, type StoryCapture } from "./mutation/affected.js";
 
 export type * from "./config/types.js";
 export {
