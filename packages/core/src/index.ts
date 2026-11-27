@@ -47,6 +47,35 @@ export {
   type JudgePlanImage,
   type JudgePlanInput,
 } from "./judge/plan.js";
+export { judgeInstructions, judgeResponseSchema, judgeVersion } from "./judge/instructions.js";
+export {
+  federationVariables,
+  judgeCredential,
+  judgeSdkClient,
+  missingCredential,
+  type JudgeCredential,
+} from "./judge/credentials.js";
+export { addTokens, costOf, frameworkPrices, priceOf } from "./judge/prices.js";
+export { fitPng, fittedSize, maxLongEdge, maxVisualTokens, visualTokens } from "./judge/images.js";
+export { judgeMaxTokens, judgeRequest, type JudgeRequestInput } from "./judge/request.js";
+export {
+  JudgeCredentialError,
+  majority,
+  runJudge,
+  sdkJudgeClient,
+  storyVerdicts,
+  type ImageVerdict,
+  type JudgeAttempt,
+  type JudgeCallRecord,
+  type JudgeClient,
+  type JudgeFinding,
+  type JudgeOutcome,
+  type RunJudgeInput,
+  type Severity,
+  type StoryFinding,
+  type StoryVerdict,
+  type Verdict,
+} from "./judge/run.js";
 
 export type * from "./config/types.js";
 export {

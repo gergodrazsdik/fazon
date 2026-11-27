@@ -10,7 +10,7 @@
     "question": {
       "description": "The question's ID, as the prompt gives it.",
       "type": "string",
-      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+      "pattern": "^[a-z][a-z0-9]*(--?[a-z0-9]+)*$"
     },
     "results": {
       "type": "array",
