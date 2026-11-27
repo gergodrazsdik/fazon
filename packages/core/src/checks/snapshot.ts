@@ -107,6 +107,35 @@ export interface InspectedElement {
   readonly states: readonly string[];
   /** Absent when the inspection skipped styles. */
   readonly styles?: ElementStyles;
+  /** The fonts of its own text; absent when it has none, or the inspection skipped styles. */
+  readonly fonts?: TextFonts;
+}
+
+/** A font the browser rendered text with, as the DevTools protocol reports it. */
+export interface RenderedFont {
+  /** The family name in the font file, such as `Inter` for the faces `Inter Variable` registers. */
+  readonly family: string;
+  readonly postScriptName: string;
+  /** A web font, loaded through `@font-face`; not a font installed on the system. */
+  readonly custom: boolean;
+  /** How many glyphs of the text it rendered. */
+  readonly glyphs: number;
+}
+
+/** The fonts of an element's own text (its text nodes, not its descendants'). */
+export interface TextFonts {
+  /** The computed `font-family`. */
+  readonly family: string;
+  /** Its first family, unquoted, as written. */
+  readonly first: string;
+  /**
+   * The status (`unloaded`, `loading`, `loaded`, `error`) of each of the document's font faces
+   * (`@font-face` rules and `FontFace` objects) for the first family; empty when the document
+   * declares none, as for a font installed on the system, or one that is missing.
+   */
+  readonly faces: readonly string[];
+  /** The fonts the browser rendered the text with. */
+  readonly rendered: readonly RenderedFont[];
 }
 
 /** The frame and the component's elements, in document order (roots before their descendants). */

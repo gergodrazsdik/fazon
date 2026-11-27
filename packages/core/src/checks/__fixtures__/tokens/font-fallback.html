@@ -1,0 +1,22 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=font-fallback -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokens: a font family token whose first family isn't loaded</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      /* The token's CSS names Inter, but the font package registers Inter Variable (F-0016). */
+      /* The text falls back to system-ui. */
+      :root {
+        --font-family-inter: Inter, system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <button class="button" type="button" data-part="Button">Save changes</button>
+    </div>
+  </body>
+</html>

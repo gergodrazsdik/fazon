@@ -16,6 +16,7 @@ import type {
   InspectedElement,
   NameSourceKind,
   PageInspection,
+  RenderedFont,
   StyleOrigin,
   StyleSource,
 } from "./snapshot.js";
@@ -57,7 +58,7 @@ export interface LaunchRendererOptions {
 
 /** What `RenderedPage.inspect` reads besides the boxes. */
 export interface InspectOptions {
-  /** The matched styles of every element, for `tokens`. Default true. */
+  /** The matched styles of every element, and the fonts of its text, for `tokens`. Default true. */
   readonly styles?: boolean;
   /** Roles, names and descriptions from the accessibility tree. Default true. */
   readonly accessibility?: boolean;
@@ -159,15 +160,25 @@ export class RenderedPage {
     try {
       await cdp.send("DOM.enable");
       await cdp.send("CSS.enable");
-      const { root } = await cdp.send("DOM.getDocument", { depth: -1 });
+      const { root } = (await cdp.send("DOM.getDocument", { depth: -1 })) as { root: CdpNode };
+      const nodes = new Map<number, CdpNode>();
+      const index = (node: CdpNode): void => {
+        nodes.set(node.nodeId, node);
+        for (const child of node.children ?? []) index(child);
+      };
+      index(root);
       const elements: InspectedElement[] = [];
       for (const element of layout.elements) {
-        const { path, ...rest } = element;
+        const { path, fonts: pageFonts, ...rest } = element;
         const { nodeId } = await cdp.send("DOM.querySelector", { nodeId: root.nodeId, selector: path });
         if (nodeId === 0) throw new CheckError(`The element ${element.selector} disappeared while it was inspected.`);
         const accessibility =
           options.accessibility === false ? undefined : await accessibilityOf(cdp, nodeId, element.tag);
         const styles = options.styles === false ? undefined : await stylesOf(cdp, nodeId);
+        const fonts =
+          options.styles === false || pageFonts === undefined
+            ? undefined
+            : { ...pageFonts, rendered: await renderedFonts(cdp, nodes.get(nodeId)) };
         elements.push({
           ...rest,
           role: accessibility?.role ?? "",
@@ -175,6 +186,7 @@ export class RenderedPage {
           nameSource: accessibility?.nameSource ?? "none",
           description: accessibility?.description ?? "",
           ...(styles === undefined ? {} : { styles }),
+          ...(fonts === undefined ? {} : { fonts }),
         });
       }
       return { viewport: layout.viewport, frame: layout.frame, elements };
@@ -305,6 +317,40 @@ async function stylesOf(cdp: CDPSession, nodeId: number): Promise<ElementStyles>
     matched: sources(matched, false),
     inherited: (matched.inherited ?? []).map((entry) => sources(entry, true)),
   };
+}
+
+interface CdpNode {
+  readonly nodeId: number;
+  readonly nodeType: number;
+  readonly nodeValue: string;
+  readonly children?: readonly CdpNode[];
+}
+interface CdpPlatformFont {
+  readonly familyName: string;
+  readonly postScriptName?: string;
+  readonly isCustomFont: boolean;
+  readonly glyphCount: number;
+}
+
+/**
+ * The fonts the browser rendered an element's own text nodes with, summed over the nodes. The
+ * protocol's answer for the element itself would include its descendants' text.
+ */
+async function renderedFonts(cdp: CDPSession, element: CdpNode | undefined): Promise<RenderedFont[]> {
+  const fonts = new Map<string, RenderedFont>();
+  for (const child of element?.children ?? []) {
+    if (child.nodeType !== 3 || child.nodeValue.trim() === "") continue;
+    const answer = (await cdp.send("CSS.getPlatformFontsForNode", { nodeId: child.nodeId })) as {
+      fonts: readonly CdpPlatformFont[];
+    };
+    for (const font of answer.fonts) {
+      const postScriptName = font.postScriptName ?? "";
+      const key = [font.familyName, postScriptName, String(font.isCustomFont)].join("\u0000");
+      const glyphs = (fonts.get(key)?.glyphs ?? 0) + font.glyphCount;
+      fonts.set(key, { family: font.familyName, postScriptName, custom: font.isCustomFont, glyphs });
+    }
+  }
+  return [...fonts.values()];
 }
 
 interface CdpAxValue {

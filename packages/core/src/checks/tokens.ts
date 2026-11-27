@@ -5,12 +5,12 @@ import type { PropValue, PropValues, TokenRule, When } from "../spec/types.js";
 import type { IndexedToken, TokenIndex } from "../tokens/build.js";
 import { winningDeclarations, type Declaration } from "./cascade.js";
 import { looksLikeTokenValue, parseValue, type ValueComponent } from "./css-values.js";
-import type { InspectedElement } from "./snapshot.js";
+import type { InspectedElement, TextFonts } from "./snapshot.js";
 import { physicalProperty, tokenBoundProperties, tokenShorthands } from "./token-properties.js";
 import { locate, type CheckContext, type CheckFinding } from "./types.js";
 
 /** The `tokens` check's rules. */
-export type TokensRule = "raw-value" | "raw-token" | "unknown-token" | "user-agent" | "token-rule";
+export type TokensRule = "raw-value" | "raw-token" | "unknown-token" | "user-agent" | "token-rule" | "font-fallback";
 
 /** For an element, the role token each physical longhand must resolve to (from the spec's token rules). */
 export type ExpectedTokens = (element: InspectedElement) => ReadonlyMap<string, string> | undefined;
@@ -49,7 +49,7 @@ const baseStyles: ReadonlyMap<string, string> = new Map([
 ]);
 
 interface Problem {
-  readonly rule: Exclude<TokensRule, "user-agent" | "token-rule">;
+  readonly rule: Exclude<TokensRule, "user-agent" | "token-rule" | "font-fallback">;
   readonly actual: string;
   readonly message: string;
 }
@@ -77,6 +77,13 @@ export function checkTokens(input: TokensCheckInput): CheckFinding[] {
   const winnersOf = input.elements.map((element) =>
     element.styles === undefined ? undefined : winningDeclarations(element.styles.matched),
   );
+  // Evaluates a value declared on the element at `at`, for following inherited values.
+  const evaluateAt = (value: string, whole: boolean, at: number): Evaluation => {
+    const own = winnersOf[at];
+    const styles = input.elements[at]?.styles;
+    if (own === undefined || styles === undefined) return { problems: [], tokens: [] };
+    return evaluateValue(value, whole, tokens, own, styles.inherited.map(winningDeclarations), 0);
+  };
   input.elements.forEach((element, i) => {
     const winners = winnersOf[i];
     if (winners === undefined || element.styles === undefined) {
@@ -123,12 +130,7 @@ export function checkTokens(input: TokensCheckInput): CheckFinding[] {
 
     const expected = input.expected?.(element);
     for (const [property, token] of expected ?? []) {
-      const reached = reachedTokens(property, input.elements, winnersOf, i, (value, whole, at) => {
-        const own = winnersOf[at];
-        const styles = input.elements[at]?.styles;
-        if (own === undefined || styles === undefined) return { problems: [], tokens: [] };
-        return evaluateValue(value, whole, tokens, own, styles.inherited.map(winningDeclarations), 0);
-      });
+      const reached = reachedTokens(property, input.elements, winnersOf, i, evaluateAt);
       if (reached.paths.includes(token)) continue;
       add({
         ...where,
@@ -140,8 +142,61 @@ export function checkTokens(input: TokensCheckInput): CheckFinding[] {
         actual: reached.paths.length > 0 ? reached.paths.join(", ") : reached.describe,
       });
     }
+
+    // font-fallback: the text of an element whose font family comes from a token renders in the
+    // family's first font, not a fallback.
+    const fonts = element.fonts;
+    if (fonts !== undefined && !fontLoaded(fonts)) {
+      const family = reachedTokens("font-family", input.elements, winnersOf, i, evaluateAt);
+      if (family.paths.length > 0) {
+        const used = fonts.rendered.map((f) => f.family).join(", ");
+        const why =
+          fonts.faces.length === 0
+            ? "no font face in the page declares it, and no installed font has that name"
+            : `none of the page's font faces for it has loaded (${[...new Set(fonts.faces)].join(", ")})`;
+        add({
+          ...where,
+          rule: "font-fallback",
+          message:
+            `font-family (${family.paths.join(", ")}) names ${fonts.first} first, but its text renders in ${used}, a fallback: ` +
+            `${why}. Load the font in the library's stylesheet, or name the family its font faces register.`,
+          expected: fonts.first,
+          actual: used,
+        });
+      }
+    }
   });
   return findings;
+}
+
+// The generic font families, which always resolve to a font (docs/spec/check-catalogue.md#tokens).
+const genericFamilies = new Set([
+  "serif",
+  "sans-serif",
+  "monospace",
+  "cursive",
+  "fantasy",
+  "system-ui",
+  "ui-serif",
+  "ui-sans-serif",
+  "ui-monospace",
+  "ui-rounded",
+  "math",
+  "emoji",
+  "fangsong",
+]);
+
+/**
+ * Whether the browser rendered some of the text with the first family's font. A family the page
+ * declares with `@font-face` is loaded when one of its faces has loaded and a web font rendered
+ * the text; any other family when an installed font of that name rendered it. A generic family
+ * always resolves, and text the protocol reports no font for gives no evidence either way.
+ */
+function fontLoaded(fonts: TextFonts): boolean {
+  const first = fonts.first.toLowerCase();
+  if (first === "" || genericFamilies.has(first) || fonts.rendered.length === 0) return true;
+  if (fonts.faces.length > 0) return fonts.faces.includes("loaded") && fonts.rendered.some((f) => f.custom);
+  return fonts.rendered.some((f) => f.family.toLowerCase() === first || f.postScriptName.toLowerCase() === first);
 }
 
 function shown(declaration: Declaration): string {
