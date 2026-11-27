@@ -192,6 +192,7 @@ export const commands: readonly Command[] = [
       budget: { type: "string" },
       out: { type: "string" },
       records: { type: "string" },
+      from: { type: "string" },
       "in-image": { type: "string" },
     },
     run: calibrate,

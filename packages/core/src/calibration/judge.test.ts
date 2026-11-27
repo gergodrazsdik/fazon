@@ -45,6 +45,10 @@ function fakeBatches(
     batches: 0,
     requests: 0,
     submit: (requests: readonly { custom_id: string; params: Anthropic.MessageCreateParamsNonStreaming }[]) => {
+      // As the API does: a request's ID is 1 to 64 letters, digits, `_` and `-`.
+      const invalid = requests.find((request) => !/^[a-zA-Z0-9_-]{1,64}$/.test(request.custom_id));
+      if (invalid !== undefined)
+        return Promise.reject(new Error(`custom_id ${invalid.custom_id} doesn't match the API's pattern`));
       client.batches += 1;
       client.requests += requests.length;
       const id = `batch-${String(client.batches)}`;
@@ -54,7 +58,7 @@ function fakeBatches(
     wait: () => Promise.resolve(),
     results: async function* (id: string) {
       for (const request of stored.get(id) ?? []) {
-        const repeat = Number(request.custom_id.split("~")[1]);
+        const repeat = Number(request.custom_id.split("-")[1]);
         const content = request.params.messages[0]?.content;
         const blocks = Array.isArray(content) ? content : [];
         const labels = blocks.flatMap((block) =>

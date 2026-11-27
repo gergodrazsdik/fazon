@@ -12,6 +12,11 @@ import {
   calibrateInImage,
   calibrationDirectory,
   calibrationRecord,
+  componentInputsHash,
+  readRunRecord,
+  readVerifyDetails,
+  type Config,
+  type VerifyComponent,
   judgeCredential,
   judgeRound,
   judgeSdkClient,
@@ -133,67 +138,83 @@ export async function calibrate(invocation: Invocation, context: Context): Promi
     );
   }
 
-  // The round's components must pass every check (docs/spec/measurement.md#judge-calibration).
-  const verified = await verify({ positionals: names, options: { "no-judge": true } }, context);
-  const result = verified.result as { run?: unknown } | undefined;
-  const run = typeof result?.run === "string" ? result.run : undefined;
-  if (verified.status !== "ok" || run === undefined) {
-    return {
-      status: verified.status === "error" ? "error" : "refused",
-      messages: [
-        ...verified.messages.filter((message) => message.level === "error"),
-        {
-          level: "error",
-          text: `A calibration round runs on components that pass every check; ${names.join(", ")} don't yet.`,
-          hint: `fazon verify ${names.join(" ")}`,
-        },
-      ],
-    };
-  }
-
-  const runtime = await findRuntime(environment);
-  if ("problem" in runtime) return environmentError(runtime.problem, "fazon doctor");
   const stream = (text: string) => {
     if (context.global.verbose || !context.global.json) context.stderr?.(text);
   };
-  const pulled = await ensureImage(environment, runtime.runtime, config.image, stream);
-  if (pulled !== undefined) return environmentError(pulled);
-  const cli = await inImageCli(repo);
-  const mount = await mountRoot(repo, cli.package);
-  if ("problem" in mount) return environmentError(mount.problem);
-  const runDir = runDirectory(repo, run);
-  stream(
-    `Calibration round ${String(round)}: rendering ${names.join(", ")} unmodified and with every case, in ${config.image}\n`,
-  );
-  const env = Object.fromEntries(
-    passedThrough.filter((name) => isSet(environment, name)).map((name) => [name, environment.env[name] ?? ""]),
-  );
-  const ran = await environment.exec(
-    runtime.runtime,
-    runArguments({
-      runtime,
-      image: config.image,
-      root: mount.root,
-      repo,
-      runDir,
-      bin: cli.bin,
-      args: ["calibrate", "--in-image", run, ...names, ...(context.global.verbose ? ["--verbose"] : [])],
-      env,
-      ...(environment.user === undefined ? {} : { user: environment.user }),
-    }),
-    { timeoutMs: rendersTimeoutMs, stream },
-  );
+  let run: string;
   let renders: CalibrationRenders;
-  try {
-    renders = JSON.parse(
-      await readFile(path.join(runDir, calibrationDirectory, rendersFile), "utf8"),
-    ) as CalibrationRenders;
-  } catch {
-    const tail = (ran?.stderr ?? "").trim().split("\n").slice(-8).join("\n");
-    return environmentError(
-      `The renders didn't finish in the verifier image (exit ${String(ran?.exitCode ?? "-")}):\n${tail}`,
+  const from = invocation.options.from;
+  if (typeof from === "string") {
+    // An earlier round's renders, when they still match the checkout: no new renders.
+    const reused = await reuseRenders(
+      repo,
+      config,
+      components.filter((c) => names.includes(c.name)),
+      from,
     );
+    if ("refusal" in reused) return reused.refusal;
+    run = from;
+    renders = reused.renders;
+    stream(`Calibration round ${String(round)}: the renders of ${from}\n`);
+  } else {
+    // The round's components must pass every check (docs/spec/measurement.md#judge-calibration).
+    const verified = await verify({ positionals: names, options: { "no-judge": true } }, context);
+    const result = verified.result as { run?: unknown } | undefined;
+    run = typeof result?.run === "string" ? result.run : "";
+    if (verified.status !== "ok" || run === "") {
+      return {
+        status: verified.status === "error" ? "error" : "refused",
+        messages: [
+          ...verified.messages.filter((message) => message.level === "error"),
+          {
+            level: "error",
+            text: `A calibration round runs on components that pass every check; ${names.join(", ")} don't yet.`,
+            hint: `fazon verify ${names.join(" ")}`,
+          },
+        ],
+      };
+    }
+
+    const runtime = await findRuntime(environment);
+    if ("problem" in runtime) return environmentError(runtime.problem, "fazon doctor");
+    const pulled = await ensureImage(environment, runtime.runtime, config.image, stream);
+    if (pulled !== undefined) return environmentError(pulled);
+    const cli = await inImageCli(repo);
+    const mount = await mountRoot(repo, cli.package);
+    if ("problem" in mount) return environmentError(mount.problem);
+    stream(
+      `Calibration round ${String(round)}: rendering ${names.join(", ")} unmodified and with every case, in ${config.image}\n`,
+    );
+    const env = Object.fromEntries(
+      passedThrough.filter((name) => isSet(environment, name)).map((name) => [name, environment.env[name] ?? ""]),
+    );
+    const ran = await environment.exec(
+      runtime.runtime,
+      runArguments({
+        runtime,
+        image: config.image,
+        root: mount.root,
+        repo,
+        runDir: runDirectory(repo, run),
+        bin: cli.bin,
+        args: ["calibrate", "--in-image", run, ...names, ...(context.global.verbose ? ["--verbose"] : [])],
+        env,
+        ...(environment.user === undefined ? {} : { user: environment.user }),
+      }),
+      { timeoutMs: rendersTimeoutMs, stream },
+    );
+    try {
+      renders = JSON.parse(
+        await readFile(path.join(runDirectory(repo, run), calibrationDirectory, rendersFile), "utf8"),
+      ) as CalibrationRenders;
+    } catch {
+      const tail = (ran?.stderr ?? "").trim().split("\n").slice(-8).join("\n");
+      return environmentError(
+        `The renders didn't finish in the verifier image (exit ${String(ran?.exitCode ?? "-")}):\n${tail}`,
+      );
+    }
   }
+  const runDir = runDirectory(repo, run);
   const directory = `${runsDirectory}/${run}/${calibrationDirectory}`;
   const chosen = components.filter((component) => names.includes(component.name));
   const client = environment.judgeBatchClient?.(credential) ?? sdkBatchClient(judgeSdkClient(credential));
@@ -256,6 +277,57 @@ export async function calibrate(invocation: Invocation, context: Context): Promi
     ],
     result: { ...(outcome.result as Record<string, unknown>), record: out, measures },
   };
+}
+
+/**
+ * An earlier verify run's renders for `--from`: the run passed, in the image the config pins, its
+ * components' inputs are unchanged since, and its renders cover the round's components.
+ */
+async function reuseRenders(
+  repo: string,
+  config: Config,
+  components: readonly VerifyComponent[],
+  run: string,
+): Promise<{ renders: CalibrationRenders } | { refusal: Outcome }> {
+  const runDir = runDirectory(repo, run);
+  const record = await readRunRecord(runDir);
+  if (record?.kind !== "verify" || record.status !== "passed") {
+    return { refusal: refused(`--from names ${run}, which isn't a passed verify run.`, "fazon runs") };
+  }
+  if (record.versions.image !== config.image) {
+    return {
+      refusal: refused(
+        `${run} ran in ${record.versions.image}, not in the image fazon.yaml pins; render the round again.`,
+      ),
+    };
+  }
+  const details = await readVerifyDetails(runDir);
+  for (const component of components) {
+    const then = details?.components.find((entry) => entry.name === component.name)?.inputs;
+    if (then !== (await componentInputsHash(repo, component, config.paths.tokens))) {
+      return {
+        refusal: refused(
+          `${component.name} changed since ${run}, or that run didn't check it; render the round again.`,
+        ),
+      };
+    }
+  }
+  try {
+    const renders = JSON.parse(
+      await readFile(path.join(runDir, calibrationDirectory, rendersFile), "utf8"),
+    ) as CalibrationRenders;
+    const missing = components.filter((c) => !renders.components.some((entry) => entry.name === c.name));
+    if (missing.length > 0) {
+      return {
+        refusal: refused(
+          `${run}'s renders don't cover ${missing.map((c) => c.name).join(", ")}; render the round again.`,
+        ),
+      };
+    }
+    return { renders };
+  } catch {
+    return { refusal: refused(`${run} has no calibration renders; render the round again.`) };
+  }
 }
 
 /** `https://github.com/<owner>/<repo>/releases/download/measurement-<round>/records.tar.gz`, from the origin remote. */
