@@ -60,6 +60,7 @@ jobs:
       status: ${{ steps.status.outputs.status }}
       judge: ${{ steps.verify.outputs.judge }}
       judge-timeout: ${{ steps.status.outputs.judge-timeout }}
+      report-url: ${{ steps.report.outputs.artifact-url }}
     steps:
       # With its history, so `fazon verify --base` can compare the baselines with the base branch.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -243,6 +244,7 @@ jobs:
           } >"$dir/summary.md"
           cat "$dir/summary.md" >>"$GITHUB_STEP_SUMMARY"
       - name: Upload the report
+        id: report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -292,6 +294,7 @@ jobs:
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
           RUN_PAGE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPORT_URL: ${{ needs.verify.outputs.report-url }}
         run: |
           set -euo pipefail
           marker='<!-- fazon:summary -->'
@@ -308,6 +311,11 @@ jobs:
               printf '\n\n%s\n' "The summary is cut short here; the [job summary]($RUN_PAGE) has all of it."
             else
               cat "$summary"
+            fi
+            # The report artifact's own page: the summary is written before it's uploaded, so only
+            # this job, which runs after the upload, can link it.
+            if [ -n "$REPORT_URL" ]; then
+              printf '\n%s\n' "Download the report and the summary: [fazon-report]($REPORT_URL)."
             fi
           } >"$body"
           jq -n --rawfile body "$body" '{body: $body}' >"$RUNNER_TEMP/comment.json"
