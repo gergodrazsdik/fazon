@@ -23,22 +23,28 @@ export function png(width: number, height: number, dot?: { x: number; y: number;
   return encodePng({ width, height, data });
 }
 
-/** The example Button spec, as a component in `src/components/button`, with its manifest. */
-export async function exampleButton(overrides: Partial<VerifyComponent> = {}): Promise<VerifyComponent> {
-  const file = parseSpecFile(
-    "specs/button.md",
-    await readFile(path.join(docs, "examples/specs/valid/button.md"), "utf8"),
-  );
-  if (file.spec === undefined) throw new Error("the example Button doesn't parse");
+/** An example spec (`button`, `dialog` or `tabs`), as a component in `src/components/<name>`, with its manifest. */
+export async function exampleComponent(
+  name: "button" | "dialog" | "tabs",
+  overrides: Partial<VerifyComponent> = {},
+): Promise<VerifyComponent> {
+  const specFile = `specs/${name}.md`;
+  const file = parseSpecFile(specFile, await readFile(path.join(docs, `examples/specs/valid/${name}.md`), "utf8"));
+  if (file.spec === undefined) throw new Error(`the example ${name} doesn't parse`);
   return {
-    name: "button",
+    name,
     spec: file.spec,
-    specFile: "specs/button.md",
-    directory: "src/components/button",
+    specFile,
+    directory: `src/components/${name}`,
     generated: true,
-    manifest: buildManifest(file.spec, { file: "specs/button.md", themes: ["light", "dark"] }),
+    manifest: buildManifest(file.spec, { file: specFile, themes: ["light", "dark"] }),
     ...overrides,
   };
+}
+
+/** The example Button spec, as a component in `src/components/button`, with its manifest. */
+export async function exampleButton(overrides: Partial<VerifyComponent> = {}): Promise<VerifyComponent> {
+  return exampleComponent("button", overrides);
 }
 
 /** A temporary repository with the example Button's spec, a component file and the example token set. */

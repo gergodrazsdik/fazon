@@ -12,7 +12,7 @@ import { launchRenderer, type Renderer } from "../checks/render.js";
 import type { Config } from "../config/types.js";
 import { loadTokenIndex } from "../lint/tokens.js";
 import { syncRepository } from "../sync/sync.js";
-import { loadComponents, storyProps, type VerifyComponent } from "./components.js";
+import { loadComponents, type VerifyComponent } from "./components.js";
 import {
   componentCheckStatuses,
   componentInputsHash,
@@ -322,10 +322,7 @@ export async function runImageChecks(options: ImageChecksOptions): Promise<Image
   const exemptions = applyExemptions(
     [...source.checks, ...rendered.checks].flatMap((check) => check.findings),
     all,
-    (component, story) =>
-      component.manifest === undefined
-        ? {}
-        : storyProps(component.spec, component.manifest, story)(component.spec.name, 0),
+    rendered.elements,
   );
   let at = 0;
   const waived = [...source.checks, ...rendered.checks].map((check) => {

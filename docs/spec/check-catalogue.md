@@ -65,7 +65,7 @@ An exemption in the spec waives the findings of one `check` and `rule`:
 - **Rendered checks:** an exemption applies to the findings that match all it names:
   - `part`: the finding's element is in that part, meaning its nearest ancestor-or-self with `data-part` is the part;
   - `fixture`: the finding's story renders that fixture;
-  - `when`: the story's prop values and state match the condition. The verifier compares the condition's `props` with the root's prop values in the story, and its `state` with the state the story shows (the root's or a part's), also when the exemption names a `part`. That differs from [conditions](spec-format.md#conditions), where an exemption that names a part uses the part's props and states; until the maintainer settles which holds, the verifier does as described here.
+  - `when`: the [condition](spec-format.md#conditions) holds for the props and states of the part the exemption names, or of the component's root when it names none, in the finding's story: the props of the part's instance that holds the finding's element, and that instance's states as token rules see them. When the finding's element can't be found in the render, they are the part's first instance and the state the story sets on that part.
 
 A finding with no story, such as `spec-aria`'s, is waived only by an exemption that names no `fixture` or `when`.
 

@@ -2,9 +2,9 @@
 import { describe, expect, it } from "vitest";
 import type { CheckFinding } from "../checks/types.js";
 import type { Exemption } from "../spec/types.js";
-import { storyProps } from "./components.js";
-import { applyExemptions, findingComponent } from "./exemptions.js";
-import { exampleButton } from "./test-support.js";
+import type { VerifyComponent } from "./components.js";
+import { applyExemptions, findingComponent, type FindingElement, type FindingElements } from "./exemptions.js";
+import { exampleButton, exampleComponent } from "./test-support.js";
 
 const withExemptions = async (exemptions: Exemption[]) => {
   const button = await exampleButton();
@@ -22,11 +22,16 @@ const finding = (overrides: Partial<CheckFinding>): CheckFinding => ({
   ...overrides,
 });
 
-const props = (
-  component: Awaited<ReturnType<typeof exampleButton>>,
-  story: NonNullable<Awaited<ReturnType<typeof exampleButton>>["manifest"]>["stories"][number],
-) =>
-  component.manifest === undefined ? {} : storyProps(component.spec, component.manifest, story)(component.spec.name, 0);
+const withSpecExemptions = async (name: "dialog" | "tabs", exemptions: Exemption[]): Promise<VerifyComponent> => {
+  const component = await exampleComponent(name);
+  return exampleComponent(name, { spec: { ...component.spec, exemptions } });
+};
+
+/** The rendered elements by selector, for one part, as the rendered checks would record them. */
+const recorded =
+  (part: string, bySelector: Record<string, FindingElement>): FindingElements =>
+  (f, asked) =>
+    asked === part && f.selector !== undefined ? bySelector[f.selector] : undefined;
 
 describe("exemptions", () => {
   it("waive the findings they match, which stay, marked exempt and not blocking", async () => {
@@ -63,7 +68,7 @@ describe("exemptions", () => {
         reason: "this one",
       },
     ]);
-    const { findings, unused } = applyExemptions([finding({})], [button], props);
+    const { findings, unused } = applyExemptions([finding({})], [button]);
     expect(findings[0]).toMatchObject({ exempt: 3, blocking: false });
     expect(unused.map((u) => u.index)).toEqual([0, 1, 2]);
   });
@@ -82,7 +87,65 @@ describe("exemptions", () => {
       rule: "color-contrast",
       story: "button--label--variant-primary--size-md--hover",
     });
-    expect(applyExemptions([disabled, hover], [button], props).findings.map((f) => f.blocking)).toEqual([false, true]);
+    expect(applyExemptions([disabled, hover], [button]).findings.map((f) => f.blocking)).toEqual([false, true]);
+  });
+
+  it("that name a part match that part's state, not the root's or another part's", async () => {
+    const dialog = await withSpecExemptions("dialog", [
+      { check: "layout", rule: "scroll", part: "Close", when: { state: "hover" }, reason: "r" },
+    ]);
+    const at = (story: string, part: string) =>
+      finding({ story: `dialog--confirm--content-size-md--${story}`, part, selector: `[data-part="${part}"]` });
+    const findings = [
+      at("close-hover", "Close"),
+      at("default", "Close"),
+      at("close-hover", "Content"),
+      at("closed", "Close"),
+    ];
+    expect(applyExemptions(findings, [dialog]).findings.map((f) => f.blocking)).toEqual([false, true, true, true]);
+  });
+
+  it("without a part match the root's state, not a part's", async () => {
+    const tabs = await withSpecExemptions("tabs", [
+      { check: "layout", rule: "scroll", when: { state: "hover" }, reason: "r" },
+    ]);
+    const hover = finding({ story: "tabs--three--orientation-horizontal--trigger-hover", part: "Trigger" });
+    expect(applyExemptions([hover], [tabs]).findings[0]?.blocking).toBe(true);
+  });
+
+  it("that name a part match the props and states of the instance the finding is in", async () => {
+    const tabs = await withSpecExemptions("tabs", [
+      { check: "layout", rule: "scroll", part: "Trigger", when: { props: { disabled: true } }, reason: "disabled" },
+      { check: "a11y", rule: "color-contrast", part: "Trigger", when: { state: "hover" }, reason: "hovered" },
+    ]);
+    const elements = recorded("Trigger", {
+      "#first": { instance: 0, states: ["hover"] },
+      "#second": { instance: 1, states: [] },
+    });
+    const disabled = (selector: string) =>
+      finding({ story: "tabs--one-disabled--orientation-horizontal--default", part: "Trigger", selector });
+    const hovered = (selector: string) =>
+      finding({
+        check: "a11y",
+        rule: "color-contrast",
+        story: "tabs--three--orientation-horizontal--trigger-hover",
+        part: "Trigger",
+        selector,
+      });
+    const findings = [disabled("#second"), disabled("#first"), hovered("#first"), hovered("#second")];
+    expect(applyExemptions(findings, [tabs], elements).findings.map((f) => f.blocking)).toEqual([
+      false,
+      true,
+      false,
+      true,
+    ]);
+  });
+
+  it("with a fixture and part but no condition match every story of that fixture", async () => {
+    const dialog = await exampleComponent("dialog");
+    const long = finding({ story: "dialog--long-content--content-size-md--default", part: "Content" });
+    const confirm = finding({ story: "dialog--confirm--content-size-md--default", part: "Content" });
+    expect(applyExemptions([long, confirm], [dialog]).findings.map((f) => f.exempt)).toEqual([0, undefined]);
   });
 
   it("never waive visual", async () => {

@@ -23,6 +23,7 @@ import {
 import type { Story } from "../matrix/types.js";
 import type { TokenIndex } from "../tokens/build.js";
 import { storyProps, type VerifyComponent } from "./components.js";
+import type { FindingElements } from "./exemptions.js";
 import type { CheckResult } from "./run-record.js";
 
 /** What the renderer reads from one story in one theme, after its input steps. */
@@ -94,6 +95,30 @@ export interface RenderedChecksResult {
   readonly orphans: Orphan[];
   /** axe's undecided results, which never block. */
   readonly incomplete: CheckFinding[];
+  /** The part instance of each rendered finding's element, for exemptions' conditions. */
+  readonly elements?: FindingElements;
+}
+
+type RecordedElement = Pick<
+  PageInspection["elements"][number],
+  "selector" | "part" | "partRoot" | "instance" | "parent" | "states"
+>;
+
+/** Looks a finding's element up in its story's render by its selector, then walks up to the part's root. */
+function findingElements(rendered: ReadonlyMap<string, readonly RecordedElement[]>): FindingElements {
+  return (finding, part) => {
+    if (finding.story === undefined || finding.selector === undefined) return undefined;
+    const elements = rendered.get(`${finding.story}\u0000${finding.theme ?? ""}`) ?? [];
+    let at: number | undefined = elements.findIndex((e) => e.selector === finding.selector);
+    if (at === -1) return undefined;
+    while (at !== undefined) {
+      const element: RecordedElement | undefined = elements[at];
+      if (element === undefined) return undefined;
+      if (element.partRoot && element.part === part) return { instance: element.instance ?? 0, states: element.states };
+      at = element.parent;
+    }
+    return undefined;
+  };
 }
 
 /** The directory of captures and diffs in a run's directory. */
@@ -139,6 +164,8 @@ export async function runRenderedChecks(input: RenderedChecksInput): Promise<Ren
   const findings: Record<"a11y" | "tokens" | "layout", CheckFinding[]> = { a11y: [], tokens: [], layout: [] };
   const incomplete: CheckFinding[] = [];
   const errors: string[] = [];
+  /** Each story's elements, by story and theme, for the findings' part instances. */
+  const recorded = new Map<string, RecordedElement[]>();
   const captures: { component: VerifyComponent; story: Story; theme: string; png: Uint8Array; path: string }[] = [];
 
   const renderable = input.components.filter((component) => {
@@ -177,6 +204,17 @@ export async function runRenderedChecks(input: RenderedChecksInput): Promise<Ren
           input.progress?.(++done, total);
         }
         const { elements } = rendered.inspection;
+        recorded.set(
+          `${story.name}\u0000${theme}`,
+          elements.map(({ selector, part, partRoot, instance, parent, states }) => ({
+            selector,
+            partRoot,
+            states,
+            ...(part === undefined ? {} : { part }),
+            ...(instance === undefined ? {} : { instance }),
+            ...(parent === undefined ? {} : { parent }),
+          })),
+        );
         const axe = checkAxe(rendered.axe, context);
         findings.a11y.push(...axe.findings, ...checkSpecA11y({ spec: component.spec, elements, props, context }));
         incomplete.push(...axe.incomplete);
@@ -227,6 +265,7 @@ export async function runRenderedChecks(input: RenderedChecksInput): Promise<Ren
     stories: visual.stories,
     orphans: visual.orphans,
     incomplete,
+    elements: findingElements(recorded),
   };
 }
 
