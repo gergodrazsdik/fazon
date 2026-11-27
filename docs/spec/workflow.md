@@ -121,7 +121,7 @@ The other steps run the CLI as `node_modules/.bin/fazon` in the working director
 
 ### `judge`
 
-Runs after `verify` passes, unless the judge's policy is `off` (which `fazon verify`'s result names) or the pull request comes from a fork (its head repository isn't this one). Permissions: `contents: read`, and `id-token: write` for federation; the credential, for this job only.
+Runs after `verify` passes, for a pull request from this repository: not on other events, such as a push, which have no pull request's stories to judge, nor for a pull request from a fork (its head repository isn't this one), nor when the judge's policy is `off` (which `fazon verify`'s result names). Permissions: `contents: read`, and `id-token: write` for federation; the credential, for this job only.
 
 1. Check out, install, and download `verify`'s run (`fazon-run`) and summary (`fazon-report`).
 2. Set up the [credential](#credentials). Without one, the job ends here with a notice, and the summary keeps saying the judge didn't run.
