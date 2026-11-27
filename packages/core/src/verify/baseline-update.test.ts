@@ -119,6 +119,7 @@ async function agentRun(
     ...example,
     id,
     versions: { ...example.versions, image },
+    ...(overrides.kind === "feedback" ? { feedback: { text: "Round the corners." } } : {}),
     ...overrides,
   };
   const dir = runDirectory(root, id);

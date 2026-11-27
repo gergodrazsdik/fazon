@@ -92,7 +92,9 @@ In the local review, the developer can send feedback in plain words. That starts
 
 - it's linked to the run it answers, and starts with fresh iteration, budget and time caps;
 - every prompt of the run carries the feedback, as calls share no session; the first also carries the previous run's last findings ([ADR 0024](../adr/0024-feedback-in-every-prompt.md));
-- it counts as a human intervention, and its cost counts toward the component's total in the measurements.
+- its record keeps the feedback (`feedback`), and the report shows it ([ADR 0026](../adr/0026-feedback-record-and-font-check.md));
+- the component's files a person changed since the previous run's last call, during the local review for example, are recorded as the run's hand edits after iteration 0 ([hand edits](agent-permissions.md#hand-edits));
+- it counts as a human intervention, and so does each of its hand edits; its cost counts toward the component's total in the measurements.
 
 ## How a run ends
 

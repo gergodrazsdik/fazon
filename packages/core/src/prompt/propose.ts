@@ -52,6 +52,7 @@ const apiFormat = `Every member is written in long form, as a mapping, even when
 - **\`forward\`:** which element receives undeclared attributes, classes and the ref: \`root\` (the default) or a part's name.
 - **\`form\`:** for a form field: \`value\` (a \`model\` prop, required), and optionally the props that hold its \`name\`, \`disabled\` and \`required\` flags.
 - **\`parts\`,** keyed by PascalCase name, for a multi-part component: \`parent\` (the component or another part), \`count\` (\`one\`, \`optional\` or \`many\`), \`portal: true\` when it renders outside the root, such as overlay content, an optional \`description\`, and its own \`props\`, \`events\`, \`slots\` and \`methods\`. A part with \`count: many\` can't be the parent of another \`many\` part, and no part has the component's name.
+- **Parts render in their parent's default slot,** ahead of any content the slot is given, and a fixture lists them under its \`parts\`, not as slot content. So never declare a slot only to say where a component's or a part's parts go: a parent whose only content is its parts has no \`default\` slot. Declare a slot for content other than the parts, such as a label or a body text.
 - **\`extensions\`,** keyed by adapter ID: only for what one framework needs and the neutral API can't say, with \`reason\`, and \`add\`, \`map\` or \`omit\` keyed by member path (\`props.size\`, \`parts.Trigger.props.asChild\`).
 - Within the component, and within each part, a name is used once across props, events and methods.`;
 

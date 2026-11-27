@@ -256,3 +256,8 @@ export { emptyFixtureMissing } from "./spec/rules-fixtures.js";
 export type { SpecNote } from "./spec/rules-extensions.js";
 export { axeRuleIds, catalogueRule, checkCatalogue, type CatalogueCheck, type CheckKind } from "./spec/catalogue.js";
 export { validateWithJsonSchema } from "./validation/validate.js";
+
+// A feedback run's hand edits since its parent (ADR 0026): the component's files as a run's last
+// call left them, in its directory.
+export { componentFiles, componentFilesFile, readComponentFiles, writeComponentFiles } from "./loop/component-files.js";
+export type { Snapshot } from "./agent/snapshot.js";

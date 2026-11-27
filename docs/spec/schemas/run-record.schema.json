@@ -24,6 +24,18 @@
           { "properties": { "status": { "const": "failed" }, "reason": { "const": "check-error" } } }
         ]
       }
+    },
+    {
+      "description": "A feedback run, and only a feedback run, names the run it answers and keeps the developer's feedback; only its hand edits can follow iteration 0 (ADR 0026).",
+      "if": { "properties": { "kind": { "const": "feedback" } } },
+      "then": { "required": ["parent", "feedback"] },
+      "else": {
+        "properties": {
+          "parent": false,
+          "feedback": false,
+          "handEdits": { "items": { "properties": { "after": { "minimum": 1 } } } }
+        }
+      }
     }
   ],
   "properties": {
@@ -33,6 +45,13 @@
     "parent": {
       "description": "For a feedback run: the run it answers.",
       "$ref": "#/$defs/runId"
+    },
+    "feedback": {
+      "description": "For a feedback run: the developer's feedback, as `fazon feedback` passed it to every prompt.",
+      "type": "object",
+      "required": ["text"],
+      "additionalProperties": false,
+      "properties": { "text": { "type": "string", "minLength": 1 } }
     },
     "component": {
       "description": "The component; absent for a verify run, which covers them all.",
@@ -138,14 +157,18 @@
       "properties": { "path": { "$ref": "#/$defs/path" } }
     },
     "handEdits": {
-      "description": "Changes a person made between agent calls.",
+      "description": "Changes a person made between agent calls; for a feedback run, also the changes to the component's files since its parent run's last call.",
       "type": "array",
       "items": {
         "type": "object",
         "required": ["after", "files"],
         "additionalProperties": false,
         "properties": {
-          "after": { "description": "The iteration they followed.", "type": "integer", "minimum": 1 },
+          "after": {
+            "description": "The iteration they followed; 0 for a feedback run's changes to the component's files since its parent run's last call, found before its first call.",
+            "type": "integer",
+            "minimum": 0
+          },
           "files": { "type": "array", "items": { "$ref": "#/$defs/path" }, "minItems": 1 }
         }
       }

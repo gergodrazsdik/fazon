@@ -100,6 +100,30 @@ describe("renderReport", () => {
     expect(page).toContain("padding-inline: 12px is a raw value; use a spacing token.");
   });
 
+  it("shows a feedback run's feedback at the top, escaped, with the files changed since its parent (ADR 0026)", async () => {
+    const record: ReportRecord = {
+      ...(await generateRecord()),
+      id: "20261125T180000Z-button-0b1c",
+      kind: "feedback",
+      parent: "20261125T164012Z-button-3f9a",
+      feedback: { text: `Round the corners.\n\n${hostile}` },
+      handEdits: [
+        { after: 0, files: [`src/components/button/${hostile}.vue`] },
+        { after: 2, files: ["src/components/button/Button.css"] },
+      ],
+    };
+    const page = renderReport(model(record));
+    const top = page.slice(0, page.indexOf('id="next"'));
+    expect(top).toContain("<strong>Feedback</strong> on <code>20261125T164012Z-button-3f9a</code>");
+    expect(top).toContain(`Round the corners.\n\n${escapeHtml(hostile)}</blockquote>`);
+    expect(top).toContain(`Changed by a person since that run, before the first call:`);
+    expect(top).toContain(`<code>src/components/button/${escapeHtml(hostile)}.vue</code>`);
+    expect(top).not.toContain("Button.css");
+    expect(page).not.toContain(hostile);
+    // A generate run has no feedback block.
+    expect(renderReport(model(await generateRecord()))).not.toContain('class="feedback"');
+  });
+
   it("escapes findings, spec text and paths from the record", async () => {
     const record = await generateRecord();
     const [first] = record.iterations;

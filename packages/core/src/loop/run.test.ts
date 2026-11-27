@@ -593,6 +593,49 @@ describe("a feedback run", () => {
     expect(h.calls[1]?.findings.map((f) => f.rule)).toEqual(["raw-value"]);
   });
 
+  it("keeps the feedback in its record, and the changes since its parent as hand edits after 0 (ADR 0026)", async () => {
+    const edited = "src/components/button/Button.vue";
+    const h = harness({
+      calls: [{ handEdits: [edited] }, { handEdits: ["src/components/button/Button.css"] }],
+      phases: [checks(failing("lint", "raw-value"))],
+    });
+    const feedback = { parent: "20261126T100000Z-button-3f9a", text: "Make the focus ring thicker.", findings: [] };
+    const { record } = await runAgent(
+      options({ kind: "feedback", id: "20261126T110000Z-button-0b1c", feedback }),
+      h.dependencies,
+    );
+    expect(record.feedback).toEqual({ text: "Make the focus ring thicker." });
+    expect(record.handEdits).toEqual([
+      { after: 0, files: [edited] },
+      { after: 1, files: ["src/components/button/Button.css"] },
+    ]);
+    // Every record written on the way has the feedback; the harness checks each against the schema.
+    expect(h.written.every((written) => written.feedback?.text === "Make the focus ring thicker.")).toBe(true);
+    const generate = await runAgent(options(), harness({ calls: [{ handEdits: [edited] }] }).dependencies);
+    expect(generate.record).not.toHaveProperty("feedback");
+    expect(generate.record.handEdits).toEqual([]);
+  });
+
+  it("is the only run with feedback or hand edits after 0, and needs both its parent and its feedback (schema)", async () => {
+    const feedback = await runAgent(
+      options({
+        kind: "feedback",
+        id: "20261126T110000Z-button-0b1c",
+        feedback: { parent: "20261126T100000Z-button-3f9a", text: "Round it.", findings: [] },
+      }),
+      harness().dependencies,
+    );
+    const generate = await runAgent(options(), harness().dependencies);
+    const edits = [{ after: 0, files: ["src/components/button/Button.vue"] }];
+    expect(runRecordProblems({ ...feedback.record, handEdits: edits })).toEqual([]);
+    expect(runRecordProblems(without(feedback.record, "feedback"))).not.toEqual([]);
+    expect(runRecordProblems(without(feedback.record, "parent"))).not.toEqual([]);
+    expect(runRecordProblems({ ...feedback.record, feedback: { text: "" } })).not.toEqual([]);
+    expect(runRecordProblems({ ...generate.record, handEdits: edits })).not.toEqual([]);
+    expect(runRecordProblems({ ...generate.record, feedback: { text: "Round it." } })).not.toEqual([]);
+    expect(runRecordProblems({ ...generate.record, parent: "20261126T100000Z-button-3f9a" })).not.toEqual([]);
+  });
+
   it("takes its parent's last findings from the parent's record", async () => {
     const h = harness({
       calls: [{}, {}, { end: "call-time" }],

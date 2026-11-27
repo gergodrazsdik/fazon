@@ -19,7 +19,7 @@ What the agent may read, write and run while it generates a component, what the 
 Three layers, each enough on its own for what it covers:
 
 1. **Claude Code's permission rules** for the headless call: which files the agent may edit, which commands it may run, and which tools exist at all. The harness writes them for each run.
-2. **Claude Code's sandbox** for the commands the agent runs: writes only inside the component's directory and temporary directories, and no network.
+2. **Claude Code's sandbox** for the commands the agent runs: writes only inside the component's directory, the self-checks' cache directories and temporary directories, and no network.
 3. **The harness's own check after every call,** which is the one that counts: it compares every file outside the allowed paths with the state before the call, and fails the run on any difference ([PERM-002](#rules)). The sandbox limits shell commands, not file edits, so this check is what makes the allowed paths hold.
 
 ## Paths
@@ -122,7 +122,7 @@ The exact keys and flags follow the Claude Code version the harness requires, an
 | Tools | `--tools Read,Glob,Grep,Edit,Write,Bash`; `--disallowed-tools WebFetch,WebSearch,Agent,Task,NotebookEdit,mcp__*` |
 | MCP | `--strict-mcp-config --mcp-config '{"mcpServers":{}}'`, and `disableClaudeAiConnectors`; hooks off (`disableAllHooks`) |
 | Non-interactive | `--permission-mode dontAsk` (also `permissions.defaultMode`), `--permission-prompts none`, and `permissions.disableBypassPermissionsMode: "disable"` |
-| Sandbox | `sandbox.enabled`, `failIfUnavailable` (no call without it), `autoAllowBashIfSandboxed: false`, `allowUnsandboxedCommands: false`, `network.allowedDomains: []`; `filesystem.denyWrite` the repository and `generated/`, `allowWrite` the component's directory and the adapter's cache directories, `denyRead` the three directories above and each secret file found in the repository by path, as the sandbox on Linux ignores glob patterns |
+| Sandbox | `sandbox.enabled`, `failIfUnavailable` (no call without it), `autoAllowBashIfSandboxed: false`, `allowUnsandboxedCommands: false`, `network.allowedDomains: []`; `filesystem.allowWrite` the component's directory and the adapter's cache directories; `filesystem.denyWrite` `generated/` and every path that exists when the call starts beside those directories and their parents (the repository's other top-level entries, the other entries of `src/` and `src/components/`, every package and pnpm's own entries in `node_modules/`), but not the repository as a whole: sandboxed commands may write in the working directory by default, and on Linux a denied directory stays denied below it, even where `allowWrite` names a narrower path. A path that doesn't exist yet can't be denied: the snapshots catch a file a command creates there unless git ignores it (PERM-002). `filesystem.denyRead` the three directories above and each secret file found in the repository by path, as the sandbox on Linux ignores glob patterns |
 | Model and limits | `--model`, `--effort` when the config sets one, and `--max-budget-usd` with what remains of the run's budget |
 | Output | `--print --output-format stream-json --verbose`, written to `calls/<n>.jsonl` as the transcript; `--no-session-persistence` |
 | Prompt | on standard input, which is then closed |
@@ -137,7 +137,7 @@ The one call of a [propose run](loop-and-caps.md#runs) may change no file and ru
 |---|---|
 | Tools | `--tools Read,Glob,Grep`: no Edit, Write or Bash |
 | Permissions | `permissions.allow` only `Read`, `Glob` and `Grep`; `permissions.deny` adds `Edit` and `Bash` to the rules above |
-| Sandbox | as above, with an empty `filesystem.allowWrite` |
+| Sandbox | as above, with an empty `filesystem.allowWrite` and `filesystem.denyWrite` the repository as a whole |
 | Answer | `--json-schema` with the schema of a proposed API: the spec schema's API fields, with no `states`, `produce` or `a11y` on a part. Claude Code compiles it as draft-07 in strict mode, so it gets a draft-07 copy: without `$schema` and `unevaluatedProperties`, with `$defs` as `definitions` and `dependentRequired` as `dependencies`; the harness validates the answer against the full schema. Claude Code returns the answer as the result's structured output; without one, the harness reads the JSON object in the final message |
 | Allowed paths | none: any file that changes during the call is a violation (PERM-002) |
 
@@ -160,6 +160,7 @@ During a run, the harness takes a snapshot before and after each agent call. A s
 
 - A change made **during** a call, outside the allowed paths, is a violation: the run ends as "needs a person", and the report lists the files. The harness doesn't revert them, so a person can see what happened.
 - A change made **between** calls is a person's hand edit, wherever it is. The run record stores each one, with its files; it counts as a human intervention in the measurements.
+- A change made **between runs**, before a feedback run's first call, is a hand edit when it is to the component's files: its directory, outside `generated/` ([ADR 0026](../adr/0026-feedback-record-and-font-check.md)). After each call, the harness writes the component's files as the call left them to the run's directory (`component-files.json`); a feedback run compares its parent's with its snapshot before its first call, and records the files that differ as following iteration 0. The spec and the other inputs aren't the component's files: a person changes them on purpose, and they don't count. Nor do the files the harness writes between runs: `fazon accept`'s provenance file and `fazon sync`'s generated files under `generated/`, and the entry file, the token CSS, the Storybook themes and `fazon baseline update`'s baselines outside the component's directory. A parent without the file (it made no call, or an older framework version ran it) gives no hand edits after iteration 0.
 
 ## Rules
 
@@ -169,4 +170,4 @@ During a run, the harness takes a snapshot before and after each agent call. A s
 | PERM-002 | After a call, no file outside the allowed paths differs from its state before the call. | the harness, after every call |
 | PERM-003 | The component's directory holds only files of the adapter's patterns, outside `generated/`. | the harness, after every call |
 | PERM-004 | The committed generated files are what the harness generates from the committed spec. | CI (`build` rule `generated`) |
-| PERM-005 | Every change made between calls is recorded as a hand edit. | the harness |
+| PERM-005 | Every change made between calls is recorded as a hand edit, and so is every change to the component's files between a feedback run's parent and its first call. | the harness |

@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   capture,
   captureJson,
+  image,
   minimalConfig,
   removeRepository,
   repository,
@@ -16,11 +17,25 @@ const programs = {
   claude: "2.1.332 (Claude Code)",
 };
 
+/** A runtime that has the pinned image, and records every call other than `--version`. */
+function runtimeWithImage(present: boolean, calls: string[][] = []): NonNullable<FakeMachine["handle"]> {
+  return (program, args) => {
+    if (args[0] === "--version") return undefined;
+    calls.push([program, ...args]);
+    if (args[0] === "image" && args[1] === "inspect" && args[2] === image) {
+      return Promise.resolve(
+        present ? { exitCode: 0, stdout: "[]\n", stderr: "" } : { exitCode: 125, stdout: "", stderr: "no such image" },
+      );
+    }
+    return Promise.resolve({ exitCode: 1, stdout: "", stderr: "unexpected" });
+  };
+}
+
 let root: string;
 let machine: FakeMachine;
 beforeEach(async () => {
   root = await repository({ "fazon.yaml": minimalConfig });
-  machine = { cwd: root, env: { ANTHROPIC_API_KEY: secret }, programs };
+  machine = { cwd: root, env: { ANTHROPIC_API_KEY: secret }, programs, handle: runtimeWithImage(true) };
 });
 afterEach(() => removeRepository(root));
 
@@ -39,9 +54,10 @@ describe("fazon doctor", () => {
       ["container-runtime", "ok"],
       ["claude-code", "ok"],
       ["api-key", "ok"],
-      ["verifier-image", "not-checked"],
+      ["verifier-image", "ok"],
       ["config", "ok"],
     ]);
+    expect(check(json, "verifier-image")).toMatchObject({ detail: `the verifier image ${image} is on this machine` });
     expect(check(json, "container-runtime")).toMatchObject({ detail: "Docker version 28.1.0, build 1234 (detected)" });
     expect(check(json, "claude-code")).toMatchObject({ detail: "Claude Code 2.1.332 (2.1.332 or later needed)" });
   });
@@ -125,6 +141,46 @@ describe("fazon doctor", () => {
     const odd = await captureJson(["doctor"], { ...machine, programs: { ...programs, claude: "Claude Code nightly" } });
     expect(odd.code).toBe(0);
     expect(check(odd.json, "claude-code")).toMatchObject({ state: "invalid" });
+  });
+
+  it("only warns when the pinned verifier image isn't on this machine, and never pulls it (F-0028)", async () => {
+    const calls: string[][] = [];
+    const { code, json } = await captureJson(["doctor"], { ...machine, handle: runtimeWithImage(false, calls) });
+    expect(code).toBe(0);
+    expect(json.status).toBe("ok");
+    expect(check(json, "verifier-image")).toMatchObject({ state: "missing", required: false });
+    expect(json.messages).toContainEqual({
+      level: "warning",
+      text: `the verifier image ${image} isn't on this machine yet; the first fazon verify, generate or feedback pulls it. To pull it now, run 'docker pull --platform linux/amd64 ${image}'.`,
+    });
+    expect(calls).toEqual([["docker", "image", "inspect", image]]);
+  });
+
+  it("looks for the verifier image with the runtime FAZON_CONTAINER_RUNTIME names", async () => {
+    const calls: string[][] = [];
+    const { json } = await captureJson(["doctor"], {
+      ...machine,
+      env: { FAZON_CONTAINER_RUNTIME: "podman" },
+      handle: runtimeWithImage(true, calls),
+    });
+    expect(check(json, "verifier-image")).toMatchObject({ state: "ok" });
+    expect(calls).toEqual([["podman", "image", "inspect", image]]);
+  });
+
+  it("doesn't check the verifier image without a container runtime or a valid config", async () => {
+    const noRuntime = await captureJson(["doctor"], { ...machine, programs: { claude: programs.claude } });
+    expect(check(noRuntime.json, "verifier-image")).toMatchObject({
+      state: "not-checked",
+      detail: `the verifier image ${image}: not checked, without a container runtime to look for it with`,
+    });
+    await removeRepository(root);
+    root = await repository();
+    const noConfig = await captureJson(["doctor"], { ...machine, cwd: root });
+    expect(check(noConfig.json, "verifier-image")).toMatchObject({
+      state: "not-checked",
+      detail: "the verifier image: not checked, without a valid fazon.yaml to read its pin from",
+    });
+    expect(JSON.stringify(noConfig.json.messages)).not.toContain("verifier image");
   });
 
   it("warns, without failing, when there is no fazon.yaml", async () => {
