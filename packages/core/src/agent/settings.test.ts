@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import { rm } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
-import { agentSettings, findSecretFiles } from "./settings.js";
+import { agentSettings, findSecretFiles, findWriteDenied, writableDirectories } from "./settings.js";
 import { gitRepository } from "./test-support.js";
 
 const selfChecks = {
@@ -19,6 +19,7 @@ describe("the agent call's settings (PERM-001)", () => {
     scope: { directory: "src/components/button", patterns: ["*.vue", "*.ts"] },
     selfChecks,
     secretFiles: ["config/id_ed25519"],
+    writeDenied: ["package.json", "src/main.ts", "src/components/link", "node_modules/.pnpm", "node_modules/vue"],
   });
 
   it("allow reading, edits of the adapter's patterns in the component's directory, and exactly the self-checks", () => {
@@ -56,6 +57,7 @@ describe("the agent call's settings (PERM-001)", () => {
   });
 
   it("turn the sandbox on with no network, writes only in the component's directory and the caches, and no way out", () => {
+    // The repository isn't denied as a whole: on Linux that deny wins over the narrower allows (F-0029).
     expect(settings.sandbox).toEqual({
       enabled: true,
       failIfUnavailable: true,
@@ -64,7 +66,14 @@ describe("the agent call's settings (PERM-001)", () => {
       network: { allowedDomains: [] },
       filesystem: {
         allowWrite: ["/work/repo/src/components/button", "/work/repo/node_modules/.vite"],
-        denyWrite: ["/work/repo", "/work/repo/src/components/button/generated"],
+        denyWrite: [
+          "/work/repo/package.json",
+          "/work/repo/src/main.ts",
+          "/work/repo/src/components/link",
+          "/work/repo/node_modules/.pnpm",
+          "/work/repo/node_modules/vue",
+          "/work/repo/src/components/button/generated",
+        ],
         denyRead: ["/work/repo/.github", "/work/repo/.claude", "/work/repo/.fazon", "/work/repo/config/id_ed25519"],
       },
     });
@@ -73,6 +82,54 @@ describe("the agent call's settings (PERM-001)", () => {
       disableClaudeAiConnectors: true,
       enableAllProjectMcpServers: false,
     });
+  });
+});
+
+describe("the sandbox's denied writes", () => {
+  const scope = { directory: "src/components/button", patterns: ["*.vue"] };
+
+  it("cover the whole repository without the paths beside the writable ones, and for a call that only reads", () => {
+    for (const input of [
+      { repo: "/work/repo", scope, selfChecks },
+      { repo: "/work/repo", scope, selfChecks, access: "read" as const, writeDenied: ["package.json"] },
+    ]) {
+      expect(agentSettings(input).sandbox.filesystem.denyWrite).toEqual([
+        "/work/repo",
+        "/work/repo/src/components/button/generated",
+      ]);
+    }
+  });
+
+  it("are what exists beside the writable directories and their parents, from the root down", async () => {
+    const repo = await gitRepository({
+      "package.json": "{}",
+      "specs/button.yaml": "",
+      "src/main.ts": "",
+      "src/components/button/Button.vue": "",
+      "src/components/button/generated/stories.json": "",
+      "src/components/link/Link.vue": "",
+      "node_modules/.pnpm/vue/index.js": "",
+      "node_modules/.vite/deps/x.js": "",
+      "node_modules/vue/index.js": "",
+    });
+    try {
+      const writable = writableDirectories(
+        { directory: "src/components/button/", patterns: ["*.vue"] },
+        { commands: [], cacheDirectories: ["node_modules/.vite", "node_modules/.vite-temp"] },
+      );
+      expect(writable).toEqual(["src/components/button", "node_modules/.vite", "node_modules/.vite-temp"]);
+      expect(await findWriteDenied(repo, writable)).toEqual([
+        ".git",
+        "node_modules/.pnpm",
+        "node_modules/vue",
+        "package.json",
+        "specs",
+        "src/components/link",
+        "src/main.ts",
+      ]);
+    } finally {
+      await rm(repo, { recursive: true, force: true });
+    }
   });
 });
 
