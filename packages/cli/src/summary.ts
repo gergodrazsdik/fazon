@@ -234,6 +234,17 @@ export function summarizeRun(
         ? "Off: `fazon.yaml` sets `judge.policy` to `off`, so no story was judged. Cost: $0.00."
         : "Not run: this run has no judge verdicts. Cost: $0.00.",
     "",
+    ...(verdicts?.findings === undefined || verdicts.findings.length === 0
+      ? []
+      : [
+          ...list(
+            verdicts.findings,
+            (f) =>
+              `${f.verdict} ${code(f.story)} (${f.theme}), ${code(f.question)}, ${f.severity}: ${escapeMarkdown(firstLine(f.message))}`,
+            `in the run's ${code(verdicts.results)}`,
+          ),
+          "",
+        ]),
     artifactsPlaceholder,
   );
 

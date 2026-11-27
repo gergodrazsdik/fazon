@@ -282,6 +282,43 @@ describe("fazon report", () => {
     expect(stdout.trimEnd().endsWith(artifactsPlaceholder)).toBe(true);
   });
 
+  it("gives the judge's verdicts, cost and findings, escaped, once it ran", async () => {
+    const id = "20261127T090000Z-verify-0003";
+    const judge = {
+      calls: 3,
+      costUsd: 0.0123,
+      stories: { pass: 4, fail: 1, unsure: 0, notJudged: 0 },
+      blocking: false,
+      results: "judge.json",
+      findings: [
+        {
+          question: "axis-variant",
+          story: "button--b",
+          theme: "light",
+          verdict: "fail" as const,
+          severity: "high" as const,
+          message: "Secondary reads as *more* prominent than <primary>\nsecond line",
+        },
+      ],
+    };
+    await writeRun(root, id, passing, {
+      overrides: {
+        versions: { framework: "0.0.0", adapter: "0.0.0", image, judge: 1 },
+        verification: { checks: passing, captures: "captures", judge },
+        totals: { iterations: 0, agentCostUsd: 0, judgeCostUsd: 0.0123, costUsd: 0.0123, escalated: false },
+      },
+    });
+    const { stdout, code } = await capture(["report", "--summary", id], { cwd: root });
+    expect(code).toBe(0);
+    expect(stdout).toContain(
+      "3 calls: 4 pass, 1 fail, 0 unsure, 0 not judged, advisory until the judge is calibrated. Cost: $0.01.",
+    );
+    expect(stdout).toContain(
+      "- fail `button--b` (light), `axis-variant`, high: Secondary reads as \\*more\\* prominent than \\<primary\\>\n",
+    );
+    expect(stdout).not.toContain("second line");
+  });
+
   it("lists a failed run's blocking findings by component, escaped, and the result in --json", async () => {
     const id = "20261127T090000Z-verify-0001";
     await writeRun(root, id, failing);
