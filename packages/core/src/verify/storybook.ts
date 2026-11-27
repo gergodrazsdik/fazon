@@ -168,12 +168,13 @@ async function perform(page: Page, component: VerifyComponent, step: InputStep):
 /** Renders stories from a served static Storybook build. */
 export function storybookRenderer(renderer: Renderer, url: string): StoryRenderer {
   return {
-    async render(component: VerifyComponent, story: Story, theme: string): Promise<RenderedStory> {
+    async render(component: VerifyComponent, story: Story, theme: string, css?: string): Promise<RenderedStory> {
       const query = new URLSearchParams({ id: story.storybookId, viewMode: "story", globals: `theme:${theme}` });
       const page = await renderer.open({ url: `${url}/iframe.html?${query.toString()}` }, { theme, ready: storyReady });
       try {
         for (const step of story.input ?? []) await perform(page.page, component, step);
         await page.settle();
+        if (css !== undefined) await page.inject(css);
         const capture = await page.capture();
         const inspection = await page.inspect();
         const axe = await page.axe();

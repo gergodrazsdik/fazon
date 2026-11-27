@@ -36,7 +36,11 @@ export interface RenderedStory {
 
 /** Renders stories under the rendering conditions; a story that can't be rendered rejects. */
 export interface StoryRenderer {
-  render(component: VerifyComponent, story: Story, theme: string): Promise<RenderedStory>;
+  /**
+   * @param css a calibration case's seeded defect, added after the story's input and before it's
+   * captured and inspected (docs/spec/measurement.md#seeded-defects)
+   */
+  render(component: VerifyComponent, story: Story, theme: string, css?: string): Promise<RenderedStory>;
 }
 
 /** A story-theme pair's visual result. */

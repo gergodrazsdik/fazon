@@ -96,6 +96,20 @@ export {
   type OperatorId,
 } from "./mutation/operators.js";
 export { affectedStories, capturesDiffer, type StoryCapture } from "./mutation/affected.js";
+export {
+  calibrationRenders,
+  capturePath,
+  rendersFile,
+  type CalibrationRenders,
+  type RenderedCase,
+  type RenderedComponent,
+} from "./calibration/renders.js";
+export {
+  calibrateInImage,
+  calibrationDirectory,
+  type CalibrateInImageOptions,
+  type CalibrateInImageOutcome,
+} from "./calibration/in-image.js";
 
 export type * from "./config/types.js";
 export {

@@ -489,3 +489,41 @@ describe("fazon judge", () => {
     expect(stories.pass + stories.notJudged).toBe(37);
   });
 });
+
+describe("fazon calibrate", () => {
+  let root: string;
+  beforeEach(async () => {
+    // A checkout with nothing tracked yet: `git status` shows no uncommitted change.
+    root = await buttonRepository();
+    await git("git", ["init", "--quiet", "."], { cwd: root });
+  });
+  afterEach(async () => {
+    await removeRepository(root);
+  });
+
+  it("refuses (2) a round the protocol doesn't define", async () => {
+    const { json } = await captureJson(["calibrate", "--round", "3"], machine(root));
+    expect(json).toMatchObject({ status: "refused", exitCode: 2 });
+    expect(JSON.stringify(json.messages)).toContain("--round must be 1 or 2");
+  });
+
+  it("refuses (2) with fazon.local.yaml, and with uncommitted changes, as measure does", async () => {
+    await writeFile(path.join(root, "fazon.local.yaml"), "fazon: 0\n");
+    expect(JSON.stringify((await captureJson(["calibrate", "--round", "1"], machine(root))).json.messages)).toContain(
+      "runs without fazon.local.yaml",
+    );
+    await rm(path.join(root, "fazon.local.yaml"));
+    await git("git", ["add", "specs/button.md"], { cwd: root });
+    const { json } = await captureJson(["calibrate", "--round", "1"], machine(root));
+    expect(json).toMatchObject({ status: "refused", exitCode: 2 });
+    expect(JSON.stringify(json.messages)).toContain("runs from a clean checkout");
+  });
+
+  it("refuses (2) a round whose components have no spec here", async () => {
+    const { json } = await captureJson(["calibrate", "--round", "1"], machine(root));
+    expect(json).toMatchObject({ status: "refused", exitCode: 2 });
+    expect(JSON.stringify(json.messages)).toContain(
+      "Round 1 calibrates button, badge, link, dialog, but badge, link, dialog have no spec here.",
+    );
+  });
+});
