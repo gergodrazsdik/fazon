@@ -18,10 +18,12 @@ export type {
   InspectedElement,
   NameSourceKind,
   PageInspection,
+  RenderedFont,
   StyleOrigin,
   StyleProperty,
   StyleShorthand,
   StyleSource,
+  TextFonts,
 } from "./snapshot.js";
 export {
   launchRenderer,

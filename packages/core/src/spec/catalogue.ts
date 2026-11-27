@@ -27,6 +27,7 @@ const tokens: Rules<TokensRule> = {
   "unknown-token": true,
   "user-agent": true,
   "token-rule": true,
+  "font-fallback": true,
 };
 // None of the visual rules can be exempted.
 const visual: Rules<VisualRule> = { changed: false, orphan: false, image: false };

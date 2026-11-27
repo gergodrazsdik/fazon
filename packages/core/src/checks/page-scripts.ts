@@ -44,10 +44,15 @@ interface DomAnimation {
   cancel(): void;
 }
 
+interface DomFontFace {
+  readonly family: string;
+  readonly status: string;
+}
+
 interface DomGlobals {
   readonly document: {
     readonly documentElement: DomElement;
-    readonly fonts: { readonly ready: Promise<unknown> };
+    readonly fonts: Iterable<DomFontFace> & { readonly ready: Promise<unknown> };
     querySelector(selector: string): DomElement | null;
     querySelectorAll(selector: string): ArrayLike<DomElement>;
     getElementById(id: string): DomElement | null;
@@ -91,6 +96,18 @@ export interface PageElement {
   readonly describedBy: string[];
   readonly aria: Record<string, string>;
   readonly states: string[];
+  /** For an element with text of its own: its font family, and the document's faces of the first family. */
+  readonly fonts?: PageFonts;
+}
+
+/** The fonts of an element's own text, as far as the page tells; the protocol adds the rendered fonts. */
+export interface PageFonts {
+  /** The computed `font-family`. */
+  readonly family: string;
+  /** Its first family, unquoted. */
+  readonly first: string;
+  /** The status of each of the document's font faces for the first family. */
+  readonly faces: string[];
 }
 
 export interface PageLayout {
@@ -152,6 +169,28 @@ export function inspectLayout(frameSelector: string): PageLayout {
       .map((id) => doc.getElementById(id)?.closest("[data-part]")?.getAttribute("data-part") ?? "")
       .filter((p) => p !== "");
   const blank = (node: DomNode) => node.nodeType !== 3 || (node.textContent ?? "").trim() === "";
+  // The first family of a font-family value: a quoted string up to its closing quote, or the text
+  // up to the first comma.
+  const firstFamily = (family: string): string => {
+    const text = family.trim();
+    const quote = text.charAt(0);
+    if (quote !== '"' && quote !== "'") {
+      const comma = text.indexOf(",");
+      return (comma === -1 ? text : text.slice(0, comma)).trim();
+    }
+    let name = "";
+    for (let i = 1; i < text.length; i += 1) {
+      const c = text.charAt(i);
+      if (c === quote) break;
+      if (c === "\\") i += 1;
+      name += text.charAt(i);
+    }
+    return name;
+  };
+  const faces = Array.from(doc.fonts).map((face) => ({
+    family: firstFamily(face.family).toLowerCase(),
+    status: face.status,
+  }));
 
   const allParts = Array.from(doc.querySelectorAll("[data-part]"));
   const topmost = allParts.filter((e) => e.parentElement?.closest("[data-part]") == null);
@@ -188,6 +227,13 @@ export function inspectLayout(frameSelector: string): PageLayout {
     }
     for (const pseudo of ["hover", "focus-visible", "active"]) if (element.matches(`:${pseudo}`)) states.push(pseudo);
     const lineClamp = style.getPropertyValue("-webkit-line-clamp") || style.getPropertyValue("line-clamp") || "none";
+    let fonts: PageFonts | undefined;
+    if (textBoxes.length > 0) {
+      const family = style.getPropertyValue("font-family");
+      const first = firstFamily(family);
+      const name = first.toLowerCase();
+      fonts = { family, first, faces: faces.filter((f) => f.family === name).map((f) => f.status) };
+    }
     const index = elements.length;
     elements.push({
       path: pathOf(element),
@@ -219,6 +265,7 @@ export function inspectLayout(frameSelector: string): PageLayout {
       describedBy: partsOf(element.getAttribute("aria-describedby")),
       aria,
       states,
+      ...(fonts === undefined ? {} : { fonts }),
     });
     for (const child of Array.from(element.children)) visit(child, index, inFrame);
   };

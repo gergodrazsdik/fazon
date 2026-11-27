@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The `tokens` check's `font-fallback` rule: text whose `font-family` comes from a token must render in the first family it names, not a fallback. The M0 draft token set names `Inter Variable` first.
 - A feedback run's record keeps the developer's feedback (`feedback.text`), and its report shows it at the top; the run records the component's files a person changed since its parent run as hand edits after iteration 0, a human intervention in the measurements (ADR 0026).
 - An agent run's `fazon report` shows its component's gallery and visual diffs; every other component the checks covered gets one summary line, and is shown in full only when it blocks.
 - `fazon generate` and `fazon feedback` refuse a spec without fixtures whose component has a required prop or slot, and SPEC-016 checks a state recipe's prop values against their types.
