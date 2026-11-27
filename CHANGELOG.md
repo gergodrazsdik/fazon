@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The `tokens` check's `font-fallback` rule: text whose `font-family` comes from a token must render in the first family it names, not a fallback. The M0 draft token set names `Inter Variable` first.
 - An agent run's `fazon report` shows its component's gallery and visual diffs; every other component the checks covered gets one summary line, and is shown in full only when it blocks.
 - `fazon generate` and `fazon feedback` refuse a spec without fixtures whose component has a required prop or slot, and SPEC-016 checks a state recipe's prop values against their types.
 - `fazon spec check` checks every SPEC rule, SPEC-001 to SPEC-019, with the token set, the icon set and the adapter's extension schema; `propose`, `approve`, `generate` and `feedback` run the same check. Extension blocks for adapters the repository doesn't use are reported as notes.
