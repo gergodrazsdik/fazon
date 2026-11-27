@@ -100,7 +100,7 @@ With policy `advisory` (the default), the job fails only on its own errors, neve
 
 Runs after the other two, whatever their result, for pull requests from branches of the same repository. Permissions: `pull-requests: write`.
 
-It downloads the summary the earlier jobs wrote (`summary.md` in the `fazon-report` artifact), and creates or updates one comment on the pull request, found by a hidden marker (`<!-- fazon:summary -->`), with that summary. It checks out nothing, runs no code from the repository, and never sees the API key. Pull requests from forks get a read-only token, so for them the job is skipped, and the job summary is the only place for the result.
+It downloads the summary the earlier jobs wrote (`summary.md` in the `fazon-report` artifact), and creates or updates one comment on the pull request, found by a hidden marker (`<!-- fazon:summary -->`), with that summary and a link to the `fazon-report` artifact (the verify job's `report-url` output), which the job summary can't carry, as it's written before the upload. It checks out nothing, runs no code from the repository, and never sees the API key. Pull requests from forks get a read-only token, so for them the job is skipped, and the job summary is the only place for the result.
 
 ## What it reports
 

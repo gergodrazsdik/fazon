@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The reusable workflow's pull request comment links the `fazon-report` artifact, with the HTML report, below the summary.
 - The reusable workflow's `fazon-report` artifact holds the HTML report (`report/index.html`) beside `summary.md`, also when verify fails.
 - The `tokens` check's `font-fallback` rule: text whose `font-family` comes from a token must render in the first family it names, not a fallback. The M0 draft token set names `Inter Variable` first.
 - A feedback run's record keeps the developer's feedback (`feedback.text`), and its report shows it at the top; the run records the component's files a person changed since its parent run as hand edits after iteration 0, a human intervention in the measurements (ADR 0026).
