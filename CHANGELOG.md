@@ -58,6 +58,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- `@fazon/core` carries the generation skill in `dist/skills/generate/`, so `fazon generate` finds it wherever the package is installed; it failed with ENOENT where the framework was installed from a copy.
 - `fazon propose` passes Claude Code a draft-07 copy of the proposal schema, which Claude Code 2.1.332 accepts; it rejected the 2020-12 schema before making a call.
 - `fazon verify` and the generate run's checks pass over a component that has a spec but no code yet, instead of ending in error.
 - A feedback run carries the developer's feedback in every prompt, not only the first, as its calls share no session.
