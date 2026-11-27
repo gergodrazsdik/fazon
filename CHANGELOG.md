@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The reusable workflow's `fazon-report` artifact holds the HTML report (`report/index.html`) beside `summary.md`, also when verify fails.
 - The `tokens` check's `font-fallback` rule: text whose `font-family` comes from a token must render in the first family it names, not a fallback. The M0 draft token set names `Inter Variable` first.
 - A feedback run's record keeps the developer's feedback (`feedback.text`), and its report shows it at the top; the run records the component's files a person changed since its parent run as hand edits after iteration 0, a human intervention in the measurements (ADR 0026).
 - An agent run's `fazon report` shows its component's gallery and visual diffs; every other component the checks covered gets one summary line, and is shown in full only when it blocks.
@@ -61,6 +62,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Fixed
 
+- An exemption that names a part matches its `when` against that part's props and states, as spec-format.md says, not the root's.
 - `fazon propose` writes short lists of scalars in flow style (`values: [sm, md]`), as the hand-written specs do, and its prompt says parts render in their parent's default slot, so proposals no longer declare a slot only to hold parts.
 - `fazon doctor` checks that the pinned verifier image is on the machine, and warns that the first `verify`, `generate` or `feedback` pulls it when it isn't.
 - The agent's self-checks can write their caches in Claude Code's sandbox: an agent call no longer denies writes to the whole repository, only to what lies beside the component's directory and the caches, so Vitest runs.

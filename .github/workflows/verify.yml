@@ -172,6 +172,21 @@ jobs:
           include-hidden-files: true
           if-no-files-found: ignore
           retention-days: ${{ inputs.artifact-retention-days }}
+      # The HTML report (`fazon report`), copied beside the summary for the `fazon-report` artifact,
+      # also when verify failed. After the run's upload, so `fazon-run` doesn't carry it twice. A
+      # report that can't be built doesn't fail the job: the summary says so and is uploaded alone.
+      - name: HTML report
+        id: html
+        if: ${{ !cancelled() && steps.verify.outputs.run != '' }}
+        continue-on-error: true
+        env:
+          RUN_ID: ${{ steps.verify.outputs.run }}
+        run: |
+          "$FAZON" report --no-open "$RUN_ID"
+          dir="$RUNNER_TEMP/fazon-report"
+          mkdir -p "$dir"
+          rm -rf "$dir/report"
+          cp -R ".fazon/runs/$RUN_ID/report" "$dir/report"
       # `fazon report --summary`, under a heading with the job's status and any step that failed
       # outside `fazon verify`, with links to the artifacts in place of its placeholder.
       - name: Summary
@@ -185,6 +200,7 @@ jobs:
           STORYBOOK_URL: ${{ steps.storybook.outputs.artifact-url }}
           PACKAGE_URL: ${{ steps.package.outputs.artifact-url }}
           RUN_URL: ${{ steps.run.outputs.artifact-url }}
+          HTML: ${{ steps.html.outcome }}
           RUN_PAGE: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           dir="$RUNNER_TEMP/fazon-report"
@@ -212,7 +228,14 @@ jobs:
                 link fazon-storybook "$STORYBOOK_URL" "the static Storybook build"
                 link fazon-package "$PACKAGE_URL" "the packed library"
                 link fazon-run "$RUN_URL" "the run's record, captures, diff images and logs"
-                echo "- fazon-report: this summary; the HTML report arrives in M2. Every artifact is on the [workflow run's page]($RUN_PAGE)."
+                if [ "$HTML" = success ]; then
+                  echo "- fazon-report: this summary and the HTML report; open \`report/index.html\` from it in a browser."
+                elif [ -n "$RUN_ID" ]; then
+                  echo "- fazon-report: this summary only; the HTML report couldn't be built: see the [job's log]($RUN_PAGE)."
+                else
+                  echo "- fazon-report: this summary."
+                fi
+                echo "- Every artifact is on the [workflow run's page]($RUN_PAGE)."
               else
                 printf '%s\n' "$line"
               fi

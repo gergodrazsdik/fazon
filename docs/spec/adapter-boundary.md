@@ -145,7 +145,7 @@ How a story file renders a fixture:
 | `build` / `storybook` | `storybook build` | verifier |
 | `lint` | `eslint` and `stylelint` on the component's files, with Fazon's rules | verifier |
 | `test` | `vitest run`, in browser mode, on the component's tests and contract tests | verifier |
-| `package` | `pnpm pack`, then publint and Are the Types Wrong on the tarball, with its `esm-only` profile and bundler resolution, which reads the `.vue` files' declarations | verifier |
+| `package` | `npm pack --ignore-scripts`, then publint and Are the Types Wrong on the tarball, with its `esm-only` profile and bundler resolution, which reads the `.vue` files' declarations. npm, as the image has no pnpm; without scripts, as the build has already run. npm packs `package.json` as it is, so `workspace:` and `catalog:` specifiers aren't rewritten as `pnpm pack` would | verifier |
 | self-check: types | `pnpm exec vue-tsc --noEmit` | host, in the agent's sandbox |
 | self-check: lint | `pnpm exec eslint <dir>`; `pnpm exec stylelint "<dir>/**/*.{vue,css}"` | host |
 | self-check: tests | `pnpm exec vitest run <dir>` | host |

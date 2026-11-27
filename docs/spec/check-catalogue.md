@@ -50,7 +50,7 @@ A finding has:
 
 - `check` and `rule`: the IDs from this catalogue;
 - `message`: what is wrong, in plain words;
-- a location: `file`, `line` and `column` for a source check; `story`, `theme`, `part` and a CSS `selector` for a rendered check;
+- a location: `file`, `line` and `column` for a source check; `story`, `theme`, `part` and a CSS `selector` for a rendered check. A rendered finding about all of a component's stories rather than one, such as `spec-aria`, has the spec's path as `file`, its `part`, and no `story` or `theme`;
 - `expected` and `actual`, where the rule compares values;
 - `evidence`: a file that shows it, such as a diff image;
 - `exempt`: whether an exemption waives it, and which.
@@ -65,7 +65,9 @@ An exemption in the spec waives the findings of one `check` and `rule`:
 - **Rendered checks:** an exemption applies to the findings that match all it names:
   - `part`: the finding's element is in that part, meaning its nearest ancestor-or-self with `data-part` is the part;
   - `fixture`: the finding's story renders that fixture;
-  - `when`: the story's prop values and state match the condition.
+  - `when`: the [condition](spec-format.md#conditions) holds for the props and states of the part the exemption names, or of the component's root when it names none, in the finding's story: the props of the part's instance that holds the finding's element, and that instance's states as token rules see them. When the finding's element can't be found in the render, they are the part's first instance and the state the story sets on that part.
+
+A finding with no story, such as `spec-aria`'s, is waived only by an exemption that names no `fixture` or `when`.
 
 A waived finding stays in the report, marked exempt. An exemption that waived nothing in a run is listed as unused in the report; it doesn't fail the run.
 

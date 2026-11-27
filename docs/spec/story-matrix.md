@@ -228,7 +228,7 @@ Each story has:
 | MATRIX-004 | The root and every rendered part carry `data-part`, and every target in `set` and `input` resolves to an element. | the verifier |
 | MATRIX-005 | A state set by props is reflected on its target; a state with `story: false` is reflected by at least one element in the component's stories. | the verifier |
 
-A failed rule fails the run: the harness or verifier reports it, and no check result for the component counts.
+A failed rule fails the run: the harness or verifier reports it, and no check result for the component counts. The harness doesn't write a manifest that breaks MATRIX-001 or MATRIX-002. In the verifier, a failure is not a finding: the rendered checks (`a11y`, `tokens`, `layout` and `visual`) end in `error` for every component in the run, with the rule and the story in their message, so the run ends `failed` with the reason `check-error` and `fazon verify` exits 3 ([`fazon verify`](cli.md#fazon-verify)). A component with no valid manifest, or one that breaks MATRIX-003, renders no story; a target that breaks MATRIX-004 stops its story. The verifier doesn't check MATRIX-005 yet (T-0098).
 
 ## Examples
 
