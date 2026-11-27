@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The vision judge (judge version 1): `fazon verify` runs it on the host once every check passes, and `fazon judge <run>` runs it for an earlier verify run, within the CI cap in CI. Its plan and results go to the run's `judge.json`, and the run record gets its summary. Before calibration its verdicts are advisory. It reads `ANTHROPIC_API_KEY`, or the workload identity federation variables, and `fazon doctor` reports either.
 - The reusable workflow's pull request comment links the `fazon-report` artifact, with the HTML report, below the summary.
 - The reusable workflow's `fazon-report` artifact holds the HTML report (`report/index.html`) beside `summary.md`, also when verify fails.
 - The `tokens` check's `font-fallback` rule: text whose `font-family` comes from a token must render in the first family it names, not a fallback. The M0 draft token set names `Inter Variable` first.

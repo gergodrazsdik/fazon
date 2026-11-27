@@ -29,11 +29,13 @@ import {
   type CheckFinding,
   type CheckResult,
   type Config,
+  type JudgePass,
   type RunRecord,
   type VerifyComponent,
   type VerifyDetails,
 } from "@fazon/core";
 import { findAdapter } from "../adapters.js";
+import { judgeText, judgeVerifyRun } from "../judge.js";
 import { containerScratch, ensureImage, findRuntime, mountRoot, runArguments } from "../container.js";
 import { isSet, type Environment } from "../environment.js";
 import { refused, type Message, type Outcome, type TextLine } from "../outcome.js";
@@ -190,13 +192,36 @@ async function verifyOnHost(invocation: Invocation, context: Context): Promise<O
     details = { ...details, base: { ref: base, changes: await baseChanges(environment, repo, config, base) } };
     await writeVerifyDetails(runDir, details);
   }
-  if (invocation.options["no-judge"] !== true && config.judge.policy !== "off") {
-    messages.push({
-      level: "warning",
-      text: "The judge isn't available yet (it arrives in M3), so this run has no judge verdicts. --no-judge skips it explicitly.",
+  let judge: JudgeOutput;
+  if (invocation.options["no-judge"] === true) {
+    judge = { skipped: "--no-judge skips it" };
+  } else if (config.judge.policy === "off") {
+    judge = { skipped: "the judge's policy is off" };
+  } else if (record.status !== "passed" || details === undefined) {
+    judge = { skipped: "the checks didn't pass" };
+  } else {
+    const judged = await judgeVerifyRun({
+      environment,
+      config,
+      runDir,
+      record,
+      details,
+      components: chosen.chosen,
+      library: components,
+      budgetUsd: config.loop.budgetUsd,
+      progress: stream,
     });
+    if (judged.kind === "judged") {
+      record = judged.record;
+      judge = { pass: judged.pass, calibrated: record.config.judgeCalibrated === true };
+    } else if (judged.kind === "no-credential") {
+      messages.push({ level: "warning", text: judged.message, hint: "fazon doctor" });
+      judge = { skipped: "no credential" };
+    } else {
+      return environmentError(judged.message, "fazon doctor", { run: id, record: `${runsDirectory}/${id}/run.json` });
+    }
   }
-  return outcome(id, record, details, chosen.chosen, components, messages);
+  return outcome(id, record, details, chosen.chosen, components, messages, judge);
 }
 
 function environmentError(text: string, hint?: string, result?: Record<string, unknown>): Outcome {
@@ -226,7 +251,7 @@ async function firstRecord(id: string, started: Date, config: Config, repo: stri
     kind: "verify",
     status: "running",
     started: started.toISOString().replace(/\.\d{3}Z$/, "Z"),
-    // No agent call and, until M3, no judge: neither version is recorded.
+    // No agent call, so no Claude Code version; the judge's version is added if the judge runs.
     versions: { framework: version, adapter: version, image: config.image },
     inputs,
     config: {
@@ -283,6 +308,9 @@ function describeFinding(finding: CheckFinding): string {
   return `${finding.check}/${finding.rule}${where === "" ? "" : ` ${where}`}: ${finding.message.split("\n")[0] ?? ""}`;
 }
 
+/** What the judge did in a verify run: its pass, or why it didn't run. */
+export type JudgeOutput = { readonly pass: JudgePass; readonly calibrated: boolean } | { readonly skipped: string };
+
 /** The command's outcome from the run's record and details. */
 export function outcome(
   id: string,
@@ -291,6 +319,7 @@ export function outcome(
   chosen: readonly VerifyComponent[],
   all: readonly VerifyComponent[],
   messages: Message[] = [],
+  judge: JudgeOutput = { skipped: "--no-judge skips it" },
 ): Outcome {
   const checks: readonly CheckResult[] = record.verification?.checks ?? [];
   const text: TextLine[] = [];
@@ -308,12 +337,25 @@ export function outcome(
       stream: "stdout",
       text: `${component.name}: ${checkOrder.map((check) => `${check} ${statuses[check] ?? "-"}`).join(", ")}; stories: ${String(count("unchanged"))} unchanged, ${String(count("changed"))} changed, ${String(count("new"))} new`,
     });
+    const verdicts = "pass" in judge ? judge.pass.stories.filter((story) => story.component === component.name) : [];
+    const verdictCount = (verdict: string) => verdicts.filter((story) => story.verdict === verdict).length;
     return {
       component: component.name,
       checks: statuses,
       findings,
       stories: { unchanged: count("unchanged"), changed: count("changed"), new: count("new") },
-      judge: { available: false },
+      judge:
+        "pass" in judge
+          ? {
+              ran: true,
+              stories: {
+                pass: verdictCount("pass"),
+                fail: verdictCount("fail"),
+                unsure: verdictCount("unsure"),
+                notJudged: verdictCount("not-judged"),
+              },
+            }
+          : { ran: false, reason: judge.skipped },
     };
   });
   const unowned = checks.flatMap((check) =>
@@ -338,6 +380,12 @@ export function outcome(
       stream: "stdout",
       text: `  unused exemption: ${unused.component} ${unused.check}/${unused.rule} (#${String(unused.index)})`,
     });
+  }
+
+  if ("pass" in judge) {
+    const lines = judgeText(judge.pass, judge.calibrated);
+    text.push(...lines.text);
+    messages.push(...lines.messages);
   }
 
   const errored = checks.filter((check) => check.status === "error");
@@ -381,7 +429,10 @@ export function outcome(
       orphans: details?.orphans ?? [],
       ...(details?.base === undefined ? {} : { base: details.base }),
       unusedExemptions: details?.unusedExemptions ?? [],
-      judge: { available: false },
+      judge:
+        "pass" in judge
+          ? { ran: true, ...(record.verification?.judge ?? judge.pass.summary) }
+          : { ran: false, reason: judge.skipped },
     },
   };
 }

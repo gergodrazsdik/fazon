@@ -158,7 +158,7 @@ function rubric(input: JudgePlanInput): Question[] {
   const axes = axisDefaults(spec, manifest);
   const atDefaults = (story: Story, except?: string) =>
     Object.entries(axes).every(([key, value]) => key === except || story.axes[key] === value);
-  const defaultStory = manifest.stories.find((story) => story.grid === "axes" && atDefaults(story));
+  const defaultStory = defaultStoryOf(spec, manifest);
   const questions: Question[] = [];
 
   questions.push({
@@ -283,6 +283,14 @@ function rubric(input: JudgePlanInput): Question[] {
   }
 
   return questions;
+}
+
+/** The component's default story: the axes grid's story with every axis at its default; the `state`, `reference` and `family` questions show it. */
+export function defaultStoryOf(spec: Spec, manifest: StoryManifest): Story | undefined {
+  const axes = axisDefaults(spec, manifest);
+  return manifest.stories.find(
+    (story) => story.grid === "axes" && Object.entries(axes).every(([key, value]) => story.axes[key] === value),
+  );
 }
 
 /** Each axis's default value (docs/spec/story-matrix.md#axes): the prop's `default`, or its first value. */

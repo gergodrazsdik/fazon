@@ -207,7 +207,7 @@ Decision 2. Marks the component's latest run as accepted, and writes the `genera
 fazon verify [<component>...] [--base <ref>] [--no-judge]
 ```
 
-A [verify run](loop-and-caps.md#runs): renders and checks the named components, or all of them, in the verifier image, and runs the judge as the policy says. No agent call. The run ends as `passed`, or as `failed` (1) on a blocking finding. It exits 3 when a check ended in error or the image couldn't run the checks (the run ends `failed`, reason `check-error`), and on a host other than linux/amd64 ([where checks run](check-catalogue.md#where-checks-run)). Result: the run, and per component its checks, judge summary and findings.
+A [verify run](loop-and-caps.md#runs): renders and checks the named components, or all of them, in the verifier image, and runs the judge as the policy says: on the host, once every check passed, within the run's budget. Without a [credential](#environment), the judge doesn't run and a warning says so. No agent call. The run ends as `passed`, or as `failed` (1) on a blocking finding. It exits 3 when a check ended in error or the image couldn't run the checks (the run ends `failed`, reason `check-error`), and on a host other than linux/amd64 ([where checks run](check-catalogue.md#where-checks-run)). Result: the run, and per component its checks, judge summary and findings.
 
 - `--base <ref>` compares the baselines with those at `<ref>`, and marks the stories whose baselines were added, changed, removed or renamed, as [CI](baseline-lifecycle.md#in-ci) needs. With it, the judge looks only at the added and changed ones.
 - `--no-judge` skips the judge; CI runs it in its own job with `fazon judge`.
@@ -218,7 +218,7 @@ A [verify run](loop-and-caps.md#runs): renders and checks the named components, 
 fazon judge <run-id>
 ```
 
-Runs the judge for an earlier verify run, on the stories it marked as added or changed, or on all of them when it had no `--base`. The judge's policy and CI cap apply. It refuses (2) when the run isn't a verify run, and exits 3 without a credential: an API key or the federation variables ([environment](#environment)). Result: the judge's summary, added to the run's record.
+Runs the judge for an earlier verify run, on the stories it marked as added or changed, or on all of them when it had no `--base`. The judge's policy applies, and in CI its cap; locally, the run's budget. A second run replaces the first one's summary. It refuses (2) when the run isn't a verify run, and exits 3 without a credential: an API key or the federation variables ([environment](#environment)). Result: the judge's summary, added to the run's record.
 
 ### `fazon baseline update`
 

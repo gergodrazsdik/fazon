@@ -38,6 +38,7 @@ export { checkSpec, checkedSpecRules, specRules, type SpecRule, type ValidSpecFi
 export { isKebabCase, kebabCase } from "./spec/names.js";
 export {
   appearanceStatements,
+  defaultStoryOf,
   judgePlan,
   maxFamilyComponents,
   maxImagesPerCall,
@@ -76,6 +77,15 @@ export {
   type StoryVerdict,
   type Verdict,
 } from "./judge/run.js";
+export {
+  frameworkCalibration,
+  judgeCalibrated,
+  judgePass,
+  type JudgePass,
+  type JudgePassComponent,
+  type JudgePassInput,
+  type JudgeResults,
+} from "./judge/pass.js";
 
 export type * from "./config/types.js";
 export {
