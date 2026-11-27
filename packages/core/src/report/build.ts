@@ -10,10 +10,18 @@ import type { StoryManifest } from "../matrix/types.js";
 import { storybookId } from "../matrix/names.js";
 import { kebabCase } from "../spec/names.js";
 import { generatedDirectory, manifestFileName } from "../sync/sync.js";
-import type { VerifyDetails } from "../verify/details.js";
+import { checksPhaseFiles } from "../loop/checks.js";
+import { readVerifyDetails, type VerifyDetails } from "../verify/details.js";
 import { runDirectory, runsDirectory, type RunRecord } from "../verify/run-record.js";
 import { renderReport } from "./render.js";
-import { galleryVerification, type ReportCapture, type ReportRecord } from "./types.js";
+import {
+  findingOwner,
+  galleryVerification,
+  type ReportCapture,
+  type ReportFocus,
+  type ReportOtherComponent,
+  type ReportRecord,
+} from "./types.js";
 
 /** The report's directory in a run's directory. */
 export const reportDirectory = "report";
@@ -103,13 +111,25 @@ async function pngFiles(directory: string): Promise<string[]> {
 }
 
 /**
- * The captures of a run: a verify run's from `verify.json`; otherwise every PNG in the captures
- * directory, at `<theme>/<component>/<story>.png` as baselines are named, with its diff image
- * beside it. A capture without `verify.json` is changed when it has a diff image, unchanged when
- * the baselines directory has its baseline, and new otherwise.
+ * The `verify.json` of the gallery's captures: a verify run's, from the input; an agent run's
+ * iteration's, from its `checks/<n>/` directory, when the checks phase wrote one.
+ */
+async function galleryDetails(input: ReportInput, record: ReportRecord, runDir: string) {
+  if (record.kind === "verify") return input.details;
+  const iteration = galleryVerification(record)?.iteration;
+  if (iteration === undefined) return undefined;
+  const directory = inside(runDir, checksPhaseFiles(iteration).directory);
+  return directory === undefined ? undefined : await readVerifyDetails(directory);
+}
+
+/**
+ * The captures of a run: from its `verify.json` (a verify run's, or an agent run's iteration's);
+ * otherwise every PNG in the captures directory, at `<theme>/<component>/<story>.png` as baselines
+ * are named, with its diff image beside it. A capture without `verify.json` is changed when it has
+ * a diff image, unchanged when the baselines directory has its baseline, and new otherwise.
  */
 async function collectCaptures(
-  input: ReportInput,
+  details: VerifyDetails | undefined,
   record: ReportRecord,
   runDir: string,
   baselinesDir: string,
@@ -118,8 +138,8 @@ async function collectCaptures(
   const capturesDir = inside(runDir, gallery?.verification.captures ?? "captures");
   if (capturesDir === undefined) return [];
   const collected: Collected[] = [];
-  if (input.details !== undefined && record.kind === "verify") {
-    for (const story of input.details.stories) {
+  if (details !== undefined) {
+    for (const story of details.stories) {
       const image = inside(capturesDir, story.path);
       const diff = story.diff === undefined ? undefined : inside(runDir, story.diff);
       const baseline = story.status === "changed" ? inside(baselinesDir, story.path) : undefined;
@@ -167,6 +187,64 @@ async function collectCaptures(
   return collected;
 }
 
+/** A configured directory, repository-relative and `/`-separated, without `./` or a trailing `/`. */
+function posixDirectory(directory: string): string {
+  // normalize() has collapsed repeated slashes, so at most one trailing slash is left.
+  const normalized = path.posix.normalize(toPosix(directory)).replace(/\/$/, "");
+  return normalized === "." ? "" : normalized.replace(/^\.\//, "");
+}
+
+/**
+ * What an agent run's report shows of the components its checks covered: its own component in
+ * full; every other one summarised, and in full only when it blocks. Undefined for a verify run,
+ * whose report shows every component.
+ */
+function focusOn(
+  record: ReportRecord,
+  config: Config,
+  collected: readonly Collected[],
+  details: VerifyDetails | undefined,
+): ReportFocus | undefined {
+  if (record.kind === "verify" || record.component === undefined) return undefined;
+  const component = kebabCase(record.component);
+  const paths = { components: posixDirectory(config.paths.components), specs: posixDirectory(config.paths.specs) };
+  const checks = galleryVerification(record)?.verification.checks ?? [];
+  const names = new Set<string>([
+    ...collected.map((item) => item.capture.component),
+    ...(details?.components ?? []).map((c) => c.name),
+  ]);
+  for (const check of checks) {
+    for (const finding of check.findings) {
+      const owner = findingOwner(finding, paths);
+      if (owner !== undefined) names.add(owner);
+    }
+  }
+  names.delete(component);
+  const others = [...names].sort().map((name): ReportOtherComponent => {
+    const captures = { unchanged: 0, changed: 0, new: 0, notCompared: 0 };
+    for (const item of collected) {
+      if (item.capture.component !== name) continue;
+      const status = item.capture.status;
+      if (status === undefined) captures.notCompared += 1;
+      else captures[status] += 1;
+    }
+    const ownBlocking = (check: (typeof checks)[number]) =>
+      check.findings.some((finding) => finding.blocking && findingOwner(finding, paths) === name);
+    const statuses = checks.map((check): ReportOtherComponent["checks"][number] => ({
+      check: check.check,
+      status:
+        check.status === "skipped" || check.status === "error" ? check.status : ownBlocking(check) ? "fail" : "pass",
+    }));
+    return {
+      component: name,
+      captures,
+      checks: statuses,
+      blocks: captures.changed > 0 || checks.some(ownBlocking),
+    };
+  });
+  return { component, paths, others };
+}
+
 function pascalCase(kebab: string): string {
   return kebab
     .split("-")
@@ -210,9 +288,11 @@ function storyId(ids: ReadonlyMap<string, string>, component: string, story: str
 }
 
 /**
- * Builds the report of a run: copies its captures, diff images and the baselines of changed
- * stories into `report/images/`, and writes `report/index.html`, replacing an earlier report of
- * the run. Every path it copies from stays inside the run's directory or the baselines directory.
+ * Builds the report of a run: copies the captures, diff images and baselines of changed stories it
+ * shows into `report/images/`, and writes `report/index.html`, replacing an earlier report of the
+ * run. A verify run's report shows every component; an agent run's shows its component, and
+ * another component only when it blocks. Every path it copies from stays inside the run's
+ * directory or the baselines directory.
  */
 export async function buildReport(input: ReportInput): Promise<ReportOutcome> {
   const record = input.record as unknown as ReportRecord;
@@ -221,7 +301,13 @@ export async function buildReport(input: ReportInput): Promise<ReportOutcome> {
   const reportDir = path.join(runDir, reportDirectory);
   const storybookUrl = input.storybookUrl ?? defaultStorybookUrl;
 
-  const collected = await collectCaptures(input, record, runDir, baselinesDir);
+  const details = await galleryDetails(input, record, runDir);
+  const all = await collectCaptures(details, record, runDir, baselinesDir);
+  const focus = focusOn(record, input.config, all, details);
+  // An agent run's report copies the captures of its component and of the other components that block, only.
+  const shown = new Set(focus?.others.filter((other) => other.blocks).map((other) => other.component));
+  if (focus !== undefined) shown.add(focus.component);
+  const collected = focus === undefined ? all : all.filter((item) => shown.has(item.capture.component));
   const ids = await storybookIds(input.root, input.config, new Set(collected.map((c) => c.capture.component)));
 
   await rm(reportDir, { recursive: true, force: true });
@@ -260,6 +346,7 @@ export async function buildReport(input: ReportInput): Promise<ReportOutcome> {
   const page = renderReport({
     record,
     ...(input.details === undefined ? {} : { details: input.details }),
+    ...(focus === undefined ? {} : { focus }),
     captures,
     evidence,
     storybookUrl,

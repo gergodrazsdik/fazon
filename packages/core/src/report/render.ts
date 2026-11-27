@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // The report's page: one self-contained HTML document with inline CSS, no script and no external
 // fetch. It shows the run's end, the commands for the next step, cost and duration, iterations and
-// models, check results and findings, judge verdicts, visual diffs and the gallery. Every value
-// from the record is escaped by the `html` tag.
+// models, check results and findings, judge verdicts, visual diffs, an agent run's other components
+// and the gallery. Every value from the record is escaped by the `html` tag.
 import type { CheckFinding } from "../checks/types.js";
 import { kebabCase } from "../spec/names.js";
 import type { VerifyDetails } from "../verify/details.js";
 import type { CheckResult, RunReason } from "../verify/run-record.js";
 import { html, relativeUrl, type Html } from "./html.js";
 import {
+  findingOwner,
   galleryVerification,
   type ReportCapture,
+  type ReportFocus,
   type ReportIteration,
   type ReportJudge,
+  type ReportOtherComponent,
   type ReportRecord,
   type ReportTokens,
 } from "./types.js";
@@ -20,7 +23,16 @@ import {
 export interface ReportModel {
   readonly record: ReportRecord;
   readonly details?: VerifyDetails;
-  /** The gallery, with image paths relative to the report's directory. */
+  /**
+   * An agent run's: its component, and the other components its checks covered. The gallery, the
+   * visual diffs and the iterations' findings keep to the component; each other component gets a
+   * summary line, and is shown in full when it blocks. Absent for a verify run.
+   */
+  readonly focus?: ReportFocus;
+  /**
+   * The captures shown, with image paths relative to the report's directory: every component's
+   * for a verify run; for an agent run, its component's and those of other components that block.
+   */
   readonly captures: readonly ReportCapture[];
   /** Copied images, report-relative, by their path relative to the run's directory: findings' evidence. */
   readonly evidence: ReadonlyMap<string, string>;
@@ -103,7 +115,39 @@ function movedComponents(model: ReportModel): string[] {
     const component = orphan.path.split("/")[1];
     if (component !== undefined && component !== "") moved.add(component);
   }
+  for (const other of model.focus?.others ?? []) {
+    if (other.captures.new > 0 || other.captures.changed > 0) moved.add(other.component);
+  }
   return [...moved].sort();
+}
+
+/** The captures of the gallery and the visual diffs: an agent run's component's, or every component's. */
+function focusCaptures(model: ReportModel): readonly ReportCapture[] {
+  const focus = model.focus;
+  return focus === undefined ? model.captures : model.captures.filter((c) => c.component === focus.component);
+}
+
+/** Another component's captures, as a summary line counts them: `54 captures unchanged, 2 changed`. */
+function capturesSummary(captures: ReportOtherComponent["captures"]): string {
+  const parts = (
+    [
+      [captures.unchanged, "unchanged"],
+      [captures.changed, "changed"],
+      [captures.new, "new"],
+      [captures.notCompared, "not compared"],
+    ] as const
+  ).filter(([n]) => n > 0);
+  if (parts.length === 0) return "no captures";
+  return parts
+    .map(([n, label], i) => (i === 0 ? `${plural(n, "capture")} ${label}` : `${count(n)} ${label}`))
+    .join(", ");
+}
+
+/** Another component's checks, as a summary line gives them: `every check passed`, or those that didn't. */
+function checksSummary(checks: ReportOtherComponent["checks"]): string {
+  if (checks.length === 0) return "no check results";
+  const notPassed = checks.filter((c) => c.status !== "pass");
+  return notPassed.length === 0 ? "every check passed" : notPassed.map((c) => `${c.check} ${c.status}`).join(", ");
 }
 
 /** The commands for the next step, as fit the run's kind and end. */
@@ -376,12 +420,46 @@ function checksTable(checks: readonly CheckResult[]): Html {
   </div>`;
 }
 
-function checksSection(checks: readonly CheckResult[], model: ReportModel): Html {
+/**
+ * A check phase's results and findings. In an agent run's iteration, the findings listed are the
+ * component's own and those of no component; another component's are counted, and listed under
+ * its name when one of them blocks: in the iteration the gallery shows, under Other components.
+ */
+function checksSection(checks: readonly CheckResult[], model: ReportModel, iteration?: number): Html {
   if (checks.length === 0) return html`<p class="note">No check results are recorded.</p>`;
-  return html`${checksTable(checks)}
-  ${findingGroups(
-    checks.flatMap((check) => check.findings),
-    model,
+  const findings = checks.flatMap((check) => check.findings);
+  const focus = model.focus;
+  if (focus === undefined) return html`${checksTable(checks)} ${findingGroups(findings, model)}`;
+  const own: CheckFinding[] = [];
+  const others = new Map<string, CheckFinding[]>();
+  for (const finding of findings) {
+    const owner = findingOwner(finding, focus.paths);
+    if (owner === undefined || owner === focus.component) own.push(finding);
+    else others.set(owner, [...(others.get(owner) ?? []), finding]);
+  }
+  const names = [...others.keys()].sort();
+  const blocking = (name: string) => (others.get(name) ?? []).filter((f) => f.blocking).length;
+  const inGallery = iteration !== undefined && iteration === galleryVerification(model.record)?.iteration;
+  const listed = inGallery ? [] : names.filter((name) => blocking(name) > 0);
+  return html`${checksTable(checks)} ${findingGroups(own, model)}
+  ${
+    names.length === 0
+      ? ""
+      : html`<p class="note">
+          Findings of other components:
+          ${names
+            .map((name) => {
+              const n = blocking(name);
+              return `${name} ${count(others.get(name)?.length ?? 0)}${n === 0 ? "" : ` (${count(n)} blocking)`}`;
+            })
+            .join(", ")}.
+          A component's findings are listed when one of them blocks${inGallery ? ", under Other components" : ""}.
+        </p>`
+  }
+  ${listed.map(
+    (name) =>
+      html`<h4>Findings of <code>${name}</code></h4>
+        ${findingGroups(others.get(name) ?? [], model)}`,
   )}`;
 }
 
@@ -505,7 +583,7 @@ function iterationDetails(iteration: ReportIteration, open: boolean, model: Repo
     ${
       iteration.verification === undefined
         ? html`<p class="note">No checks ran in this iteration.</p>`
-        : html`${checksSection(iteration.verification.checks, model)}
+        : html`${checksSection(iteration.verification.checks, model, iteration.n)}
             <h4>Judge</h4>
             ${judgeSection(iteration.verification.judge, model)}`
     }
@@ -560,25 +638,37 @@ function image(src: string | undefined, alt: string, label: string): Html {
       </figure>`;
 }
 
+/** A changed story's baseline, capture and diff image; `nested` under a component's heading. */
+function diffBlock(c: ReportCapture, nested: boolean): Html {
+  const title = html`<code>${c.story}</code> <span class="theme">${c.theme}</span>`;
+  return html`<div class="diff">
+    ${nested ? html`<h4>${title}</h4>` : html`<h3>${title}</h3>`}
+    <div class="images">
+      ${image(c.baseline, `${c.story} in ${c.theme}: the baseline`, "Baseline")}
+      ${image(c.image, `${c.story} in ${c.theme}: this run's capture`, "This run")}
+      ${image(c.diff, `${c.story} in ${c.theme}: the differing pixels`, "Diff")}
+    </div>
+  </div>`;
+}
+
 function visualSection(model: ReportModel): Html {
-  const changed = model.captures.filter((c) => c.status === "changed");
-  const renamed = model.captures.filter((c) => c.renamedFrom !== undefined);
+  const captures = focusCaptures(model);
+  const changed = captures.filter((c) => c.status === "changed");
+  const renamed = captures.filter((c) => c.renamedFrom !== undefined);
   const orphans = model.details?.orphans.filter((o) => o.renamedTo === undefined) ?? [];
   const base = model.details?.base;
+  const elsewhere =
+    model.focus?.others.some((o) => o.captures.changed > 0) === true
+      ? html`<p class="note">Other components' changed stories are under Other components.</p>`
+      : "";
   if (changed.length === 0 && renamed.length === 0 && orphans.length === 0 && base === undefined) {
-    return html`<p class="note">No story changed against its baseline.</p>`;
+    return html`<p class="note">
+        ${model.focus === undefined ? "No story" : html`No story of <code>${model.focus.component}</code>`} changed
+        against its baseline.
+      </p>
+      ${elsewhere}`;
   }
-  return html`${changed.map(
-    (c) =>
-      html`<div class="diff">
-        <h3><code>${c.story}</code> <span class="theme">${c.theme}</span></h3>
-        <div class="images">
-          ${image(c.baseline, `${c.story} in ${c.theme}: the baseline`, "Baseline")}
-          ${image(c.image, `${c.story} in ${c.theme}: this run's capture`, "This run")}
-          ${image(c.diff, `${c.story} in ${c.theme}: the differing pixels`, "Diff")}
-        </div>
-      </div>`,
-  )}
+  return html`${changed.map((c) => diffBlock(c, false))} ${elsewhere}
   ${
     renamed.length === 0
       ? html``
@@ -631,19 +721,35 @@ function storyFindings(model: ReportModel, capture: ReportCapture): { checks: nu
   return { checks, judge };
 }
 
-function gallerySection(model: ReportModel): Html {
-  if (model.captures.length === 0) return html`<p class="note">The run has no captures.</p>`;
-  const iteration = galleryVerification(model.record)?.iteration;
-  const byComponent = new Map<string, Map<string, ReportCapture[]>>();
-  for (const capture of model.captures) {
-    const stories = byComponent.get(capture.component) ?? new Map<string, ReportCapture[]>();
+/** Captures by component, then by story. */
+function byComponent(captures: readonly ReportCapture[]): Map<string, Map<string, ReportCapture[]>> {
+  const grouped = new Map<string, Map<string, ReportCapture[]>>();
+  for (const capture of captures) {
+    const stories = grouped.get(capture.component) ?? new Map<string, ReportCapture[]>();
     stories.set(capture.story, [...(stories.get(capture.story) ?? []), capture]);
-    byComponent.set(capture.component, stories);
+    grouped.set(capture.component, stories);
   }
-  const components = [...byComponent.keys()].sort();
+  return grouped;
+}
+
+function gallerySection(model: ReportModel): Html {
+  const captures = focusCaptures(model);
+  const others =
+    model.focus === undefined || model.focus.others.length === 0
+      ? ""
+      : html`Only <code>${model.focus.component}</code>'s stories are here; the other components the checks covered are
+          under Other components. `;
+  if (captures.length === 0) {
+    return html`<p class="note">
+      ${model.focus === undefined ? "The run has no captures." : html`The run has no captures of <code>${model.focus.component}</code>. ${others}`}
+    </p>`;
+  }
+  const iteration = galleryVerification(model.record)?.iteration;
+  const grouped = byComponent(captures);
+  const components = [...grouped.keys()].sort();
   return html`<p class="note">
-      ${iteration === undefined ? "" : `The captures of iteration ${String(iteration)}. `}Each screenshot links to its
-      live story in the local Storybook at <code>${model.storybookUrl}</code>; start it with
+      ${iteration === undefined ? "" : `The captures of iteration ${String(iteration)}. `}${others}Each screenshot links
+      to its live story in the local Storybook at <code>${model.storybookUrl}</code>; start it with
       <code>storybook dev</code> on that port. The links below a screenshot open the PNG file.
     </p>
     ${
@@ -651,43 +757,87 @@ function gallerySection(model: ReportModel): Html {
         ? html`<nav class="toc">${components.map((c) => html`<a href="#component-${c}">${c}</a> `)}</nav>`
         : ""
     }
-    ${components.map((component) => {
-      const stories = byComponent.get(component) ?? new Map<string, ReportCapture[]>();
-      return html`<section class="component" id="component-${component}">
-        <h3>${component}</h3>
-        ${[...stories.keys()].sort().map((story) => {
-          const captures = [...(stories.get(story) ?? [])].sort((a, b) => (a.theme < b.theme ? -1 : 1));
-          return html`<div class="story">
-            <h4><code>${story}</code></h4>
-            <div class="images">
-              ${captures.map((capture) => {
-                const found = storyFindings(model, capture);
-                const alt = `${capture.story} in ${capture.theme}`;
-                const picture =
-                  capture.image === undefined
-                    ? html`<div class="placeholder">no capture</div>`
-                    : html`<img src="${relativeUrl(capture.image)}" alt="${alt}" loading="lazy" />`;
-                return html`<figure>
-                  ${
-                    capture.storybook === undefined
-                      ? picture
-                      : html`<a href="${capture.storybook}" title="Open in Storybook">${picture}</a>`
-                  }
-                  <figcaption>
-                    <span class="theme">${capture.theme}</span>
-                    ${capture.status === undefined ? "" : pill(capture.status, capture.status === "changed" ? "warn" : "muted")}
-                    ${found.checks === 0 ? "" : pill(plural(found.checks, "finding"), "bad")}
-                    ${found.judge.map((j) => pill(j, j === "judge fail" ? "bad" : "warn"))}
-                    ${capture.image === undefined ? "" : html`<a href="${relativeUrl(capture.image)}">PNG</a>`}
-                    ${capture.diff === undefined ? "" : html`<a href="${relativeUrl(capture.diff)}">diff</a>`}
-                  </figcaption>
-                </figure>`;
-              })}
-            </div>
-          </div>`;
-        })}
+    ${components.map(
+      (component) =>
+        html`<section class="component" id="component-${component}">
+          <h3>${component}</h3>
+          ${storyFigures(model, grouped.get(component) ?? new Map<string, ReportCapture[]>())}
+        </section>`,
+    )}`;
+}
+
+/** Another component's summary line: its name, its captures by status and its checks. */
+function otherLine(other: ReportOtherComponent): Html {
+  const name = html`<code>${other.component}</code>`;
+  const summary = `${capturesSummary(other.captures)}, ${checksSummary(other.checks)}`;
+  return html`<li>
+    ${other.blocks ? html`<a href="#other-${other.component}">${name}</a>` : name}: ${summary}
+    ${other.blocks ? pill("blocks", "bad") : ""}
+  </li>`;
+}
+
+/**
+ * An agent run's other components: a summary line each; a component that blocks also gets its own
+ * heading with its findings, its visual diffs and its captures.
+ */
+function othersSection(model: ReportModel, focus: ReportFocus): Html {
+  const checks = galleryVerification(model.record)?.verification.checks ?? [];
+  const blocking = focus.others.filter((other) => other.blocks);
+  const grouped = byComponent(model.captures);
+  return html`<p class="note">
+      The checks ran over the whole library: another component's changed story or blocking finding fails the run too. A
+      capture is one story in one theme. A component is shown in full when it blocks.
+    </p>
+    <ul class="others">
+      ${focus.others.map(otherLine)}
+    </ul>
+    ${blocking.map((other) => {
+      const findings = checks
+        .flatMap((check) => check.findings)
+        .filter((finding) => findingOwner(finding, focus.paths) === other.component);
+      const stories = grouped.get(other.component) ?? new Map<string, ReportCapture[]>();
+      const changed = [...stories.values()].flat().filter((c) => c.status === "changed");
+      return html`<section class="component" id="other-${other.component}">
+        <h3>${other.component}</h3>
+        ${findingGroups(findings, model)} ${changed.map((c) => diffBlock(c, true))}
+        ${stories.size === 0 ? "" : html`<h4>Captures</h4>`} ${storyFigures(model, stories)}
       </section>`;
     })}`;
+}
+
+/** One component's stories, each with its captures in every theme. */
+function storyFigures(model: ReportModel, stories: ReadonlyMap<string, readonly ReportCapture[]>): Html {
+  return html`${[...stories.keys()].sort().map((story) => {
+    const captures = [...(stories.get(story) ?? [])].sort((a, b) => (a.theme < b.theme ? -1 : 1));
+    return html`<div class="story">
+      <h4><code>${story}</code></h4>
+      <div class="images">
+        ${captures.map((capture) => {
+          const found = storyFindings(model, capture);
+          const alt = `${capture.story} in ${capture.theme}`;
+          const picture =
+            capture.image === undefined
+              ? html`<div class="placeholder">no capture</div>`
+              : html`<img src="${relativeUrl(capture.image)}" alt="${alt}" loading="lazy" />`;
+          return html`<figure>
+            ${
+              capture.storybook === undefined
+                ? picture
+                : html`<a href="${capture.storybook}" title="Open in Storybook">${picture}</a>`
+            }
+            <figcaption>
+              <span class="theme">${capture.theme}</span>
+              ${capture.status === undefined ? "" : pill(capture.status, capture.status === "changed" ? "warn" : "muted")}
+              ${found.checks === 0 ? "" : pill(plural(found.checks, "finding"), "bad")}
+              ${found.judge.map((j) => pill(j, j === "judge fail" ? "bad" : "warn"))}
+              ${capture.image === undefined ? "" : html`<a href="${relativeUrl(capture.image)}">PNG</a>`}
+              ${capture.diff === undefined ? "" : html`<a href="${relativeUrl(capture.diff)}">diff</a>`}
+            </figcaption>
+          </figure>`;
+        })}
+      </div>
+    </div>`;
+  })}`;
 }
 
 const style = `
@@ -801,6 +951,14 @@ export function renderReport(model: ReportModel): string {
             <h2 id="visual">Visual diffs</h2>
             ${visualSection(model)}
           </section>
+          ${
+            model.focus === undefined || model.focus.others.length === 0
+              ? ""
+              : html`<section aria-labelledby="others">
+                  <h2 id="others">Other components</h2>
+                  ${othersSection(model, model.focus)}
+                </section>`
+          }
           <section aria-labelledby="gallery">
             <h2 id="gallery">Gallery</h2>
             ${gallerySection(model)}

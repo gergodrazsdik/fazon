@@ -58,12 +58,13 @@ export function storybookId(component: string, name: string): string {
 
 /** Storybook's `sanitize`: lower case, every separator a hyphen, no repeated or outer hyphens. */
 export function storybookSanitize(text: string): string {
+  // Repeated hyphens are collapsed first, so at most one is left at either end to remove.
   return text
     .toLowerCase()
     .replace(/[ ’–—―′¿'`~!@#$%^&*()_|+\-=?;:'",.<>{}[\]\\/]/g, "-")
     .replace(/-+/g, "-")
-    .replace(/^-+/, "")
-    .replace(/-+$/, "");
+    .replace(/^-/, "")
+    .replace(/-$/, "");
 }
 
 /** Storybook's `toId`: `<sanitized title>--<sanitized story name>`. */

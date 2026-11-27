@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // The run record as the report reads it: every field of docs/spec/schemas/run-record.schema.json,
 // including the agent runs' iterations, calls and judge summaries, which a verify run leaves out.
-import type { CheckResult, RunRecord } from "../verify/run-record.js";
+import type { CheckFinding, CheckId } from "../checks/types.js";
+import type { CheckResult, CheckStatus, RunRecord } from "../verify/run-record.js";
 
 export interface ReportTokens {
   readonly input: number;
@@ -93,6 +94,39 @@ export function galleryVerification(
   return undefined;
 }
 
+/**
+ * Another component an agent run's checks covered (they cover the whole library), as the report
+ * summarises it in one line, and shows in full only when it blocks.
+ */
+export interface ReportOtherComponent {
+  /** The component's kebab-case name. */
+  readonly component: string;
+  /** Its captures (a story in a theme) by visual status; `notCompared` when the image differs from the baselines'. */
+  readonly captures: {
+    readonly unchanged: number;
+    readonly changed: number;
+    readonly new: number;
+    readonly notCompared: number;
+  };
+  /**
+   * Each check's status for it, in the catalogue's order: a check skipped or ended in error is that
+   * for every component; otherwise it fails when a blocking finding is the component's own.
+   */
+  readonly checks: readonly { readonly check: CheckId; readonly status: CheckStatus }[];
+  /** A changed story, an orphaned baseline or a blocking finding of its own: shown in full. */
+  readonly blocks: boolean;
+}
+
+/** An agent run's report keeps to its component: the gallery shows its stories, and the others are summarised. */
+export interface ReportFocus {
+  /** The run's component, in kebab-case. */
+  readonly component: string;
+  /** Where components and specs live, repository-relative and `/`-separated, to tell a finding's component by its file. */
+  readonly paths: { readonly components: string; readonly specs: string };
+  /** Every other component of the checks phase the gallery shows, by name. */
+  readonly others: readonly ReportOtherComponent[];
+}
+
 /** A story's visual status in the report. */
 export type ReportVisualStatus = "new" | "unchanged" | "changed";
 
@@ -113,4 +147,30 @@ export interface ReportCapture {
   readonly renamedFrom?: string;
   /** The live story in the local Storybook. */
   readonly storybook?: string;
+}
+
+/**
+ * The component a finding concerns, in kebab-case: by its story's name (`<component>--…`); for a
+ * visual finding without a story (an orphaned baseline), by its baseline's path
+ * (`<theme>/<component>/…`); otherwise by its file, in the component's directory or its spec.
+ * Undefined for a finding of no component, such as one in the library's entry file.
+ */
+export function findingOwner(
+  finding: Pick<CheckFinding, "check" | "story" | "file">,
+  paths: ReportFocus["paths"],
+): string | undefined {
+  const named = (name: string | undefined): string | undefined =>
+    name === undefined || name === "" ? undefined : name;
+  if (finding.story !== undefined) return named(finding.story.split("--")[0]);
+  const file = finding.file;
+  if (file === undefined) return undefined;
+  if (finding.check === "visual") return named(file.split("/")[1]);
+  const under = (directory: string): string | undefined =>
+    directory !== "" && file.startsWith(`${directory}/`) ? file.slice(directory.length + 1) : undefined;
+  const inComponents = under(paths.components);
+  if (inComponents !== undefined) return named(inComponents.split("/")[0]);
+  const inSpecs = under(paths.specs);
+  return inSpecs !== undefined && !inSpecs.includes("/") && inSpecs.endsWith(".md")
+    ? named(inSpecs.slice(0, -".md".length))
+    : undefined;
 }
