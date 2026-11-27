@@ -6,6 +6,7 @@ import { approve } from "./commands/approve.js";
 import { doctor } from "./commands/doctor.js";
 import { feedback } from "./commands/feedback.js";
 import { baselineUpdate } from "./commands/baseline-update.js";
+import { calibrate } from "./commands/calibrate.js";
 import { generate } from "./commands/generate.js";
 import { propose } from "./commands/propose.js";
 import { report } from "./commands/report.js";
@@ -181,9 +182,11 @@ export const commands: readonly Command[] = [
   {
     name: "calibrate",
     group: "Measurement",
-    usage: "fazon calibrate --round <n> [--model <model>] --out <path>",
-    summary: "A judge calibration round.",
-    arrives: "M3",
+    usage: "fazon calibrate --round <n> [--model <model>] --budget <usd> --out <path>",
+    summary: "A judge calibration round; for now its renders, unmodified and with each seeded defect.",
+    // `--in-image <run>` is internal: the host starts the image with it.
+    options: { round: { type: "string" }, "in-image": { type: "string" } },
+    run: calibrate,
   },
 ];
 

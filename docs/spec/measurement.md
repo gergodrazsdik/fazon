@@ -75,7 +75,7 @@ Calibration measures how well the judge catches defects a viewer can see, how of
 
 ### Seeded defects
 
-A defect is made by a **mutation operator**: a deterministic CSS change that the harness adds to the page after a story loads and before it's captured, scoped by `data-part` and state attributes. The component's code and the story build stay unchanged ([ADR 0027](../adr/0027-m3-federation-calibration-cost.md)). A case's **affected stories** are those whose capture, in any theme, differs from the unmodified component's, so a catch can be attributed. An application that changes no capture isn't a case.
+A defect is made by a **mutation operator**: a deterministic CSS change that the harness adds to the page after a story loads and before it's captured, scoped by `data-part` and state attributes. The component's code and the story build stay unchanged ([ADR 0027](../adr/0027-m3-federation-calibration-cost.md)). A case's **affected stories** are those whose capture, in any theme, differs from the unmodified component's, so a catch can be attributed. An application that changes no capture is a case only when a check catches it on a story that passes unmodified, as with `raw-color`: those are its **flagged stories**, and the judge's verdicts there are the unmodified component's, as it sees the same pixels ([ADR 0028](../adr/0028-cases-a-check-catches.md)). Any other application that changes no capture isn't a case.
 
 | Operator | Class | Change | Expected to catch it |
 |---|---|---|---|
@@ -105,7 +105,7 @@ An operator applies only where the component has what it changes. For example, `
 | Self-agreement | every call of the calibration set is repeated 5 times. For each image, the share of repeats that give its most common verdict, averaged over images |
 | Cost | judge cost per component and per case, at the batch price the round paid |
 
-The comparison with the checks shows which defects only the judge catches. Measurable cases are reported too, so a judge that only repeats the checks is visible.
+The comparison with the checks shows which defects only the judge catches. A viewer-only case a check catches still counts toward the judge's catch rate; the record says how many the checks caught ([ADR 0028](../adr/0028-cases-a-check-catches.md)). Measurable cases are reported too, so a judge that only repeats the checks is visible.
 
 ### The calls a round makes
 
