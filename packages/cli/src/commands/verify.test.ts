@@ -231,7 +231,7 @@ describe("fazon verify", () => {
     );
     const { json } = await captureJson(["verify"], fake);
     expect(judge.requests).toHaveLength(0);
-    expect(json.result).toMatchObject({ judge: { ran: false, reason: "the checks didn't pass" } });
+    expect(json.result).toMatchObject({ judge: { ran: false, policy: "advisory", reason: "the checks didn't pass" } });
   });
 
   it("says nothing about the judge with --no-judge, and passes the component names on", async () => {

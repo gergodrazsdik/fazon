@@ -429,10 +429,11 @@ export function outcome(
       orphans: details?.orphans ?? [],
       ...(details?.base === undefined ? {} : { base: details.base }),
       unusedExemptions: details?.unusedExemptions ?? [],
+      // The policy tells CI's judge job whether to run, as CI's verify runs with --no-judge.
       judge:
         "pass" in judge
-          ? { ran: true, ...(record.verification?.judge ?? judge.pass.summary) }
-          : { ran: false, reason: judge.skipped },
+          ? { ran: true, policy: record.config.judgePolicy, ...(record.verification?.judge ?? judge.pass.summary) }
+          : { ran: false, policy: record.config.judgePolicy, reason: judge.skipped },
     },
   };
 }

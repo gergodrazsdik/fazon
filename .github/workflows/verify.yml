@@ -2,8 +2,8 @@
 # The reusable workflow a consumer repository calls on every pull request (docs/spec/workflow.md,
 # ADR 0017). `verify` is the required check: it runs `fazon verify` on the runner, which starts the
 # pinned verifier image as on a laptop, writes the summary and uploads the artifacts. `judge` runs
-# the judge from M3 and is skipped until then. `comment` posts the summary on pull requests from
-# the same repository. Nothing here writes code, baselines or commits (WF-001).
+# `fazon judge` on the runner and adds its verdicts to them. `comment` posts the summary on pull
+# requests from the same repository. Nothing here writes code, baselines or commits (WF-001).
 name: fazon
 
 on:
@@ -31,10 +31,29 @@ on:
         description: The verify job's limit; the judge job has half of it.
         type: number
         default: 30
+      anthropic-federation-rule-id:
+        description: >-
+          The workload identity federation rule's ID; when it's set, the judge job uses federation
+          instead of the API key (docs/spec/workflow.md#credentials). Not a secret.
+        type: string
+        default: ""
+      anthropic-organization-id:
+        description: The organization's ID; required with a federation rule.
+        type: string
+        default: ""
+      anthropic-service-account-id:
+        description: The service account's ID; required with a federation rule.
+        type: string
+        default: ""
+      anthropic-workspace-id:
+        description: The workspace's ID; needed only when the rule covers more than one workspace.
+        type: string
+        default: ""
     secrets:
       anthropic-api-key:
         description: >-
-          The judge's API key, for the judge job only (from M3). Without it the judge is skipped.
+          The judge's API key, for the judge job only, when no federation rule is set. Without
+          either, the judge is skipped.
         required: false
     outputs:
       status:
@@ -58,6 +77,7 @@ jobs:
       FAZON: node_modules/.bin/fazon
     outputs:
       status: ${{ steps.status.outputs.status }}
+      run: ${{ steps.verify.outputs.run }}
       judge: ${{ steps.verify.outputs.judge }}
       judge-timeout: ${{ steps.status.outputs.judge-timeout }}
       report-url: ${{ steps.report.outputs.artifact-url }}
@@ -111,7 +131,7 @@ jobs:
           jq -r '.messages[] | "\(.level): \(.text)"' "$result" || true
           run=$(jq -r '.result.run // ""' "$result" || true)
           if ! [[ "$run" =~ ^[0-9]{8}T[0-9]{6}Z-[a-z][a-z0-9-]*-[0-9a-f]{4}$ ]]; then run=""; fi
-          judge=$(jq -r 'if .result.judge.available == true then "run" else "skip" end' "$result" || echo skip)
+          judge=$(jq -r 'if (.result.judge.policy // "off") != "off" then "run" else "skip" end' "$result" || echo skip)
           {
             echo "status=$(jq -r '.status // "error"' "$result" || echo error)"
             echo "run=$run"
@@ -253,20 +273,161 @@ jobs:
           if-no-files-found: ignore
           retention-days: ${{ inputs.artifact-retention-days }}
 
-  # The judge arrives in M3 (T-0056). Until then `fazon verify` reports it unavailable, so this job
-  # is skipped, and the summary says so. From M3 it runs after a passing verify when the judge's
-  # policy isn't off and the API key is set, with the key in this job's environment only (WF-002).
+  # The judge (docs/spec/workflow.md#judge): after a passing verify, unless the judge's policy is
+  # off or the pull request comes from a fork. It gets one credential (#credentials): workload
+  # identity federation when the rule input is set, the API key secret otherwise; only this job
+  # sees it (WF-002). With the policy `advisory` it fails only on its own errors.
   judge:
     name: judge
     needs: verify
-    if: ${{ needs.verify.outputs.status == 'ok' && needs.verify.outputs.judge == 'run' }}
+    if: >-
+      ${{ needs.verify.outputs.status == 'ok' && needs.verify.outputs.judge == 'run'
+      && (github.event_name != 'pull_request'
+      || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-24.04
     timeout-minutes: ${{ fromJSON(needs.verify.outputs.judge-timeout || '15') }}
     permissions:
       contents: read
+      id-token: write
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    env:
+      FAZON: node_modules/.bin/fazon
+      RUN_ID: ${{ needs.verify.outputs.run }}
     steps:
-      - name: The judge arrives in M3
-        run: echo "fazon judge arrives in M3 (T-0056); nothing to judge yet."
+      # The baselines the change questions compare with are the pull request's.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: ${{ inputs.node-version-file }}
+      - name: Install pnpm
+        run: |  # zizmor: ignore[adhoc-packages]
+          manager=""
+          if [ -f package.json ]; then manager=$(jq -r '.packageManager // ""' package.json); fi
+          case "$manager" in
+            pnpm@*)
+              version=${manager#pnpm@}
+              npm install -g "pnpm@${version%%+*}"
+              ;;
+            *) echo "package.json names no pnpm version; the install command brings its own tools." ;;
+          esac
+      - name: Install the dependencies
+        env:
+          INSTALL_COMMAND: ${{ inputs.install-command }}
+        run: bash -euo pipefail -c "$INSTALL_COMMAND"
+      - name: Download the run
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: fazon-run
+          path: ${{ inputs.working-directory }}/.fazon/runs/${{ needs.verify.outputs.run }}
+      - name: Download the report
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: fazon-report
+          path: ${{ runner.temp }}/fazon-report
+      # The identity token lasts about five minutes and is exchanged once, so with federation a
+      # loop writes a fresh one every minute while `fazon judge` runs; the SDK reads the file at
+      # each exchange. The token and the key are never printed (CLI-003).
+      - name: fazon judge
+        id: judge
+        env:
+          RULE_ID: ${{ inputs.anthropic-federation-rule-id }}
+          ORGANIZATION_ID: ${{ inputs.anthropic-organization-id }}
+          SERVICE_ACCOUNT_ID: ${{ inputs.anthropic-service-account-id }}
+          WORKSPACE_ID: ${{ inputs.anthropic-workspace-id }}
+          API_KEY: ${{ secrets.anthropic-api-key }}
+        run: |
+          result="$RUNNER_TEMP/fazon-judge.json"
+          unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN ANTHROPIC_PROFILE
+          if [ -n "$RULE_ID" ]; then
+            unset API_KEY
+            if [ -z "$ORGANIZATION_ID" ] || [ -z "$SERVICE_ACCOUNT_ID" ]; then
+              echo "::error::anthropic-federation-rule-id needs anthropic-organization-id and anthropic-service-account-id."
+              exit 1
+            fi
+            if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+              echo "::warning::The job got no identity token (id-token: write), so the judge didn't run."
+              echo "judged=no" >>"$GITHUB_OUTPUT"
+              exit 0
+            fi
+            token="$RUNNER_TEMP/fazon-identity-token"
+            fetch() {
+              curl -sSf --retry 3 -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.anthropic.com" | jq -er .value >"$token.next"
+              chmod 600 "$token.next"
+              mv "$token.next" "$token"
+            }
+            fetch
+            (while sleep 60; do fetch || true; done) &
+            refresher=$!
+            trap 'kill "$refresher" 2>/dev/null || true' EXIT
+            export ANTHROPIC_FEDERATION_RULE_ID="$RULE_ID"
+            export ANTHROPIC_ORGANIZATION_ID="$ORGANIZATION_ID"
+            export ANTHROPIC_SERVICE_ACCOUNT_ID="$SERVICE_ACCOUNT_ID"
+            export ANTHROPIC_IDENTITY_TOKEN_FILE="$token"
+            if [ -n "$WORKSPACE_ID" ]; then export ANTHROPIC_WORKSPACE_ID="$WORKSPACE_ID"; fi
+          elif [ -n "$API_KEY" ]; then
+            export ANTHROPIC_API_KEY="$API_KEY"
+            unset API_KEY
+          else
+            echo "::notice::No federation rule and no anthropic-api-key secret, so the judge didn't run."
+            echo "judged=no" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+          code=0
+          "$FAZON" judge "$RUN_ID" --json --verbose >"$result" || code=$?
+          jq -r '.messages[] | "\(.level): \(.text)"' "$result" || true
+          echo "judged=yes" >>"$GITHUB_OUTPUT"
+          exit "$code"
+      # The judge's section of `fazon report --summary`, now with its verdicts, in place of the one
+      # verify wrote, in the job summary and the `fazon-report` artifact the comment posts.
+      - name: Summary
+        if: ${{ !cancelled() && steps.judge.outputs.judged == 'yes' }}
+        run: |
+          dir="$RUNNER_TEMP/fazon-report"
+          part="$RUNNER_TEMP/fazon-judge-summary.md"
+          section="$RUNNER_TEMP/fazon-judge-section.md"
+          "$FAZON" report --summary "$RUN_ID" >"$part"
+          awk '/^#### Judge$/ { on = 1 } /^<!-- fazon:artifacts -->$/ { on = 0 } on' "$part" >"$section"
+          if [ -f "$dir/summary.md" ] && [ -s "$section" ]; then
+            awk -v section="$section" '
+              /^#### Judge$/ { while ((getline line < section) > 0) print line; skip = 1; next }
+              skip && /^#### Artifacts$/ { skip = 0 }
+              !skip { print }
+            ' "$dir/summary.md" >"$dir/summary.next"
+            mv "$dir/summary.next" "$dir/summary.md"
+          fi
+          { echo "## Fazon judge"; echo; sed '1d' "$section"; } >>"$GITHUB_STEP_SUMMARY"
+          if "$FAZON" report --no-open "$RUN_ID"; then
+            rm -rf "$dir/report"
+            cp -R ".fazon/runs/$RUN_ID/report" "$dir/report"
+          fi
+      - name: Upload the report
+        if: ${{ !cancelled() && steps.judge.outputs.judged == 'yes' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fazon-report
+          path: ${{ runner.temp }}/fazon-report/
+          overwrite: true
+          if-no-files-found: ignore
+          retention-days: ${{ inputs.artifact-retention-days }}
+      # The run with the judge's record and results; still no transcript, prompt or credential (WF-006).
+      - name: Upload the run
+        if: ${{ !cancelled() && steps.judge.outputs.judged == 'yes' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fazon-run
+          path: |
+            ${{ inputs.working-directory }}/.fazon/runs/${{ needs.verify.outputs.run }}/
+            !${{ inputs.working-directory }}/.fazon/runs/${{ needs.verify.outputs.run }}/report/
+          overwrite: true
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: ${{ inputs.artifact-retention-days }}
 
   # One comment, found by its marker, created or updated with the summary. Same-repository pull
   # requests only: those from forks get a read-only token. It checks out nothing and runs no code

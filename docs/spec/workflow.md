@@ -121,12 +121,12 @@ The other steps run the CLI as `node_modules/.bin/fazon` in the working director
 
 ### `judge`
 
-Runs after `verify` passes, unless the judge's policy is `off`, the pull request comes from a fork (its head repository isn't this one), or there's no [credential](#credentials). Until the judge arrives in M3 (T-0056), `fazon verify` reports it unavailable and the job is skipped; the summary says so. Permissions: `contents: read`, and `id-token: write` for federation; the credential, for this job only.
+Runs after `verify` passes, unless the judge's policy is `off` (which `fazon verify`'s result names) or the pull request comes from a fork (its head repository isn't this one). Permissions: `contents: read`, and `id-token: write` for federation; the credential, for this job only.
 
-1. Check out, install, and download `verify`'s run and captures.
-2. Set up the [credential](#credentials).
+1. Check out, install, and download `verify`'s run (`fazon-run`) and summary (`fazon-report`).
+2. Set up the [credential](#credentials). Without one, the job ends here with a notice, and the summary keeps saying the judge didn't run.
 3. `fazon judge <run>`: the judge looks at the stories with added or changed baselines, within the CI cap ([judge](judge.md#cost)).
-4. Add the judge's verdicts to the summary and the report artifact.
+4. Replace the summary's judge section with the one `fazon report --summary` now gives, with the verdicts and findings, in the job summary and in `summary.md`; rebuild the HTML report; and upload `fazon-report` and `fazon-run` again, in place of `verify`'s.
 
 With policy `advisory` (the default), the job fails only on its own errors, never on a verdict. With `blocking`, a `fail` verdict fails it, and the repository can make `fazon / judge` a required check.
 
@@ -152,7 +152,7 @@ It links to the artifacts: `fazon report --summary` ends with a placeholder line
 | `fazon-report` | the summary (`summary.md`) and the HTML report (`report/index.html`, with the captures, diff images and before-and-after images of changed baselines it shows in `report/images/`; judge findings from M3). Without a run, or when the report can't be built, only the summary. The report's story links point at a local Storybook (`FAZON_STORYBOOK_URL`, by default `http://localhost:6006`), such as `fazon-storybook` served there |
 | `fazon-storybook` | the static Storybook build |
 | `fazon-package` | the packed library tarball |
-| `fazon-run` | the verify run's directory without its Storybook build and tarball: the record, `verify.json`, captures and diff images, logs and tool reports, which the `judge` job reads |
+| `fazon-run` | the verify run's directory without its Storybook build and tarball: the record, `verify.json`, captures and diff images, logs and tool reports, which the `judge` job reads, and replaces with the run and its `judge.json` when it judged |
 
 No artifact contains a transcript, a credential or the agent's prompts.
 
