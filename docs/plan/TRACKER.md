@@ -10,7 +10,7 @@ Next free IDs: T-0106, F-0040, Q-0030.
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M3 step 6: `fazon calibrate` (T-0055)
+1. M3 step 7: calibration round 1, Sonnet 5.5 then Opus 5.5 (T-0055)
 2. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -141,9 +141,9 @@ Complete 2026-11-27: `spec new`, the spec skill and every SPEC rule; `propose`, 
     - [x] 3b: the judge in `generate` and `feedback` iterations (its cost in the run's budget), the report's verdicts and findings, `fazon baseline update` requiring a verdict for every story it writes — 2026-11-27, [#93](https://github.com/gergodrazsdik/fazon/pull/93): the report already showed the summary and findings; a story counts as judged once it has a verdict in any theme (F-0035)
   - [x] Step 4: the judge job in CI (T-0056) — 2026-11-27, [#94](https://github.com/gergodrazsdik/fazon/pull/94), [fazon-vue-example#24](https://github.com/gergodrazsdik/fazon-vue-example/pull/24)
   - [x] Step 5: the twelve mutation operators, injected at capture; cases and their affected stories from the captures; fixtures that show the measurable operators fail their checks — 2026-11-27, [#96](https://github.com/gergodrazsdik/fazon/pull/96): each case's CSS comes from the unmodified story's facts (its part roots' winning declarations); the six measurable operators fail their checks in the verifier image (F-0037)
-  - [~] Step 6: `fazon calibrate`: the calls the protocol lists, through the Message Batches API, in stages within `--budget`; the measures with Wilson intervals; the calibration record
+  - [x] Step 6: `fazon calibrate`: the calls the protocol lists, through the Message Batches API, in stages within `--budget`; the measures with Wilson intervals; the calibration record
     - [x] 6a: the round's renders in the verifier image: a passing verify run of the round's components, then every story unmodified and with each case, its affected stories by their pixels, and whether the checks catch it with and without baselines — 2026-11-27, [#97](https://github.com/gergodrazsdik/fazon/pull/97): round 1 on the example repo rendered 44 cases (32 viewer-only) in 83 minutes, every component passing unmodified (F-0038, Q-0029)
-    - [ ] 6b: the judge's calls through the Message Batches API in stages within `--budget`, the measures with Wilson intervals, the calibration record, `--model` and `--out`; raise the image's six-hour limit for round 2's 17 components
+    - [x] 6b: the judge's calls through the Message Batches API in stages within `--budget`, the measures with Wilson intervals, the calibration record, `--model` and `--out`; raise the image's six-hour limit for round 2's 17 components — 2026-11-27, [#98](https://github.com/gergodrazsdik/fazon/pull/98): catch and false-positive rates from each call's first repeat; the image's limit is 12 hours
   - [ ] Step 7: calibration round 1 on Button, Badge, Link and Dialog, Sonnet 5.5 then Opus 5.5, within the budget left (about $147); the records in `calibration/judge-<version>/`
 - [x] F-0032 The judge plan schema's `question` pattern rejected `change-<story>`, as story names contain `--`; and `change-<story>` was an `each` question, though its baseline, capture and diff are judged together (step 1): the pattern allows `--`, and the question is `compare`, asked in each theme the story differs in — 2026-11-27, [#90](https://github.com/gergodrazsdik/fazon/pull/90)
 - [ ] F-0034 ADR 0027's calibration estimate is about 7 times too high: it assumed $0.35 per pass over Button's plan, but the first real call cost $0.0088, most of it the one-time write of the 2,709-token cached prefix, with 374 input and 125 output tokens; a whole pass should cost about $0.05 with Sonnet 5.5. Step 6's staged estimate replaces the guess with measured costs (step 2)

@@ -122,9 +122,9 @@ export class JudgeCredentialError extends Error {
   }
 }
 
-const noTokens: TokenUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+export const noTokens: TokenUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
 
-function tokensOf(message: Anthropic.Message): TokenUsage {
+export function tokensOf(message: Anthropic.Message): TokenUsage {
   const usage = message.usage;
   return {
     input: usage.input_tokens,
@@ -151,7 +151,7 @@ function describe(error: unknown): string {
 }
 
 /** The answer of a finished request, or why its images are `unsure`. */
-function readAnswer(message: Anthropic.Message): { answer?: unknown; problem?: string } {
+export function readAnswer(message: Anthropic.Message): { answer?: unknown; problem?: string } {
   if (message.stop_reason === "refusal") return { problem: "the model declined the call" };
   if (message.stop_reason === "max_tokens") return { problem: "the answer was cut off at the token limit" };
   const text = message.content
@@ -179,7 +179,7 @@ interface Answer {
 }
 
 /** Each image's verdict in one attempt; `undefined` where the attempt gives none. */
-function attemptVerdicts(call: JudgeCall, attempt: JudgeAttempt): (ImageVerdict | undefined)[] {
+export function attemptVerdicts(call: JudgeCall, attempt: JudgeAttempt): (ImageVerdict | undefined)[] {
   const answer = attempt.answer as Answer | undefined;
   return call.images.map((image) => {
     const base = { label: image.label, ...(image.story === undefined ? {} : { story: image.story }) };

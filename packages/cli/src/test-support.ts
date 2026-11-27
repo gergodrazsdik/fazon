@@ -24,6 +24,8 @@ export interface FakeMachine {
   readonly interrupt?: AbortSignal;
   /** The judge's API client; tests that make judge calls pass a fake. */
   readonly judgeClient?: Environment["judgeClient"];
+  /** The judge's batch client; calibration tests pass a fake. */
+  readonly judgeBatchClient?: Environment["judgeBatchClient"];
   /** Installed programs, with what `<program> --version` prints. */
   readonly programs?: Readonly<Record<string, string>>;
   /** Runs a program other than with `--version`; `undefined` leaves it to the default (exit 1). */
@@ -43,6 +45,7 @@ export function fakeEnvironment({
   claudeCode,
   interrupt,
   judgeClient,
+  judgeBatchClient,
 }: FakeMachine): Environment {
   return {
     cwd,
@@ -52,6 +55,7 @@ export function fakeEnvironment({
     ...(claudeCode === undefined ? {} : { claudeCode }),
     ...(interrupt === undefined ? {} : { interrupt }),
     ...(judgeClient === undefined ? {} : { judgeClient }),
+    ...(judgeBatchClient === undefined ? {} : { judgeBatchClient }),
     exec: (program, args, options) => {
       const handled = handle?.(program, args, options);
       if (handled !== undefined) return handled;

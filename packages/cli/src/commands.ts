@@ -183,9 +183,17 @@ export const commands: readonly Command[] = [
     name: "calibrate",
     group: "Measurement",
     usage: "fazon calibrate --round <n> [--model <model>] --budget <usd> --out <path>",
-    summary: "A judge calibration round; for now its renders, unmodified and with each seeded defect.",
+    summary:
+      "A judge calibration round: seeded defects, the judge through the Message Batches API, and the calibration record.",
     // `--in-image <run>` is internal: the host starts the image with it.
-    options: { round: { type: "string" }, "in-image": { type: "string" } },
+    options: {
+      round: { type: "string" },
+      model: { type: "string" },
+      budget: { type: "string" },
+      out: { type: "string" },
+      records: { type: "string" },
+      "in-image": { type: "string" },
+    },
     run: calibrate,
   },
 ];
