@@ -194,10 +194,12 @@ export async function judgePass(input: JudgePassInput): Promise<JudgePass> {
 }
 
 /**
- * The calibration records the framework ships, by judge version and model:
- * `calibration/judge-<version>/<model>.json` in this package. None exist before M3's first round.
+ * The calibration records the framework ships, by judge version and model: the repository's
+ * `calibration/judge-<version>/<model>.json`, which the build copies into the package's
+ * `dist/calibration-records/` (scripts/copy-schemas.ts). This module sits two levels below the
+ * package root both as src/judge/pass.ts and as dist/judge/pass.js.
  */
-export const frameworkCalibration = fileURLToPath(new URL("../../calibration/", import.meta.url));
+export const frameworkCalibration = fileURLToPath(new URL("../../dist/calibration-records/", import.meta.url));
 
 /**
  * Whether the judge counts as calibrated for a model (docs/spec/measurement.md#calibrated-status):
