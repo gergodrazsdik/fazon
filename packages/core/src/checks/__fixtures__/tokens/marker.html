@@ -1,0 +1,27 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=raw-token -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokens: a list whose markers take a raw token</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      .list {
+        margin: 0;
+        padding: 0 0 0 var(--space-inset-md);
+      }
+      .list li::marker {
+        color: var(--color-blue-600);
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <ul class="list" data-part="List">
+        <li>First</li>
+        <li>Second</li>
+      </ul>
+    </div>
+  </body>
+</html>

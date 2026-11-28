@@ -176,6 +176,92 @@ describe("checkTokens", () => {
   });
 });
 
+describe("pseudo-elements", () => {
+  // A checkbox-like control whose mark is its ::before.
+  const withPseudo = (
+    pseudoElements: InspectedElement["pseudoElements"],
+    ...extra: StyleSource[]
+  ): InspectedElement => ({
+    ...button(...extra),
+    ...(pseudoElements === undefined ? {} : { pseudoElements }),
+  });
+  const mark = (declarations: Record<string, string>, origin: StyleSource["origin"] = "author") =>
+    style(origin, { content: '""', ...declarations }, { selector: ".button::before" });
+
+  it("finds a raw colour in a ::before, named by its originating element's selector and part", () => {
+    const findings = checkTokens({
+      elements: [
+        withPseudo([
+          { pseudo: "::before", styles: { matched: [mark({ "background-color": "#2154d9" })], inherited: [] } },
+        ]),
+      ],
+      index,
+      context: { story: "button--label--default", theme: "light" },
+    });
+    expect(findings).toEqual([
+      expect.objectContaining({
+        check: "tokens",
+        rule: "raw-value",
+        part: "Button",
+        selector: '[data-part="Button"]::before',
+        actual: "#2154d9",
+        blocking: true,
+      }),
+    ]);
+  });
+
+  it("applies the same rules to every pseudo-element it inspected", () => {
+    const pseudo = [
+      {
+        pseudo: "::before",
+        styles: { matched: [mark({ "background-color": "var(--color-action-primary)" })], inherited: [] },
+      },
+      {
+        pseudo: "::after",
+        styles: { matched: [mark({ "border-top-color": "var(--color-blue-600)" })], inherited: [] },
+      },
+      { pseudo: "::marker", styles: { matched: [mark({ color: "var(--brand)" })], inherited: [] } },
+    ] as const;
+    const findings = checkTokens({ elements: [withPseudo(pseudo)], index });
+    expect(findings.map((f) => [f.selector, f.rule, f.actual])).toEqual([
+      ['[data-part="Button"]::after', "raw-token", "color.blue.600"],
+      ['[data-part="Button"]::marker', "unknown-token", "--brand"],
+    ]);
+  });
+
+  it("follows a component-local property to its originating element", () => {
+    const own = style("author", { "--_mark": "var(--color-text-on-action)" }, { selector: ".button" });
+    const inherited = [[own]];
+    const local = withPseudo(
+      [{ pseudo: "::before", styles: { matched: [mark({ "background-color": "var(--_mark)" })], inherited } }],
+      own,
+    );
+    expect(rules([local])).toEqual([]);
+    const raw = style("author", { "--_mark": "#ffffff" }, { selector: ".button" });
+    const rawLocal = withPseudo(
+      [{ pseudo: "::before", styles: { matched: [mark({ "background-color": "var(--_mark)" })], inherited: [[raw]] } }],
+      raw,
+    );
+    expect(rules([rawLocal])).toEqual([["raw-value", "#ffffff"]]);
+  });
+
+  it("finds a placeholder that keeps the browser's colour (user-agent)", () => {
+    const userAgent = style("user-agent", { color: "rgb(117, 117, 117)" }, { selector: "::-webkit-input-placeholder" });
+    const placeholder = (...extra: StyleSource[]) =>
+      withPseudo([{ pseudo: "::placeholder", styles: { matched: [userAgent, ...extra], inherited: [] } }]);
+    expect(checkTokens({ elements: [placeholder()], index }).map((f) => [f.selector, f.rule, f.actual])).toEqual([
+      ['[data-part="Button"]::placeholder', "user-agent", "rgb(117, 117, 117)"],
+    ]);
+    expect(rules([placeholder(style("author", { color: "var(--color-text-primary)" }))])).toEqual([]);
+  });
+
+  it("leaves inherited values to the element that declares them, and token rules to the part's root", () => {
+    const expected = () => new Map([["background-color", "color.action.primary"]]);
+    const inheriting = withPseudo([{ pseudo: "::before", styles: { matched: [mark({})], inherited: [] } }]);
+    expect(checkTokens({ elements: [inheriting], index, expected })).toEqual([]);
+  });
+});
+
 describe("font-fallback", () => {
   const dejaVu: RenderedFont = { family: "DejaVu Sans", postScriptName: "DejaVuSans", custom: false, glyphs: 12 };
   const inter: RenderedFont = { family: "Inter", postScriptName: "Inter-Regular", custom: true, glyphs: 12 };

@@ -7,7 +7,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { ariaObservations, checkAxe, checkSpecA11y, checkSpecAria, type AriaObservation } from "../checks/a11y.js";
 import { checkLayout } from "../checks/layout.js";
-import type { AxeOutcome, Capture, PageInspection } from "../checks/snapshot.js";
+import { pseudoElementNames, type AxeOutcome, type Capture, type PageInspection } from "../checks/snapshot.js";
 import { checkTokens, tokenRuleExpectations } from "../checks/tokens.js";
 import type { CheckFinding, CheckId } from "../checks/types.js";
 import {
@@ -108,12 +108,16 @@ type RecordedElement = Pick<
   "selector" | "part" | "partRoot" | "instance" | "parent" | "states"
 >;
 
-/** Looks a finding's element up in its story's render by its selector, then walks up to the part's root. */
+/**
+ * Looks a finding's element up in its story's render by its selector, then walks up to the part's
+ * root. A pseudo-element's finding (`…::before`) is about its originating element.
+ */
 function findingElements(rendered: ReadonlyMap<string, readonly RecordedElement[]>): FindingElements {
   return (finding, part) => {
     if (finding.story === undefined || finding.selector === undefined) return undefined;
     const elements = rendered.get(`${finding.story}\u0000${finding.theme ?? ""}`) ?? [];
-    let at: number | undefined = elements.findIndex((e) => e.selector === finding.selector);
+    const selector = originatingSelector(finding.selector);
+    let at: number | undefined = elements.findIndex((e) => e.selector === selector);
     if (at === -1) return undefined;
     while (at !== undefined) {
       const element: RecordedElement | undefined = elements[at];
@@ -123,6 +127,12 @@ function findingElements(rendered: ReadonlyMap<string, readonly RecordedElement[
     }
     return undefined;
   };
+}
+
+/** A finding's selector without the pseudo-element `tokens` appends to its originating element's. */
+function originatingSelector(selector: string): string {
+  for (const pseudo of pseudoElementNames) if (selector.endsWith(pseudo)) return selector.slice(0, -pseudo.length);
+  return selector;
 }
 
 /** The directory of captures and diffs in a run's directory. */

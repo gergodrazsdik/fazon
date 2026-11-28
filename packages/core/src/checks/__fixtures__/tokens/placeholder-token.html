@@ -1,0 +1,35 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=pass -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokens: a text field whose placeholder takes a role token</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      .field {
+        display: inline-block;
+      }
+      .input {
+        margin: 0;
+        padding: var(--space-inset-sm);
+        border: 0 solid transparent;
+        border-radius: var(--radius-control);
+        background-color: var(--color-surface-base);
+        color: var(--color-text-primary);
+        font: inherit;
+        letter-spacing: normal;
+      }
+      .input::placeholder {
+        color: var(--color-text-primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <span class="field" data-part="TextField"
+        ><input class="input" aria-label="Email" placeholder="name@example.com"
+      /></span>
+    </div>
+  </body>
+</html>

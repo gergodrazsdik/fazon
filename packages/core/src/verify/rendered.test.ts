@@ -3,7 +3,7 @@ import { access, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { element, fixtureTokenIndex } from "../checks/test-support.js";
+import { element, fixtureTokenIndex, style } from "../checks/test-support.js";
 import { baselinePath, formatBaselinesRecord } from "../checks/visual.js";
 import type { TokenIndex } from "../tokens/build.js";
 import type { VerifyComponent } from "./components.js";
@@ -246,6 +246,23 @@ describe("the rendered checks", () => {
     const rules = new Set(a11y?.findings.map((f) => f.rule));
     expect([...rules].sort()).toEqual(["button-name", "spec-aria"]);
     expect(a11y?.findings.find((f) => f.rule === "spec-aria")?.file).toBe("specs/button.md");
+  });
+
+  it("look a pseudo-element's finding up by its originating element, for exemptions", async () => {
+    const result = await run({
+      renderer: renderer(() => {
+        const base = rendered();
+        const [first] = base.inspection.elements;
+        if (first === undefined) throw new Error("The rendered Button has no element.");
+        const mark = style("author", { content: '""', "background-color": "#ff0000" }, { selector: ".button::before" });
+        const pseudoElements = [{ pseudo: "::before" as const, styles: { matched: [mark], inherited: [] } }];
+        return { ...base, inspection: { ...base.inspection, elements: [{ ...first, pseudoElements }] } };
+      }),
+    });
+    const finding = result.checks.find((c) => c.check === "tokens")?.findings[0];
+    expect(finding).toMatchObject({ rule: "raw-value", selector: '[data-part="Button"]::before', part: "Button" });
+    if (finding === undefined) throw new Error("No tokens finding.");
+    expect(result.elements?.(finding, "Button")).toEqual({ instance: 0, states: [] });
   });
 });
 

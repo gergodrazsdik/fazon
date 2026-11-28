@@ -5,7 +5,7 @@ import type { PropValue, PropValues, TokenRule, When } from "../spec/types.js";
 import type { IndexedToken, TokenIndex } from "../tokens/build.js";
 import { winningDeclarations, type Declaration } from "./cascade.js";
 import { looksLikeTokenValue, parseValue, type ValueComponent } from "./css-values.js";
-import type { InspectedElement, TextFonts } from "./snapshot.js";
+import type { ElementStyles, InspectedElement, TextFonts } from "./snapshot.js";
 import { physicalProperty, tokenBoundProperties, tokenShorthands } from "./token-properties.js";
 import { locate, type CheckContext, type CheckFinding } from "./types.js";
 
@@ -89,8 +89,6 @@ export function checkTokens(input: TokensCheckInput): CheckFinding[] {
     if (winners === undefined || element.styles === undefined) {
       throw new Error(`The element ${element.selector} was inspected without its styles.`);
     }
-    const ancestors = element.styles.inherited.map((sources) => winningDeclarations(sources));
-    const evaluate = (value: string, whole: boolean) => evaluateValue(value, whole, tokens, winners, ancestors, 0);
     const where = {
       check: "tokens" as const,
       ...locate(input.context ?? {}),
@@ -98,34 +96,14 @@ export function checkTokens(input: TokensCheckInput): CheckFinding[] {
       selector: element.selector,
       blocking: true,
     };
-
-    for (const property of tokenBoundProperties.keys()) {
-      const declaration = winners.get(property);
-      if (declaration === undefined || declaration.implicit) continue;
-      const evaluation = evaluate(declaration.value, declaration.whole);
-      if (declaration.origin === "user-agent") {
-        // An empty value is a system font the browser sets with the font shorthand.
-        if (declaration.value === "" || evaluation.problems.length > 0) {
-          add({
-            ...where,
-            rule: "user-agent",
-            message:
-              `${property} takes the browser's own value ${shown(declaration)}: no author declaration sets it. ` +
-              "Set it from a role token, or to an allowed value.",
-            actual: declaration.value === "" ? `(the browser's ${declaration.declaredAs})` : declaration.value,
-          });
-        }
-        continue;
-      }
-      for (const problem of evaluation.problems) {
-        add({
-          ...where,
-          rule: problem.rule,
-          message: `${declared(declaration)}: ${problem.message}`,
-          actual: problem.actual,
-          ...(problem.rule === "raw-token" ? { expected: "a role token" } : {}),
-        });
-      }
+    const declarations = (own: ReadonlyMap<string, Declaration>, styles: ElementStyles, selector: string) => {
+      const ancestors = styles.inherited.map((sources) => winningDeclarations(sources));
+      for (const finding of declarationFindings(own, ancestors, tokens)) add({ ...where, selector, ...finding });
+    };
+    declarations(winners, element.styles, element.selector);
+    // A pseudo-element's own declarations, with its originating element as its nearest ancestor.
+    for (const pseudo of element.pseudoElements ?? []) {
+      declarations(winningDeclarations(pseudo.styles.matched), pseudo.styles, `${element.selector}${pseudo.pseudo}`);
     }
 
     const expected = input.expected?.(element);
@@ -166,6 +144,45 @@ export function checkTokens(input: TokensCheckInput): CheckFinding[] {
       }
     }
   });
+  return findings;
+}
+
+/**
+ * The `raw-value`, `raw-token`, `unknown-token` and `user-agent` findings of the winning
+ * declarations of one element or pseudo-element, without their location.
+ */
+function declarationFindings(
+  winners: ReadonlyMap<string, Declaration>,
+  ancestors: readonly ReadonlyMap<string, Declaration>[],
+  tokens: ReadonlyMap<string, IndexedToken>,
+): Pick<CheckFinding, "rule" | "message" | "actual" | "expected">[] {
+  const findings: Pick<CheckFinding, "rule" | "message" | "actual" | "expected">[] = [];
+  for (const property of tokenBoundProperties.keys()) {
+    const declaration = winners.get(property);
+    if (declaration === undefined || declaration.implicit) continue;
+    const evaluation = evaluateValue(declaration.value, declaration.whole, tokens, winners, ancestors, 0);
+    if (declaration.origin === "user-agent") {
+      // An empty value is a system font the browser sets with the font shorthand.
+      if (declaration.value === "" || evaluation.problems.length > 0) {
+        findings.push({
+          rule: "user-agent",
+          message:
+            `${property} takes the browser's own value ${shown(declaration)}: no author declaration sets it. ` +
+            "Set it from a role token, or to an allowed value.",
+          actual: declaration.value === "" ? `(the browser's ${declaration.declaredAs})` : declaration.value,
+        });
+      }
+      continue;
+    }
+    for (const problem of evaluation.problems) {
+      findings.push({
+        rule: problem.rule,
+        message: `${declared(declaration)}: ${problem.message}`,
+        actual: problem.actual,
+        ...(problem.rule === "raw-token" ? { expected: "a role token" } : {}),
+      });
+    }
+  }
   return findings;
 }
 
