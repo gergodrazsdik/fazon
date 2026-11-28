@@ -181,7 +181,7 @@ axe's undecided results ("incomplete", for example contrast over a gradient) don
 
 ## tokens
 
-**Scope:** every story in every theme. For each element of the component and each [token-bound property](#token-bound-properties), the verifier reads the declaration that wins the cascade, through the Chromium DevTools protocol, and follows its custom properties to the token they name.
+**Scope:** every story in every theme. For each element of the component, each of its pseudo-elements that renders (below), and each [token-bound property](#token-bound-properties), the verifier reads the declaration that wins the cascade, through the Chromium DevTools protocol, and follows its custom properties to the token they name.
 
 | Rule | Fails when |
 |---|---|
@@ -194,6 +194,22 @@ axe's undecided results ("incomplete", for example contrast over a gradient) don
 
 A property that no stylesheet sets keeps its initial value, which isn't a finding. An inherited value is checked on the element that declares it; values inherited from outside the component come from the story frame's base styles.
 
+**Pseudo-elements:** controls often draw marks, tracks and thumbs with pseudo-elements, so `raw-value`, `raw-token`, `unknown-token` and `user-agent` also apply to the declarations that win on these pseudo-elements of the component's elements, while they render:
+
+| Pseudo-element | Checked when |
+|---|---|
+| `::before`, `::after` | Its `content` is neither `none` nor `normal`, and its `display` isn't `none`. |
+| `::marker` | The element is a list item that shows a marker: its `display` is `list-item`, and its `list-style-type` isn't `none` or it has a `list-style-image`. |
+| `::placeholder` | The element is an `input` or `textarea` whose placeholder shows (`:placeholder-shown` matches). |
+| `::backdrop` | The element is in the top layer, such as a modal `dialog`. |
+
+- A pseudo-element that doesn't render isn't checked, whatever its rules set.
+- The browser's own styles count as for an element: a placeholder whose colour no author declaration sets is a `user-agent` finding, and so is a modal `dialog`'s backdrop.
+- A component-local property in a pseudo-element's value is followed to the pseudo-element's own declarations, then to its originating element and that element's ancestors. An inherited value is checked on the element that declares it.
+- A finding carries its originating element's `part`, and that element's `selector` with the pseudo-element appended, such as `[data-part="Checkbox"] > span:nth-child(1)::before`. An [exemption](#exemptions)'s `part` and `when` apply to it as to its originating element.
+- `token-rule` and `font-fallback` don't apply to pseudo-elements: token rules apply to a part's root element, and `font-fallback` reads an element's own text nodes, not text from `content`.
+- Other pseudo-elements, such as `::selection`, `::first-line`, `::first-letter`, `::file-selector-button` and scrollbar pseudo-elements, aren't checked.
+
 **Fonts:** `font-fallback` compares the first family of the element's computed `font-family` with the fonts Chromium reports for the element's own text nodes (the DevTools protocol's `CSS.getPlatformFontsForNode`), after the page's fonts have loaded:
 
 - A family that a `@font-face` rule (or a `FontFace`) in the page declares is used when one of its faces has loaded and a web font rendered the text. A font file's own family name can differ from the family its `@font-face` rules register (`Inter` in the files that register `Inter Variable`), so the names aren't compared.
@@ -204,7 +220,7 @@ Text rendered partly in the first family, with a fallback only for characters th
 
 **Allowed:** the allowed values above.
 
-**Fixtures:** [tokens](examples/checks/tokens/tokens.json) for both; [pass](examples/checks/tokens/pass.html), a button styled with role tokens only, with the token set's font loaded; [fail](examples/checks/tokens/fail.html), its background taken from a raw token (`raw-token`). The pages load Inter from the workspace's `@fontsource-variable/inter` package, as the example library's stylesheet does.
+**Fixtures:** [tokens](examples/checks/tokens/tokens.json) for both; [pass](examples/checks/tokens/pass.html), a button styled with role tokens only, with the token set's font loaded; [fail](examples/checks/tokens/fail.html), its background taken from a raw token (`raw-token`); for pseudo-elements, [pseudo-pass](examples/checks/tokens/pseudo-pass.html), a checkbox whose mark is a `::before` coloured with a role token, beside an `::after` with no content whose literal colour isn't checked, and [pseudo-fail](examples/checks/tokens/pseudo-fail.html), the same mark with a literal colour (`raw-value`). The pages load Inter from the workspace's `@fontsource-variable/inter` package, as the example library's stylesheet does.
 
 ## layout
 

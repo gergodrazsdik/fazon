@@ -109,6 +109,27 @@ export interface InspectedElement {
   readonly styles?: ElementStyles;
   /** The fonts of its own text; absent when it has none, or the inspection skipped styles. */
   readonly fonts?: TextFonts;
+  /** Its pseudo-elements that render, in `pseudoElementNames` order; absent when the inspection skipped styles. */
+  readonly pseudoElements?: readonly InspectedPseudoElement[];
+}
+
+/**
+ * The pseudo-elements `tokens` checks, in the order it reports them: those Chromium generates
+ * (`::before` and `::after` with a `content` other than `none`, `::marker` on a list item,
+ * `::backdrop` on an element in the top layer), and `::placeholder` while the placeholder shows.
+ */
+export const pseudoElementNames = ["::before", "::after", "::marker", "::placeholder", "::backdrop"] as const;
+
+export type PseudoElementName = (typeof pseudoElementNames)[number];
+
+/** A pseudo-element that renders, with its styles. */
+export interface InspectedPseudoElement {
+  readonly pseudo: PseudoElementName;
+  /**
+   * Its matched rules (it has no inline style or attributes), and as `inherited` its originating
+   * element's styles, then that element's ancestors', nearest first.
+   */
+  readonly styles: ElementStyles;
 }
 
 /** A font the browser rendered text with, as the DevTools protocol reports it. */

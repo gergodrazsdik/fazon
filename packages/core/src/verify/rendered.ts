@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // The rendered checks of a verify run over the stories (docs/spec/story-matrix.md,
 // docs/spec/check-catalogue.md): every manifest story in every theme, with `a11y`, `tokens` and
-// `layout` on each render and `visual` against the baselines directory. Stories are rendered by an
-// injected renderer, so the orchestration is tested with recorded snapshots.
+// `layout` on each render, `visual` against the baselines directory, and MATRIX-005 over each
+// component's renders. Stories are rendered by an injected renderer, so the orchestration is
+// tested with recorded snapshots.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { ariaObservations, checkAxe, checkSpecA11y, checkSpecAria, type AriaObservation } from "../checks/a11y.js";
 import { checkLayout } from "../checks/layout.js";
-import type { AxeOutcome, Capture, PageInspection } from "../checks/snapshot.js";
+import { pseudoElementNames, type AxeOutcome, type Capture, type PageInspection } from "../checks/snapshot.js";
 import { checkTokens, tokenRuleExpectations } from "../checks/tokens.js";
 import type { CheckFinding, CheckId } from "../checks/types.js";
 import {
@@ -24,6 +25,7 @@ import type { Story } from "../matrix/types.js";
 import type { TokenIndex } from "../tokens/build.js";
 import { storyProps, type VerifyComponent } from "./components.js";
 import type { FindingElements } from "./exemptions.js";
+import { reflectedStateProblems } from "./reflected-states.js";
 import type { CheckResult } from "./run-record.js";
 
 /** What the renderer reads from one story in one theme, after its input steps. */
@@ -108,12 +110,16 @@ type RecordedElement = Pick<
   "selector" | "part" | "partRoot" | "instance" | "parent" | "states"
 >;
 
-/** Looks a finding's element up in its story's render by its selector, then walks up to the part's root. */
+/**
+ * Looks a finding's element up in its story's render by its selector, then walks up to the part's
+ * root. A pseudo-element's finding (`…::before`) is about its originating element.
+ */
 function findingElements(rendered: ReadonlyMap<string, readonly RecordedElement[]>): FindingElements {
   return (finding, part) => {
     if (finding.story === undefined || finding.selector === undefined) return undefined;
     const elements = rendered.get(`${finding.story}\u0000${finding.theme ?? ""}`) ?? [];
-    let at: number | undefined = elements.findIndex((e) => e.selector === finding.selector);
+    const selector = originatingSelector(finding.selector);
+    let at: number | undefined = elements.findIndex((e) => e.selector === selector);
     if (at === -1) return undefined;
     while (at !== undefined) {
       const element: RecordedElement | undefined = elements[at];
@@ -123,6 +129,12 @@ function findingElements(rendered: ReadonlyMap<string, readonly RecordedElement[
     }
     return undefined;
   };
+}
+
+/** A finding's selector without the pseudo-element `tokens` appends to its originating element's. */
+function originatingSelector(selector: string): string {
+  for (const pseudo of pseudoElementNames) if (selector.endsWith(pseudo)) return selector.slice(0, -pseudo.length);
+  return selector;
 }
 
 /** The directory of captures and diffs in a run's directory. */
@@ -168,6 +180,8 @@ export async function runRenderedChecks(input: RenderedChecksInput): Promise<Ren
   const findings: Record<"a11y" | "tokens" | "layout", CheckFinding[]> = { a11y: [], tokens: [], layout: [] };
   const incomplete: CheckFinding[] = [];
   const errors: string[] = [];
+  /** MATRIX-005's problems, which don't stop a story from rendering but fail the run as errors do. */
+  const unreflected: string[] = [];
   /** Each story's elements, by story and theme, for the findings' part instances. */
   const recorded = new Map<string, RecordedElement[]>();
   const captures: { component: VerifyComponent; story: Story; theme: string; png: Uint8Array; path: string }[] = [];
@@ -243,15 +257,28 @@ export async function runRenderedChecks(input: RenderedChecksInput): Promise<Ren
       }
     }
     findings.a11y.push(...checkSpecAria(component.spec, observations).map((f) => ({ ...f, file: component.specFile })));
+    unreflected.push(
+      ...reflectedStateProblems(component.spec, manifest, (story, theme) => recorded.get(`${story}\u0000${theme}`)),
+    );
   }
 
   // visual
   const visual = await compareCaptures(input, captures);
   const duration = Math.round((now() - started) / 100) / 10;
-  const errorMessage =
-    errors.length === 0
-      ? undefined
-      : `${String(errors.length)} ${errors.length === 1 ? "problem" : "problems"} stopped stories from rendering: ${errors.slice(0, 10).join("; ")}${errors.length > 10 ? "; …" : ""}`;
+  const listed = (list: readonly string[]) => `${list.slice(0, 10).join("; ")}${list.length > 10 ? "; …" : ""}`;
+  const messages = [
+    ...(errors.length === 0
+      ? []
+      : [
+          `${String(errors.length)} ${errors.length === 1 ? "problem" : "problems"} stopped stories from rendering: ${listed(errors)}`,
+        ]),
+    ...(unreflected.length === 0
+      ? []
+      : [
+          `${String(unreflected.length)} ${unreflected.length === 1 ? "state isn't" : "states aren't"} reflected: ${listed(unreflected)}`,
+        ]),
+  ];
+  const errorMessage = messages.length === 0 ? undefined : messages.join(". ");
   const check = (id: CheckId, list: CheckFinding[]): CheckResult => ({
     check: id,
     status: errorMessage !== undefined ? "error" : list.some((f) => f.blocking) ? "fail" : "pass",

@@ -1,0 +1,28 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=user-agent -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>tokens: a modal dialog whose backdrop keeps the browser's colour</title>
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      .dialog {
+        margin: auto;
+        padding: var(--space-inset-md);
+        border: 0 solid transparent;
+        outline: none;
+        background-color: var(--color-surface-base);
+        color: var(--color-text-primary);
+      }
+    </style>
+  </head>
+  <body>
+    <div data-fazon-frame>
+      <dialog class="dialog" data-part="Dialog" aria-label="Notice">Saved.</dialog>
+    </div>
+    <script>
+      document.querySelector("dialog").showModal();
+    </script>
+  </body>
+</html>

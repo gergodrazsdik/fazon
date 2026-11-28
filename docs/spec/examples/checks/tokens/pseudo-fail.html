@@ -1,0 +1,82 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- fazon-fixture: check=tokens expect=raw-value -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- The token set's font, from the workspace's @fontsource-variable/inter, as the example library's stylesheet loads it. -->
+<link rel="stylesheet" href="../../../../../node_modules/@fontsource-variable/inter/index.css">
+<title>tokens: a checkbox whose mark, its ::before, takes a literal colour</title>
+<style>
+:root {
+  --color-blue-600: #2154d9;
+  --color-neutral-0: #ffffff;
+  --color-neutral-900: #1c1f25;
+  --space-2: 8px;
+  --space-3: 12px;
+  --radius-2: 6px;
+  --font-family-inter: 'Inter Variable', Inter, system-ui, sans-serif;
+  --font-size-2: 0.875rem;
+  --font-weight-400: 400;
+  --font-weight-500: 500;
+  --line-height-2: 1.5;
+  --color-surface-base: var(--color-neutral-0);
+  --color-text-primary: var(--color-neutral-900);
+  --color-action-primary: var(--color-blue-600);
+  --color-text-on-action: var(--color-neutral-0);
+  --space-inset-sm: var(--space-2);
+  --space-inset-md: var(--space-3);
+  --radius-control: var(--radius-2);
+  --font-family-body: var(--font-family-inter);
+  --font-size-body: var(--font-size-2);
+  --font-weight-body: var(--font-weight-400);
+  --font-weight-medium: var(--font-weight-500);
+  --line-height-body: var(--line-height-2);
+}
+body { margin: 0; }
+[data-fazon-frame] {
+  display: inline-block;
+  padding: 16px;
+  color-scheme: light;
+  background-color: var(--color-surface-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-body);
+  line-height: var(--line-height-body);
+}
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-inset-sm);
+  margin: 0;
+  padding: 0;
+}
+/* The box, and its mark drawn by ::before. */
+.box {
+  display: inline-block;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-control);
+  background-color: var(--color-action-primary);
+}
+.box::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: var(--radius-control);
+  background-color: #ffffff;
+}
+/* No content, so it doesn't render, and its literal colour isn't checked. */
+.box::after {
+  background-color: #ff0000;
+}
+</style>
+</head>
+<body>
+<div data-fazon-frame>
+<span class="checkbox" data-part="Checkbox"><span class="box"></span>Email me updates</span>
+</div>
+</body>
+</html>

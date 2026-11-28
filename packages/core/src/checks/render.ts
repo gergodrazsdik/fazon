@@ -9,16 +9,19 @@ import type { Browser, BrowserContext, CDPSession, Page } from "playwright-core"
 import { axeRunOptions } from "./a11y.js";
 import { stripImportant } from "./cascade.js";
 import { captureArea, inspectLayout, runAxe, setTheme, settle } from "./page-scripts.js";
-import type {
-  AxeOutcome,
-  Capture,
-  ElementStyles,
-  InspectedElement,
-  NameSourceKind,
-  PageInspection,
-  RenderedFont,
-  StyleOrigin,
-  StyleSource,
+import {
+  pseudoElementNames,
+  type AxeOutcome,
+  type Capture,
+  type ElementStyles,
+  type InspectedElement,
+  type InspectedPseudoElement,
+  type NameSourceKind,
+  type PageInspection,
+  type PseudoElementName,
+  type RenderedFont,
+  type StyleOrigin,
+  type StyleSource,
 } from "./snapshot.js";
 import { CheckError } from "./types.js";
 
@@ -185,6 +188,7 @@ export class RenderedPage {
         const accessibility =
           options.accessibility === false ? undefined : await accessibilityOf(cdp, nodeId, element.tag);
         const styles = options.styles === false ? undefined : await stylesOf(cdp, nodeId);
+        const pseudoElements = options.styles === false ? undefined : await pseudoElementsOf(cdp, nodes.get(nodeId));
         const fonts =
           options.styles === false || pageFonts === undefined
             ? undefined
@@ -197,6 +201,7 @@ export class RenderedPage {
           description: accessibility?.description ?? "",
           ...(styles === undefined ? {} : { styles }),
           ...(fonts === undefined ? {} : { fonts }),
+          ...(pseudoElements === undefined ? {} : { pseudoElements }),
         });
       }
       return { viewport: layout.viewport, frame: layout.frame, elements };
@@ -332,9 +337,54 @@ async function stylesOf(cdp: CDPSession, nodeId: number): Promise<ElementStyles>
 interface CdpNode {
   readonly nodeId: number;
   readonly nodeType: number;
+  readonly nodeName: string;
   readonly nodeValue: string;
   readonly children?: readonly CdpNode[];
+  /** The pseudo-elements Chromium generated for the element: those that render. */
+  readonly pseudoElements?: readonly (CdpNode & { readonly pseudoType: string })[];
+  readonly shadowRoots?: readonly (CdpNode & { readonly shadowRootType?: string })[];
 }
+
+// The generated pseudo-elements `tokens` checks, by the protocol's pseudo type.
+const generatedPseudoElements: ReadonlyMap<string, PseudoElementName> = new Map([
+  ["before", "::before"],
+  ["after", "::after"],
+  ["marker", "::marker"],
+  ["backdrop", "::backdrop"],
+]);
+
+/**
+ * The pseudo-elements of an element that render, with their styles. Chromium generates `::before`,
+ * `::after`, `::marker` and `::backdrop` only when they render; `::placeholder` is an element in
+ * the user-agent shadow root of an `input` or `textarea`, rendered while the placeholder shows.
+ */
+async function pseudoElementsOf(cdp: CDPSession, element: CdpNode | undefined): Promise<InspectedPseudoElement[]> {
+  if (element === undefined) return [];
+  const found: InspectedPseudoElement[] = [];
+  for (const node of element.pseudoElements ?? []) {
+    const pseudo = generatedPseudoElements.get(node.pseudoType);
+    if (pseudo !== undefined) found.push({ pseudo, styles: await stylesOf(cdp, node.nodeId) });
+  }
+  const tag = element.nodeName.toLowerCase();
+  const shadow = element.shadowRoots?.find((root) => root.shadowRootType === "user-agent");
+  if ((tag === "input" || tag === "textarea") && shadow !== undefined) {
+    const { nodeId } = await cdp.send("DOM.querySelector", {
+      nodeId: shadow.nodeId,
+      selector: '[pseudo="-webkit-input-placeholder"]',
+    });
+    if (nodeId !== 0) {
+      const { computedStyle } = (await cdp.send("CSS.getComputedStyleForNode", { nodeId })) as {
+        computedStyle: readonly { name: string; value: string }[];
+      };
+      if (computedStyle.find((p) => p.name === "display")?.value !== "none") {
+        found.push({ pseudo: "::placeholder", styles: await stylesOf(cdp, nodeId) });
+      }
+    }
+  }
+  const order = (p: InspectedPseudoElement) => pseudoElementNames.indexOf(p.pseudo);
+  return found.sort((a, b) => order(a) - order(b));
+}
+
 interface CdpPlatformFont {
   readonly familyName: string;
   readonly postScriptName?: string;

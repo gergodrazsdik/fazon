@@ -16,8 +16,10 @@ export type {
   Capture,
   ElementStyles,
   InspectedElement,
+  InspectedPseudoElement,
   NameSourceKind,
   PageInspection,
+  PseudoElementName,
   RenderedFont,
   StyleOrigin,
   StyleProperty,
@@ -25,6 +27,7 @@ export type {
   StyleSource,
   TextFonts,
 } from "./snapshot.js";
+export { pseudoElementNames } from "./snapshot.js";
 export {
   launchRenderer,
   renderDefaults,
