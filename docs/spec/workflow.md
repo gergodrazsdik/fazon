@@ -158,7 +158,7 @@ No artifact contains a transcript, a credential or the agent's prompts.
 
 ## From M4: Pages
 
-A second reusable workflow, `pages.yml`, deploys the Storybook build and the docs site to GitHub Pages on pushes to `main`. Its caller grants `pages: write` and `id-token: write` to that workflow only. T-0061 specifies it when the site exists.
+A second reusable workflow, `pages.yml`, deploys the Storybook build and the docs site to GitHub Pages on pushes to `main`. The docs site is the Storybook build, with a generated page per component from its spec and a metrics page from the rounds' records ([ADR 0029](../adr/0029-m4-plan.md)). Its caller grants `pages: write` and `id-token: write` to that workflow only. T-0061 specifies it when the site exists.
 
 ## Rules
 

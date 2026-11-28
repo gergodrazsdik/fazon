@@ -4,14 +4,14 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0108, F-0042, Q-0032.
+Next free IDs: T-0108, F-0043, Q-0032.
 
 ## Now
 
 <!-- the next 3–5 items, in order; agents pick work from here -->
 
-1. M4: break T-0060 (the library) down into steps with the maintainer before starting it
-2. Publish the draft `measurement-1` release of fazon-vue-example, which holds round 1's records; publishing creates its tag (maintainer)
+1. T-0060 step 1: `tokens` on pseudo-elements and MATRIX-005 (T-0098)
+2. T-0060 step 2: `fazon measure` and measured round 1 as its pilot (F-0042)
 3. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
@@ -168,7 +168,17 @@ Complete 2026-11-28: the judge's rubric and plan, its call through the SDK, the 
 
 ### M4 The library
 
-- [ ] T-0060 The remaining 13 components, the packed library as a CI artifact, the docs site, the second calibration (Sonnet 5.5 only, Q-0030); 17 components pass, Menu and Popover included ([ADR 0020](../adr/0020-component-list-and-npm-names.md)), and the metrics table is on the site
+- [ ] T-0060 The remaining 13 components, the packed library as a CI artifact, the docs site, the second calibration (Sonnet 5.5 only, Q-0030); 17 components pass, Menu and Popover included ([ADR 0020](../adr/0020-component-list-and-npm-names.md)), and the metrics table is on the site (broken down with the maintainer 2026-11-28, [ADR 0029](../adr/0029-m4-plan.md): one pull request per component, USD 300 for M4's rounds, Storybook as the docs site)
+  - [x] The packed library as a CI artifact — since M1 (T-0046): the reusable `verify.yml` uploads the packed tarball as `fazon-package`
+  - [ ] Step 1: the framework's gaps before the components that need them: `tokens` on pseudo-elements and MATRIX-005 (T-0098) before Checkbox, RadioGroup and Switch; a fixture image for Avatar, whose specs can't show one yet; other spec-format gaps as the specs find them
+  - [ ] Step 2: `fazon measure`, with a staged estimate against the budget as `fazon calibrate` has; measured round 1 on Button, Badge, Link and Dialog as its pilot (F-0042)
+  - [ ] Step 3a: Avatar, Spinner and Card, each specified with the maintainer through the spec skill, proposed, approved, generated, reviewed and accepted, in one example-repository pull request per component
+  - [ ] Step 3b: TextField, Textarea, Checkbox, RadioGroup and Switch, the same way
+  - [ ] Step 3c: Tabs, Tooltip, Popover, Menu and Select, on Reka UI, the same way
+  - [ ] Step 4: F-0035, then calibration round 2 with Sonnet 5.5 on all 17 components
+  - [ ] Step 5: measured round 2 on all 17 components
+  - [ ] Step 6: the docs site: the Storybook build with a generated page per component from its spec and a metrics page from the rounds' records, deployed to GitHub Pages (T-0061)
+- [ ] F-0042 Measured round 1 (Button, Badge, Link and Dialog, five repeats each) never ran at the end of M2, as measurement.md had it: M2 generated each component once, for $2.80, and `fazon measure` is registered in the CLI but not implemented. It runs in M4 as the command's pilot (T-0060 step 2, ADR 0029)
 - [ ] T-0061 GitHub Pages for the docs site: the first deploy job and its `pages: write` permission, as the reusable `pages.yml` ([ADR 0017](../adr/0017-workflow.md))
 - [ ] T-0098 The rendered and source checks' remaining gaps: pseudo-elements in `tokens`; MATRIX-005; Vite and Storybook warnings as findings; the `package` check's `styles` rule loading the styles in a browser, and accepting any reachable stylesheet, so the exported `tokens.css` alone passes it ([fazon-vue-example#4](https://github.com/gergodrazsdik/fazon-vue-example/pull/4)) ([#56](https://github.com/gergodrazsdik/fazon/pull/56), [#57](https://github.com/gergodrazsdik/fazon/pull/57)) (moved from M2 on 2026-11-27)
 - [ ] F-0035 When the judge's fails block (once it's calibrated), the next iteration's prompt carries only the checks' blocking findings: the loop takes `findings` from the checks phase, so the agent wouldn't see why the judge failed the story. Carry the judge's fail findings into the prompt before a calibrated judge can block. Before round 2 (step 3b) (moved from M3 on 2026-11-28)
