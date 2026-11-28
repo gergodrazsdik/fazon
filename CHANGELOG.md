@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- The `tokens` check covers `::before`, `::after`, `::marker`, `::placeholder` and `::backdrop` while they render; a placeholder or a modal dialog's backdrop that keeps the browser's colour is a `user-agent` finding.
+- `fazon verify` checks MATRIX-005: a state set by props is reflected on its target, and a `story: false` state on at least one element; a failure ends the rendered checks in error.
 - `fazon measure --round <n> --budget <usd>`: a measurement round of propose and generate runs from a clean checkout, in stages within the budget, resumable, with the round's loop metrics.
 - The judge's first calibration records, round 1 for judge version 1 with Claude Sonnet 5.5 and Claude Opus 5.5 (`calibration/judge-1/`), which `@fazon/core` ships. Neither meets the protocol's sample sizes, so the judge stays advisory.
 - `fazon calibrate --round <n> --budget <usd> --out <path>`: a judge calibration round. It verifies the round's components and renders them in the verifier image unmodified and with the twelve seeded defects, then judges them through the Message Batches API, the unmodified components first and the cases only when their estimate fits the budget. It writes the calibration record, with the catch rate, false-positive rate and self-agreement and their Wilson intervals.
