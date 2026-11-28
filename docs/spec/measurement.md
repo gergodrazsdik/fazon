@@ -33,10 +33,10 @@ Every component is measured **5 times** per measurement round. Every published n
 
 | Round | When | Components |
 |---|---|---|
-| 1 | end of M2 | Button, Badge, Link, Dialog |
+| 1 | M4, as `fazon measure`'s pilot ([ADR 0029](../adr/0029-m4-plan.md)) | Button, Badge, Link, Dialog |
 | 2 | end of M4 | all 17 |
 
-**Budget:** measured runs and calibration rounds through M3 share a budget of USD 150 ([ADR 0021](../adr/0021-settled-questions.md)). Before a round starts, its estimate is compared with what's left; a round that would exceed it waits for the maintainer's approval. The budget for M4's round is set before it.
+**Budget:** measured runs and calibration rounds through M3 share a budget of USD 150 ([ADR 0021](../adr/0021-settled-questions.md)). Before a round starts, its estimate is compared with what's left; a round that would exceed it waits for the maintainer's approval. M4's rounds, measured rounds 1 and 2 and calibration round 2, share a budget of USD 300 ([ADR 0029](../adr/0029-m4-plan.md)).
 
 ## Loop metrics
 
