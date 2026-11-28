@@ -21,7 +21,7 @@ A measured run is a generate run made under fixed conditions, so that runs can b
 - **Code:** a clean checkout of the example repository, at a commit that pins one framework version. The component's own files are removed. The spec and its approved API (from the component's provenance file) stay.
 - **Pinned:** the verifier image, the Claude Code version and the models are pinned; the run record names each.
 - **Settings:** the default caps and models of that framework version, unless an experiment states otherwise.
-- **Credentials:** an API key, so that costs are exact.
+- **Credentials:** an API key, so that costs are exact. A run whose cost is Claude Code's estimate stops the round.
 - **No person in the loop:** the run starts from the approved API, with no review feedback and no hand edits. A run that ends as "needs a person" counts as not passing.
 - **Independence:** each repeat starts from its own clean checkout, and repeats run one after another.
 

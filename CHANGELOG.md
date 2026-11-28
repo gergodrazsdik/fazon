@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- `fazon measure --round <n> --budget <usd>`: a measurement round of propose and generate runs from a clean checkout, in stages within the budget, resumable, with the round's loop metrics.
 - The judge's first calibration records, round 1 for judge version 1 with Claude Sonnet 5.5 and Claude Opus 5.5 (`calibration/judge-1/`), which `@fazon/core` ships. Neither meets the protocol's sample sizes, so the judge stays advisory.
 - `fazon calibrate --round <n> --budget <usd> --out <path>`: a judge calibration round. It verifies the round's components and renders them in the verifier image unmodified and with the twelve seeded defects, then judges them through the Message Batches API, the unmodified components first and the cases only when their estimate fits the budget. It writes the calibration record, with the catch rate, false-positive rate and self-agreement and their Wilson intervals.
 - The reusable workflow's `judge` job runs `fazon judge` after a passing verify, on the stories the pull request adds or changes, with workload identity federation (the `anthropic-federation-rule-id`, `anthropic-organization-id`, `anthropic-service-account-id` and `anthropic-workspace-id` inputs, and `id-token: write`) or the `anthropic-api-key` secret. It's skipped on pull requests from forks and when the judge's policy is `off`, and it adds the verdicts to the summary, the comment and the artifacts.

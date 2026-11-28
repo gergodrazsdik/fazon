@@ -262,10 +262,18 @@ These are for the maintainer; they follow the [measurement protocol](measurement
 ### `fazon measure`
 
 ```text
-fazon measure --round <n> [<component>...] [--repeats <n>]
+fazon measure --round <n> --budget <usd> [<component>...] [--repeats <n>]
 ```
 
-Makes measured runs: for each component and repeat, a propose run and a generate run from a clean checkout, with the runs' `measurement` fields set. It refuses (2) with a `fazon.local.yaml`, uncommitted changes, or credentials other than an API key. Result: the runs, and the loop metrics of the round.
+Makes measured runs: for each component and repeat, a propose run and a generate run from a clean checkout, with the runs' `measurement` fields set. Round 1 measures Button, Badge, Link and Dialog, round 2 every component; components named on the command line must be in the round. `--repeats` defaults to 5. `--budget` is what's left of the measurement budget, in USD.
+
+- **Order:** every component's repeat 1 first, then repeat 2, and so on. In a repeat, the propose run comes first and its output is discarded; the generate run removes the component's files first, as `generate --clean` does.
+- **Clean checkout:** after every run, the tracked files are restored from `HEAD` and the untracked files in the components directory are removed. The round stops when the checkout isn't clean afterwards.
+- **Stages:** before a component's repeat starts, its estimate must fit what's left of `--budget`: the mean cost of its measured repeats, or the per-run cost cap before it has one. Once every component has a measured repeat, the estimate for the rest of the round must fit too. Otherwise the round stops and needs a person (1).
+- **Exact costs:** the round stops (3) after a run whose cost is Claude Code's estimate rather than the API's, because an API key didn't pay for it.
+- **Resuming:** running the command again keeps the round's completed runs that started from the same spec, token set, conventions doc, config, framework version, image and Claude Code version, and makes only the rest.
+
+It refuses (2) with a `fazon.local.yaml`, uncommitted changes, untracked files in the components directory, credentials other than an API key, or a component that `fazon generate` would refuse. Result: the runs, the cost this invocation spent, and the loop metrics of the round, per component and for the library.
 
 ### `fazon calibrate`
 

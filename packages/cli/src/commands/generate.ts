@@ -129,6 +129,8 @@ export interface LoopRunRequest {
   readonly clean?: boolean;
   /** Required for a feedback run, and only there. */
   readonly feedback?: FeedbackInput;
+  /** A measured run's round and repeat (`fazon measure`). */
+  readonly measurement?: { readonly round: number; readonly repeat: number };
 }
 
 /**
@@ -165,6 +167,7 @@ export async function runLoopCommand(
       dependencies: { refreshGenerated: generatedRefresh(refresh), judge: judge.hook },
       judge: { ...(judge.version === undefined ? {} : { version: judge.version }), calibrated: judge.calibrated },
       ...(feedback === undefined ? {} : { feedback }),
+      ...(request.measurement === undefined ? {} : { measurement: request.measurement }),
       prepare: async () => {
         const stale = await staleOutside(setup);
         if (stale !== undefined) return stale;
