@@ -4,7 +4,7 @@ What's open and next. Agents keep it current; humans skim it. Rules are in [AGEN
 
 Legend: [ ] todo · [~] in progress · [x] done · [-] dropped · [!] blocked or needs a decision
 
-Next free IDs: T-0107, F-0042, Q-0031.
+Next free IDs: T-0108, F-0042, Q-0032.
 
 ## Now
 
@@ -192,6 +192,7 @@ Complete 2026-11-28: the judge's rubric and plan, its call through the SDK, the 
 - [ ] T-0080 Further adapters: Angular, then React, Svelte and Web Components
 - [ ] F-0033 Two adapter-vue tests (`reader.test.ts`, `vitest.test.ts`'s `fazonVueApi`) timed out at Vitest's 5 s default once during `just check`, and passed alone and in a full rerun: vue-component-meta is slow under load. Give them a longer timeout if it happens again (M3 step 1)
 - [ ] T-0081 Tailwind as a second styling option
+- [ ] T-0107 After version 1: a spec format for complex components, up to a data grid of AG Grid's scope: nested collections (F-0006), virtualised rows and columns, column definitions with per-column renderers and editors, and a component split into specs that compose each other, since one generate run's caps can't hold a grid (maintainer, 2026-11-28)
 - [ ] T-0084 Tool updates as they come due: `just tool-updates` says which, and each is a pull request that changes the version (and for release binaries the URL and digest) in `scripts/install-ci-tools.sh` or `.github/workflows/lint.yml`, together with the local install
   - [ ] zizmor 1.33.1 from 2026-11-29: `ZIZMOR_VERSION` and the zizmor action's `version` input together; the action itself (v0.9.x) comes through Dependabot
 - [ ] T-0091 Move to TypeScript 7.1 once typescript-eslint, vue-tsc and vue-component-meta each support it in a release at least 7 days old: both repos in one change, without the side-by-side TypeScript 6 alias, and the contract tests' API reading tested again, as 7.1's API is new. Until then the workspace stays on 6.0 and Dependabot ignores TypeScript's major updates (7.0 ships no JavaScript API; 7.1's beta came on 2026-10-20; [typescript-eslint#10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940))
@@ -279,3 +280,4 @@ From the bootstrap:
 - [x] Q-0024 Should every call of a feedback run carry the developer's feedback? Calls don't share a session, so from iteration 2 on the agent no longer sees it; agent-permissions.md says each call's prompt carries it, loop-and-caps.md says the first prompt does, and the loop follows the latter ([#74](https://github.com/gergodrazsdik/fazon/pull/74)) (2026-11-26) — answered 2026-11-26: every prompt ([ADR 0024](../adr/0024-feedback-in-every-prompt.md))
 - [x] Q-0025 The empty fixture: story-matrix.md says a spec without fixtures renders the `empty` fixture, which SPEC-009 allows only when no prop or slot is required; but fixtures are written after `fazon approve`, so enforcing it in `spec check` would make `propose` reject every API with a required slot and `approve` refuse every spec without fixtures. [#76](https://github.com/gergodrazsdik/fazon/pull/76) leaves the clause out; should `generate` refuse such a spec instead? (2026-11-26) — answered 2026-11-26: `generate` and `feedback` refuse it; `spec check` leaves the clause out ([ADR 0025](../adr/0025-empty-fixture-and-recipe-values.md), [#76](https://github.com/gergodrazsdik/fazon/pull/76))
 - [x] Q-0026 SPEC-016 checks that a recipe's props exist, not that their values fit their type, as SPEC-009 does for fixtures: should the rule say so? ([#76](https://github.com/gergodrazsdik/fazon/pull/76)) (2026-11-26) — answered 2026-11-26: yes ([ADR 0025](../adr/0025-empty-fixture-and-recipe-values.md), [#76](https://github.com/gergodrazsdik/fazon/pull/76))
+- [ ] Q-0031 After version 1: should Fazon build on an existing component library, such as PrimeVue, so that an application's developers make their own components from the library's? Today it can't: the adapter fixes Reka UI as the only headless library; the `lint` and `tokens` checks reject a library's own styles and custom properties, so PrimeVue would run unstyled with pass-through styles from the role tokens, or its variables would need to count as aliases of role tokens; `uses` names only specs in the same repository (SPEC-008); and the `package` check expects a library package, not components inside an application (maintainer, 2026-11-28)
