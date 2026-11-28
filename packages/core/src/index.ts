@@ -112,6 +112,15 @@ export {
 } from "./calibration/in-image.js";
 export { judgeRound, type RoundCall, type RoundJudgeInput, type RoundJudgeOutcome } from "./calibration/judge.js";
 export {
+  loopMetrics,
+  roundMetrics,
+  spread,
+  type Count,
+  type LoopMetrics,
+  type RoundMetrics,
+  type Spread,
+} from "./measurement/metrics.js";
+export {
   calibrationRecord,
   roundMeasures,
   thresholds,

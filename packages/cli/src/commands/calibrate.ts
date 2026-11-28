@@ -5,7 +5,7 @@
 // mutation case into the verify run's `calibration/` directory (`--in-image <run>`, internal).
 // Then the judge, through the Message Batches API in stages within `--budget`, the round's
 // measures, and the calibration record at `--out`.
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import {
@@ -25,7 +25,6 @@ import {
   priceOf,
   roundMeasures,
   sdkBatchClient,
-  localConfigFileName,
   loadComponents,
   rendersFile,
   runDirectory,
@@ -37,6 +36,7 @@ import { ensureImage, findRuntime, mountRoot, runArguments } from "../container.
 import { refused, type Message, type Outcome, type TextLine } from "../outcome.js";
 import { passComponents } from "../judge.js";
 import { requireConfig, type Context, type Invocation } from "./context.js";
+import { measuredCheckoutProblem } from "./measured.js";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../../package.json") as { version: string };
@@ -111,21 +111,8 @@ export async function calibrate(invocation: Invocation, context: Context): Promi
   }
 
   // The refusals of a measured run (docs/spec/cli.md#fazon-measure).
-  if (
-    await access(path.join(repo, localConfigFileName)).then(
-      () => true,
-      () => false,
-    )
-  ) {
-    return refused(
-      `A calibration round runs without ${localConfigFileName}: its overrides would change what's measured. Move it aside first.`,
-    );
-  }
-  const status = await environment.exec("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: repo });
-  if (status?.exitCode !== 0) return environmentError("git status failed: a calibration round needs a git checkout.");
-  if (status.stdout.trim() !== "") {
-    return refused("A calibration round runs from a clean checkout: commit or stash the changes first.", "git status");
-  }
+  const checkout = await measuredCheckoutProblem(context, "A calibration round");
+  if (checkout !== undefined) return checkout;
 
   const { components, problems } = await loadComponents(repo, config, adapter);
   if (problems.length > 0)

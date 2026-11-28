@@ -7,6 +7,7 @@ import { doctor } from "./commands/doctor.js";
 import { feedback } from "./commands/feedback.js";
 import { baselineUpdate } from "./commands/baseline-update.js";
 import { calibrate } from "./commands/calibrate.js";
+import { measure } from "./commands/measure.js";
 import { generate } from "./commands/generate.js";
 import { propose } from "./commands/propose.js";
 import { report } from "./commands/report.js";
@@ -175,9 +176,14 @@ export const commands: readonly Command[] = [
   {
     name: "measure",
     group: "Measurement",
-    usage: "fazon measure --round <n> [<component>...] [--repeats <n>]",
-    summary: "Make measured runs.",
-    arrives: "M2",
+    usage: "fazon measure --round <n> --budget <usd> [<component>...] [--repeats <n>]",
+    summary: "A measurement round: measured propose and generate runs, and the round's loop metrics.",
+    options: {
+      round: { type: "string" },
+      budget: { type: "string" },
+      repeats: { type: "string" },
+    },
+    run: measure,
   },
   {
     name: "calibrate",

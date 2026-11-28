@@ -35,6 +35,7 @@ Decisions about Fazon's architecture, process and licensing. The [design brief](
 | [0027](0027-m3-federation-calibration-cost.md) | Workload identity federation for the judge in CI; a calibration round that fits the budget; seeded defects injected at capture | accepted, amended by 0028 |
 | [0028](0028-cases-a-check-catches.md) | A calibration case a check catches counts though no pixel changes; viewer-only cases the checks catch stay in the judge's catch rate | accepted |
 | [0029](0029-m4-plan.md) | M4's plan: measured round 1 as a pilot, a USD 300 budget, Storybook as the docs site, one pull request per component | accepted |
+| [0030](0030-marks-are-parts.md) | A mark that shows a state is a composed part, not a pseudo-element | accepted |
 
 ## Numbering and status
 

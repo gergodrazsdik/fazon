@@ -30,8 +30,14 @@ import {
 import type { Message, Outcome } from "../outcome.js";
 import { describeFinding, type Context, type Invocation } from "./context.js";
 
-/** `fazon propose <component>`. */
-export async function propose(invocation: Invocation, context: Context): Promise<Outcome> {
+/** A measured run's round and repeat (`fazon measure`). */
+export interface Measurement {
+  readonly round: number;
+  readonly repeat: number;
+}
+
+/** `fazon propose <component>`; `fazon measure` makes it a measured run. */
+export async function propose(invocation: Invocation, context: Context, measurement?: Measurement): Promise<Outcome> {
   const setup = await prepareAgentCommand("propose", invocation, context);
   if ("stop" in setup) return setup.stop;
   const { component, spec } = setup;
@@ -94,6 +100,7 @@ export async function propose(invocation: Invocation, context: Context): Promise
       jsonSchema: proposalSchema(),
       answer,
       proposal: spec.file,
+      ...(measurement === undefined ? {} : { measurement }),
     },
     context,
   );

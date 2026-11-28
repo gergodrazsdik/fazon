@@ -5,10 +5,13 @@ import { cp, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { VueApiFile, VueComponentApi } from "./api.js";
 import { apiDifferences, createVueApiReader, parseDefault, type VueApiReader } from "./reader.js";
 import { exampleNames, fixtures, golden } from "./test-support.js";
+
+// vue-component-meta is slow under load: the 5 s default timed out in full runs (F-0033).
+vi.setConfig({ testTimeout: 30_000 });
 
 const packageRoot = fileURLToPath(new URL("../", import.meta.url));
 
