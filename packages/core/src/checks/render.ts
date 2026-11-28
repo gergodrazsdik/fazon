@@ -384,6 +384,7 @@ async function pseudoElementsOf(cdp: CDPSession, element: CdpNode | undefined): 
   const order = (p: InspectedPseudoElement) => pseudoElementNames.indexOf(p.pseudo);
   return found.sort((a, b) => order(a) - order(b));
 }
+
 interface CdpPlatformFont {
   readonly familyName: string;
   readonly postScriptName?: string;

@@ -5,8 +5,10 @@ import path from "node:path";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { element, fixtureTokenIndex, style } from "../checks/test-support.js";
 import { baselinePath, formatBaselinesRecord } from "../checks/visual.js";
+import type { Story } from "../matrix/types.js";
 import type { TokenIndex } from "../tokens/build.js";
 import type { VerifyComponent } from "./components.js";
+import { setByProps } from "./reflected-states.js";
 import { runRenderedChecks, storybookIndexProblems, type RenderedStory, type StoryRenderer } from "./rendered.js";
 import { exampleButton, image, otherImage, png } from "./test-support.js";
 
@@ -58,8 +60,17 @@ function rendered(capture = png(4, 4)): RenderedStory {
   };
 }
 
+/** The render with the story's state reflected on the Button, as `data-<state>` (MATRIX-005). */
+function reflecting(story: Story, render: RenderedStory): RenderedStory {
+  if (!setByProps(button.spec, story.state)) return render;
+  const elements = render.inspection.elements.map((e) =>
+    e.partRoot && e.part === "Button" ? { ...e, states: [...e.states, story.state.name] } : e,
+  );
+  return { ...render, inspection: { ...render.inspection, elements } };
+}
+
 function renderer(render: (story: string, theme: string) => RenderedStory = () => rendered()): StoryRenderer {
-  return { render: (_component, story, theme) => Promise.resolve(render(story.name, theme)) };
+  return { render: (_component, story, theme) => Promise.resolve(reflecting(story, render(story.name, theme))) };
 }
 
 const run = (overrides: Partial<Parameters<typeof runRenderedChecks>[0]> = {}) =>
@@ -121,7 +132,7 @@ describe("the rendered checks", () => {
       renderer: {
         render: (component, story, theme) => {
           seen.push(`${component.name} ${story.name} ${theme}`);
-          return Promise.resolve(rendered());
+          return Promise.resolve(reflecting(story, rendered()));
         },
       },
     });
@@ -280,5 +291,22 @@ describe("MATRIX-003", () => {
     const result = await run({ storybookIndex: new Map([["Button", []]]) });
     expect(result.stories).toEqual([]);
     expect(result.checks.every((c) => c.status === "error")).toBe(true);
+  });
+});
+
+describe("MATRIX-005", () => {
+  it("ends the rendered checks in error when a state set by props isn't reflected, with the story in the message", async () => {
+    const result = await run({
+      renderer: {
+        render: (_component, story) =>
+          Promise.resolve(story.state.name === "loading" ? rendered() : reflecting(story, rendered())),
+      },
+    });
+    expect(statuses(result).map(([, status]) => status)).toEqual(["error", "error", "error", "error"]);
+    const message = result.checks[0]?.message ?? "";
+    expect(message).toMatch(/^3 states aren't reflected: MATRIX-005 button--label--variant-primary--size-md--loading/);
+    expect(message).toContain("doesn't carry data-loading");
+    // Every story rendered, so the other checks' findings and the captures are kept.
+    expect(result.stories).toHaveLength(27 * 2);
   });
 });

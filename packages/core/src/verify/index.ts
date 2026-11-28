@@ -54,6 +54,12 @@ export {
   type StoryRenderer,
   type StoryVisual,
 } from "./rendered.js";
+export {
+  reflectedStateProblems,
+  setByProps,
+  type ReflectingElement,
+  type RenderedElements,
+} from "./reflected-states.js";
 export { readStorybookIndex, serveDirectory, storybookRenderer } from "./storybook.js";
 export {
   compareWithBase,

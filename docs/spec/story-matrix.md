@@ -144,6 +144,13 @@ Two attributes let the verifier find elements and know their state:
 
 The verifier uses them to find targets, to pick `<Part>[default]`, to know each element's state when it applies token rules and exemptions, and to confirm that a `story: false` state is shown. The rule is part of the [conventions doc](example-library/conventions.md#parts-and-states), and a check confirms it (MATRIX-004, MATRIX-005). Attributes a headless library sets, such as Reka UI's `data-state`, are unaffected.
 
+MATRIX-005 confirms the second attribute on the rendered stories, in every theme, after each story's input steps:
+
+- A state is **set by props** when its recipe has `props`, or when it has no recipe with `props` or `input` and a boolean prop of its name produces it ([producing states](#producing-states)). In every story of such a state, its [target](#targets) carries `data-<state>`: the component's root, or the part's instance that the recipe's `instance` names (the first instance without one).
+- A state with `story: false` is carried as `data-<state>` by the component's root, for a component's state, or by a root element of its part, for a part's state, in at least one story in one theme.
+- Pseudo-states are never reflected, so neither applies to them. A state produced by input alone is checked only if it has `story: false`.
+- An element with `display: none` isn't inspected, so the attributes it carries don't count.
+
 ## Content
 
 - Stories render fixtures only: the agent doesn't choose what a story shows.
@@ -228,7 +235,7 @@ Each story has:
 | MATRIX-004 | The root and every rendered part carry `data-part`, and every target in `set` and `input` resolves to an element. | the verifier |
 | MATRIX-005 | A state set by props is reflected on its target; a state with `story: false` is reflected by at least one element in the component's stories. | the verifier |
 
-A failed rule fails the run: the harness or verifier reports it, and no check result for the component counts. The harness doesn't write a manifest that breaks MATRIX-001 or MATRIX-002. In the verifier, a failure is not a finding: the rendered checks (`a11y`, `tokens`, `layout` and `visual`) end in `error` for every component in the run, with the rule and the story in their message, so the run ends `failed` with the reason `check-error` and `fazon verify` exits 3 ([`fazon verify`](cli.md#fazon-verify)). A component with no valid manifest, or one that breaks MATRIX-003, renders no story; a target that breaks MATRIX-004 stops its story. The verifier doesn't check MATRIX-005 yet (T-0098).
+A failed rule fails the run: the harness or verifier reports it, and no check result for the component counts. The harness doesn't write a manifest that breaks MATRIX-001 or MATRIX-002. In the verifier, a failure is not a finding: the rendered checks (`a11y`, `tokens`, `layout` and `visual`) end in `error` for every component in the run, with the rule and the story in their message, so the run ends `failed` with the reason `check-error` and `fazon verify` exits 3 ([`fazon verify`](cli.md#fazon-verify)). A component with no valid manifest, or one that breaks MATRIX-003, renders no story; a target that breaks MATRIX-004 stops its story. MATRIX-005 is checked once all of a component's stories have rendered, on those that did; it stops no story, so the other checks still report their findings.
 
 ## Examples
 
