@@ -12,8 +12,7 @@ Next free IDs: T-0108, F-0044, Q-0033.
 
 1. T-0060 step 2: measured round 1, the pilot, once the example repository pins #106 and #107 (maintainer runs it)
 2. T-0060 step 3a: Avatar (with a fixture image), Spinner and Card, specified with the maintainer
-3. Q-0032 before T-0060 step 3b
-4. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
+3. Tool updates as they come due: zizmor 1.33.1 from 2026-11-29 (T-0084)
 
 ## Phase 0: Bootstrap
 
@@ -171,8 +170,8 @@ Complete 2026-11-28: the judge's rubric and plan, its call through the SDK, the 
 
 - [ ] T-0060 The remaining 13 components, the packed library as a CI artifact, the docs site, the second calibration (Sonnet 5.5 only, Q-0030); 17 components pass, Menu and Popover included ([ADR 0020](../adr/0020-component-list-and-npm-names.md)), and the metrics table is on the site (broken down with the maintainer 2026-11-28, [ADR 0029](../adr/0029-m4-plan.md): one pull request per component, USD 300 for M4's rounds, Storybook as the docs site)
   - [x] The packed library as a CI artifact — since M1 (T-0046): the reusable `verify.yml` uploads the packed tarball as `fazon-package`
-  - [~] Step 1: the framework's gaps before the components that need them: `tokens` on pseudo-elements and MATRIX-005 (T-0098) before Checkbox, RadioGroup and Switch; a fixture image for Avatar, whose specs can't show one yet; other spec-format gaps as the specs find them — `tokens` on `::before`, `::after`, `::marker`, `::placeholder` and `::backdrop`, and MATRIX-005: 2026-11-28, [#107](https://github.com/gergodrazsdik/fazon/pull/107); Avatar's image and Q-0032 remain
-- [!] Q-0032 Token rules can't name a pseudo-element, so a Checkbox mark or a Switch thumb drawn with `::before` gets no per-state `token-rule` and no reflected state, though `tokens` checks its values since #107. Should the conventions require such marks to be parts with `data-part`, or should token rules get a pseudo-element field? Settle before Checkbox and Switch are specified (T-0060 step 3b)
+  - [~] Step 1: the framework's gaps before the components that need them: `tokens` on pseudo-elements and MATRIX-005 (T-0098) before Checkbox, RadioGroup and Switch; a fixture image for Avatar, whose specs can't show one yet; other spec-format gaps as the specs find them — `tokens` on `::before`, `::after`, `::marker`, `::placeholder` and `::backdrop`, and MATRIX-005: 2026-11-28, [#107](https://github.com/gergodrazsdik/fazon/pull/107); Avatar's image remains; marks are parts (Q-0032, ADR 0030)
+- [x] Q-0032 Token rules can't name a pseudo-element, so a Checkbox mark or a Switch thumb drawn with `::before` gets no per-state `token-rule` and no reflected state, though `tokens` checks its values since #107. Should the conventions require such marks to be parts with `data-part`, or should token rules get a pseudo-element field? Settle before Checkbox and Switch are specified (T-0060 step 3b) — answered 2026-11-28: marks are composed parts with `data-part`, such as `CheckboxIndicator` and `SwitchThumb` ([ADR 0030](../adr/0030-marks-are-parts.md)); the example repository's conventions doc follows with the next pin move
 - [ ] F-0043 `font-fallback` doesn't cover text in a pseudo-element's `content`: a `✓` in a font without the glyph falls back without a finding ([#107](https://github.com/gergodrazsdik/fazon/pull/107))
   - [~] Step 2: `fazon measure`, with a staged estimate against the budget as `fazon calibrate` has; measured round 1 on Button, Badge, Link and Dialog as its pilot (F-0042) — `fazon measure`: 2026-11-28, [#106](https://github.com/gergodrazsdik/fazon/pull/106); the pilot follows, run by the maintainer
   - [ ] Step 3a: Avatar, Spinner and Card, each specified with the maintainer through the spec skill, proposed, approved, generated, reviewed and accepted, in one example-repository pull request per component
@@ -203,7 +202,7 @@ Complete 2026-11-28: the judge's rubric and plan, its call through the SDK, the 
 ## Later
 
 - [ ] T-0080 Further adapters: Angular, then React, Svelte and Web Components
-- [ ] F-0033 Two adapter-vue tests (`reader.test.ts`, `vitest.test.ts`'s `fazonVueApi`) timed out at Vitest's 5 s default once during `just check`, and passed alone and in a full rerun: vue-component-meta is slow under load. Give them a longer timeout if it happens again (M3 step 1)
+- [x] F-0033 Two adapter-vue tests (`reader.test.ts`, `vitest.test.ts`'s `fazonVueApi`) timed out at Vitest's 5 s default once during `just check`, and passed alone and in a full rerun: vue-component-meta is slow under load. Give them a longer timeout if it happens again (M3 step 1) — 2026-11-28: `fazonVueApi` timed out again in a full run; both files now allow 30 s per test ([#106](https://github.com/gergodrazsdik/fazon/pull/106))
 - [ ] T-0081 Tailwind as a second styling option
 - [ ] T-0107 After version 1: a spec format for complex components, up to a data grid of AG Grid's scope: nested collections (F-0006), virtualised rows and columns, column definitions with per-column renderers and editors, and a component split into specs that compose each other, since one generate run's caps can't hold a grid (maintainer, 2026-11-28)
 - [ ] T-0084 Tool updates as they come due: `just tool-updates` says which, and each is a pull request that changes the version (and for release binaries the URL and digest) in `scripts/install-ci-tools.sh` or `.github/workflows/lint.yml`, together with the local install
